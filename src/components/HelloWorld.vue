@@ -1,34 +1,32 @@
 <script lang="ts" setup>
-import { ref } from 'vue';
+import { browser } from 'wxt/browser';
+import { MessageType } from '@/constants/message-types';
 
-defineProps({
-  msg: String,
-});
+async function sendToActiveTab(type: MessageType, data?: any) {
+  const [tab] = await browser.tabs.query({ active: true, currentWindow: true });
 
-const count = ref(0);
+  if (tab?.id) {
+    await browser.tabs.sendMessage(tab.id, { type, data });
+  }
+}
+
+function onLeadScrape() {
+  sendToActiveTab(MessageType.SCRAPE_LEAD);
+}
+
+function onAccountScrape() {
+  sendToActiveTab(MessageType.SCRAPE_ACCOUNT);
+}
 </script>
 
 <template>
-  <h1>{{ msg }}</h1>
-
   <div class="card">
-    <button type="button" @click="count++">count is {{ count }}</button>
-    <p>
-      Edit
-      <code>components/HelloWorld.vue</code> to test HMR
-    </p>
+    <button type="button" @click="onLeadScrape">
+      Scrape lead
+    </button>
+
+    <button type="button" @click="onAccountScrape">
+      Scrape account
+    </button>
   </div>
-
-  <p>
-    Install
-    <a href="https://github.com/vuejs/language-tools" target="_blank">Volar</a>
-    in your IDE for a better DX
-  </p>
-  <p class="read-the-docs">Click on the WXT and Vue logos to learn more</p>
 </template>
-
-<style scoped>
-.read-the-docs {
-  color: #888;
-}
-</style>
