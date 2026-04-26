@@ -3,6 +3,7 @@ import ScrapperView from '@/components/ScrapperView.vue';
 import { onMounted, ref } from 'vue';
 import { browser } from 'wxt/browser';
 
+const tabUrl = ref('');
 const isLinkedIn = ref(false);
 const isLoading = ref(true);
 
@@ -10,6 +11,7 @@ onMounted(async () => {
   try {
     const [tab] = await browser.tabs.query({ active: true, currentWindow: true });
     if (tab?.url) {
+      tabUrl.value = tab.url;
       isLinkedIn.value = tab.url.includes('linkedin.com');
     }
   } finally {
@@ -23,7 +25,7 @@ onMounted(async () => {
     Loading...
   </div>
   <div v-else-if="isLinkedIn">
-    <ScrapperView />
+    <ScrapperView :tab-url="tabUrl" />
   </div>
   <div v-else class="not-linkedin">
     <p>This extension only works on LinkedIn.</p>
