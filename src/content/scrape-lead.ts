@@ -3,9 +3,3 @@ export function scrapeLead() {
 
   return {};
 }
-
-export function scrapeAccount() {
-  console.log('Scrapping the account');
-
-  return {};
-}

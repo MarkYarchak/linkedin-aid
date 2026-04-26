@@ -1,6 +1,7 @@
 import { browser } from 'wxt/browser';
 import { MessageType } from '@/constants/message-types';
-import { scrapeAccount, scrapeLead } from '@/content/scrape-lead';
+import { scrapeLead } from '@/content/scrape-lead';
+import { scrapeAccount } from '@/content/scrape-account';
 
 export default defineContentScript({
   matches: ['*://*.linkedin.com/*'],
