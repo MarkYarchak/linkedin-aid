@@ -15,11 +15,13 @@ export function scrapeLead() {
   const name = nameEl.textContent.trim();
   const headline = headerSection.querySelector('[data-anonymize="headline"]')?.textContent.trim();
   const location = getLocation(headerSection);
+  const about = document.querySelector('main section#about-section [data-anonymize="person-blurb"]')?.textContent.trim();
 
   const lead = {
     name,
     headline,
     location,
+    about,
   };
 
   console.log('Scrapped lead:', lead)
