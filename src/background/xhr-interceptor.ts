@@ -38,7 +38,6 @@ function patchXhr() {
           this.getResponseHeader('content-type') || '';
         if (!contentType.includes('application/json')) return;
 
-        console.log('[LI] XHR response', this.response);
         handlers.forEach((handler) => {
           if (url.includes(handler.urlIncludes)) {
             (this.response as Blob).text().then((rawData) => {
