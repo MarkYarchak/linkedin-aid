@@ -14,7 +14,7 @@ export default defineContentScript({
         const lead = scrapeLead();
 
         browser.runtime.sendMessage({
-          type: MessageType.RESULT_LEAD,
+          type: MessageType.SCRAPE_LEAD_RESULT,
           data: { lead },
         });
       }
@@ -23,7 +23,7 @@ export default defineContentScript({
         const account = scrapeAccount();
 
         browser.runtime.sendMessage({
-          type: MessageType.RESULT_ACCOUNT,
+          type: MessageType.SCRAPE_ACCOUNT_RESULT,
           data: { account },
         });
       }

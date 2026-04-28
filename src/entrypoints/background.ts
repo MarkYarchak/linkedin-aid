@@ -27,12 +27,12 @@ export default defineBackground(() => {
   });
 
   browser.runtime.onMessage.addListener((msg) => {
-    if (msg.type === MessageType.RESULT_LEAD) {
-      console.log(MessageType.RESULT_LEAD, msg.data);
+    if (msg.type === MessageType.SCRAPE_LEAD_RESULT) {
+      console.log(MessageType.SCRAPE_LEAD_RESULT, msg.data);
     }
 
-    if (msg.type === MessageType.RESULT_ACCOUNT) {
-      console.log(MessageType.RESULT_ACCOUNT, msg.data);
+    if (msg.type === MessageType.SCRAPE_ACCOUNT_RESULT) {
+      console.log(MessageType.SCRAPE_ACCOUNT_RESULT, msg.data);
     }
   });
 });
