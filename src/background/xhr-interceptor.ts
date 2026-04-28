@@ -1,46 +1,62 @@
-export function interceptXHR() {
+export type OnXhrLoad<T> = (data: T, url: string) => void;
+
+interface XhrHandler {
+  urlIncludes: string;
+  onLoad: OnXhrLoad<any>;
+}
+
+const handlers: XhrHandler[] = [];
+let isPatched = false;
+
+function patchXhr() {
+  if (isPatched) return;
+  isPatched = true;
+
   console.log('[LI] MAIN injection via scripting');
 
-  const OriginalXHR = window.XMLHttpRequest;
+  const originalOpen = XMLHttpRequest.prototype.open;
+  const originalSend = XMLHttpRequest.prototype.send;
 
-  window.XMLHttpRequest = function () {
-    const xhr = new OriginalXHR();
+  XMLHttpRequest.prototype.open = function (
+    method: string,
+    url: string | URL,
+    async: boolean = true,
+    username?: string | null,
+    password?: string | null,
+  ) {
+    (this as any)._url = url.toString();
+    return originalOpen.apply(this, [method, url, async || false, username, password]);
+  };
 
-    let url: string | URL = '';
+  XMLHttpRequest.prototype.send = function (this: XMLHttpRequest, body?: Document | XMLHttpRequestBodyInit | null) {
+    this.addEventListener('load', function () {
+      try {
+        const url: string = (this as any)._url || '';
+        if (!url.includes('/sales-api/')) return;
 
-    const originalOpen = xhr.open;
-    xhr.open = function (
-      method: string,
-      requestUrl: string | URL,
-      async: boolean = true,
-      username?: string,
-      password?: string,
-    ) {
-      url = requestUrl;
-      return originalOpen.apply(xhr, [method, requestUrl, async, username, password]);
-    };
+        const contentType =
+          this.getResponseHeader('content-type') || '';
+        if (!contentType.includes('application/json')) return;
 
-    const originalSend = xhr.send;
-    xhr.send = function (body: Document | XMLHttpRequestBodyInit | null | undefined) {
-      xhr.addEventListener('load', function () {
-        try {
-          if (!url.toString().includes('/sales-api/')) return;
+        console.log('[LI] XHR response', this.response);
+        handlers.forEach((handler) => {
+          if (url.includes(handler.urlIncludes)) {
+            (this.response as Blob).text().then((rawData) => {
+              const data = JSON.parse(rawData);
+              handler.onLoad(data, url);
+            });
+          }
+        });
+      } catch (e) {
+        console.error('[LI] Failed to parse XHR response', e);
+      }
+    });
 
-          const contentType =
-            xhr.getResponseHeader('content-type') || '';
-          if (!contentType.includes('application/json')) return;
+    return originalSend.apply(this, [body]);
+  };
+}
 
-          (xhr.response as Blob).text().then(() => {
-            console.log('[LI] XHR parsed');
-          });
-        } catch (e) {
-          console.error('[LI] Failed to parse XHR response', e);
-        }
-      });
-
-      return originalSend.apply(xhr, [body]);
-    };
-
-    return xhr;
-  } as any;
+export function handleXhr<T = any>(urlIncludes: string, onLoad: OnXhrLoad<T>) {
+  patchXhr();
+  handlers.push({ urlIncludes, onLoad });
 }
