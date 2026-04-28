@@ -1,18 +1,20 @@
 import { browser } from 'wxt/browser';
 import { MessageType } from '@/constants/message-types';
-import { interceptXHR } from '@/background/xhr-interceptor';
+import { isSalesNavigatorLeadUrl } from '@/helpers/url-helpers';
 
 export default defineBackground(() => {
   browser.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
     if (changeInfo.status !== 'loading') return;
     if (!tab.url?.includes('linkedin.com/sales')) return;
 
-    browser.scripting.executeScript({
-      target: { tabId },
-      world: 'MAIN',
-      injectImmediately: true,
-      func: interceptXHR,
-    });
+    if (isSalesNavigatorLeadUrl(tab.url)) {
+      browser.scripting.executeScript({
+        target: { tabId },
+        world: 'MAIN',
+        injectImmediately: true,
+        files: ['/handle-lead-profile.js'],
+      });
+    }
   });
 
   browser.runtime.onMessage.addListener((msg) => {
