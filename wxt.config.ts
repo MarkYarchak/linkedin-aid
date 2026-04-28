@@ -4,7 +4,8 @@ import { defineConfig } from 'wxt';
 export default defineConfig({
   srcDir: 'src',
   manifest: {
-    permissions: ['storage', 'tabs'],
+    permissions: ['scripting', 'storage', 'tabs'],
+    host_permissions: ['*://*.linkedin.com/*'],
   },
   modules: ['@wxt-dev/module-vue'],
 });
