@@ -1,6 +1,6 @@
 import { browser } from 'wxt/browser';
 import { MessageType } from '@/constants/message-types';
-import { isSalesNavigatorLeadUrl } from '@/helpers/url-helpers';
+import { isSalesNavigatorCompanyUrl, isSalesNavigatorLeadUrl } from '@/helpers/url-helpers';
 
 export default defineBackground(() => {
   browser.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
@@ -13,6 +13,15 @@ export default defineBackground(() => {
         world: 'MAIN',
         injectImmediately: true,
         files: ['/handle-lead-profile.js'],
+      });
+    }
+
+    if (isSalesNavigatorCompanyUrl(tab.url)) {
+      browser.scripting.executeScript({
+        target: { tabId },
+        world: 'MAIN',
+        injectImmediately: true,
+        files: ['/handle-account-profile.js'],
       });
     }
   });
