@@ -1,14 +1,15 @@
 <script lang="ts" setup>
 import { browser } from 'wxt/browser';
 import { MessageType } from '@/constants/message-types';
+import { isSalesNavigatorLeadUrl as isLeadUrl, isSalesNavigatorCompanyUrl as isCompanyUrl } from '@/helpers/url-helpers';
 
 interface Props {
   tabUrl: string;
 }
 const props = defineProps<Props>();
 
-const isSalesNavigatorLeadUrl = computed(() => /\/sales\/lead\/[^/?#]+/.test(props.tabUrl));
-const isSalesNavigatorCompanyUrl = computed(() => /\/sales\/company\/[^/?#]+/.test(props.tabUrl));
+const isSalesNavigatorLeadUrl = computed(() => isLeadUrl(props.tabUrl));
+const isSalesNavigatorCompanyUrl = computed(() => isCompanyUrl(props.tabUrl));
 
 async function sendToActiveTab(type: MessageType, data?: any) {
   const [tab] = await browser.tabs.query({ active: true, currentWindow: true });
