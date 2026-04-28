@@ -1,12 +1,24 @@
 import { handleXhr } from '@/background/xhr-interceptor';
 import type { SalesApiProfiles } from '@/types/salesApiProfiles';
+import type { SalesApiProfiles2 } from '@/types/salesApiProfiles2';
 import type { SalesApiInsightsV2 } from '@/types/salesApiInsightsV2';
 
 export function handleLeadProfileXhr() {
-  handleXhr<SalesApiProfiles>('/sales-api/salesApiProfiles', (data, url) => {
-    console.log('[LI] XHR URL', url);
-    console.log('[LI] XHR data', data);
-  });
+  handleXhr<SalesApiProfiles>(
+    /\/sales-api\/salesApiProfiles\/.*decoration=.*firstName/,
+    (data, url) => {
+      console.log('[LI] XHR SalesApiProfiles (Main) URL', url);
+      console.log('[LI] XHR SalesApiProfiles (Main) data', data);
+    },
+  );
+
+  handleXhr<SalesApiProfiles2>(
+    /\/sales-api\/salesApiProfiles\/.*decoration=.*educations/,
+    (data, url) => {
+      console.log('[LI] XHR SalesApiProfiles2 (Extra) URL', url);
+      console.log('[LI] XHR SalesApiProfiles2 (Extra) data', data);
+    },
+  );
 
   handleXhr<SalesApiInsightsV2>('/sales-api/salesApiInsightsV2', (data, url) => {
     console.log('[LI] XHR URL', url);

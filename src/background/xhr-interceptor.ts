@@ -1,7 +1,7 @@
 export type OnXhrLoad<T> = (data: T, url: string) => void;
 
 interface XhrHandler {
-  urlIncludes: string;
+  urlIncludes: string | RegExp;
   onLoad: OnXhrLoad<any>;
 }
 
@@ -39,7 +39,12 @@ function patchXhr() {
         if (!contentType.includes('application/json')) return;
 
         handlers.forEach((handler) => {
-          if (url.includes(handler.urlIncludes)) {
+          const matches =
+            typeof handler.urlIncludes === 'string'
+              ? url.includes(handler.urlIncludes)
+              : handler.urlIncludes.test(url);
+
+          if (matches) {
             (this.response as Blob).text().then((rawData) => {
               const data = JSON.parse(rawData);
               handler.onLoad(data, url);
@@ -55,7 +60,7 @@ function patchXhr() {
   };
 }
 
-export function handleXhr<T = any>(urlIncludes: string, onLoad: OnXhrLoad<T>) {
+export function handleXhr<T = any>(urlIncludes: string | RegExp, onLoad: OnXhrLoad<T>) {
   patchXhr();
   handlers.push({ urlIncludes, onLoad });
 }
