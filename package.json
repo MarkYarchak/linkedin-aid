@@ -1,6 +1,6 @@
 {
-  "name": "wxt-vue-starter",
-  "description": "manifest.json description",
+  "name": "linkedin-scrapper-ext",
+  "description": "LinkedIn SN data scrapper & helper",
   "private": true,
   "version": "0.0.0",
   "type": "module",
