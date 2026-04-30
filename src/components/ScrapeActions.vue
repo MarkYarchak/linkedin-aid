@@ -29,7 +29,7 @@ function onAccountScrape() {
 </script>
 
 <template>
-  <div class="card">
+  <div class="scraper-actions">
     <div v-if="isSalesNavigatorLeadUrl">
       <button type="button" @click="onLeadScrape">
         Scrape lead
@@ -43,3 +43,9 @@ function onAccountScrape() {
     </div>
   </div>
 </template>
+
+<style scoped>
+.scraper-actions {
+  padding: 1em;
+}
+</style>
