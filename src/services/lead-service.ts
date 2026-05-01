@@ -1,7 +1,7 @@
 import { browser } from 'wxt/browser';
 import { MessageType } from '@/constants/message-types';
 import { BASE_URL } from '@/constants/urls';
-import type { Lead } from '@/types/lead';
+import type { Lead } from '@/types/lead/lead';
 
 export class LeadService {
   private lastTabUrls: Record<number, string> = {};

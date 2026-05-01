@@ -1,17 +1,8 @@
-export interface Artifact {
-  width: number;
-  fileIdentifyingUrlPathSegment: string;
-  height: number;
-}
-
-export interface CompanyPictureDisplayImage {
-  rootUrl: string;
-  artifacts: Artifact[];
-}
+import { DisplayImage } from '@/types/linkedin-common';
 
 export interface CompanyUrnResolutionResult {
   name: string;
-  companyPictureDisplayImage: CompanyPictureDisplayImage;
+  companyPictureDisplayImage: DisplayImage;
   entityUrn: string;
 }
 

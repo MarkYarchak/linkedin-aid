@@ -1,17 +1,17 @@
 import { ref, onMounted, computed } from 'vue';
 import { browser } from 'wxt/browser';
-import type { Lead } from '@/types/lead';
+import type { Lead } from '@/types/lead/lead';
 
 export function useLeads(tabUrl?: string) {
   const leads = ref<Record<string, Lead>>({});
 
   const sortedLeads = computed(() => {
     let result = Object.values(leads.value);
-    
+
     if (tabUrl) {
       result = result.filter(lead => lead.profileUrl === tabUrl);
     }
-    
+
     return result.sort((a, b) => b.updatedAt - a.updatedAt);
   });
 

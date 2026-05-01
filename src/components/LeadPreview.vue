@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import type { Lead } from '@/types/lead';
+import type { Lead } from '@/types/lead/lead';
 
 interface Props {
   lead: Lead;

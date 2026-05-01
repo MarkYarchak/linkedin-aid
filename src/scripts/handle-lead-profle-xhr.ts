@@ -1,17 +1,14 @@
 import { handleXhr } from '@/scripts/xhr-interceptor';
 import { MessageType } from '@/constants/message-types';
 import { postWindowMessage } from '@/content/window-messages';
-import type { SalesApiProfiles } from '@/types/salesApiProfiles';
-import type { SalesApiProfiles2 } from '@/types/salesApiProfiles2';
-import type { SalesApiInsightsV2 } from '@/types/salesApiInsightsV2';
+import type { SalesApiProfiles } from '@/types/lead/salesApiProfiles';
+import type { SalesApiProfiles2 } from '@/types/lead/salesApiProfiles2';
+import type { SalesApiInsightsV2 } from '@/types/lead/salesApiInsightsV2';
 
 export function handleLeadProfileXhr() {
   handleXhr<SalesApiProfiles>(
     /\/sales-api\/salesApiProfiles\/.*decoration=.*firstName/,
     (data, url) => {
-      console.log('[LI] XHR SalesApiProfiles (Main) URL', url);
-      console.log('[LI] XHR SalesApiProfiles (Main) data', data);
-
       postWindowMessage({
         type: MessageType.LEAD_CAPTURED,
         url,
@@ -23,9 +20,6 @@ export function handleLeadProfileXhr() {
   handleXhr<SalesApiProfiles2>(
     /\/sales-api\/salesApiProfiles\/.*decoration=.*educations/,
     (data, url) => {
-      console.log('[LI] XHR SalesApiProfiles2 (Extra) URL', url);
-      console.log('[LI] XHR SalesApiProfiles2 (Extra) data', data);
-
       postWindowMessage({
         type: MessageType.LEAD_EXTRA_CAPTURED,
         url,
@@ -35,9 +29,6 @@ export function handleLeadProfileXhr() {
   );
 
   handleXhr<SalesApiInsightsV2>('/sales-api/salesApiInsightsV2', (data, url) => {
-    console.log('[LI] XHR URL', url);
-    console.log('[LI] XHR data', data);
-
     postWindowMessage({
       type: MessageType.LEAD_INSIGHTS_CAPTURED,
       url,

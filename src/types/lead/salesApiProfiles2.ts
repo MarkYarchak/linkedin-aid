@@ -1,13 +1,4 @@
-export interface Artifact {
-  width: number;
-  fileIdentifyingUrlPathSegment: string;
-  height: number;
-}
-
-export interface DisplayImage {
-  artifacts: Artifact[];
-  rootUrl: string;
-}
+import { DisplayImage } from '@/types/linkedin-common';
 
 export interface SchoolResolutionResult {
   entityUrn: string;
@@ -35,13 +26,8 @@ export interface Skill {
   numOfEndorsement: number;
 }
 
-export interface VectorImage {
-  artifacts: Artifact[];
-  rootUrl: string;
-}
-
 export interface ProfileBackgroundPicture {
-  "com.linkedin.common.VectorImage": VectorImage;
+  "com.linkedin.common.VectorImage": DisplayImage;
 }
 
 export interface DateRange {
