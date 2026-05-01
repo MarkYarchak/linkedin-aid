@@ -1,15 +1,11 @@
 import { browser } from 'wxt/browser';
-import { MessageType } from '@/constants/message-types';
 import { isSalesNavigatorCompanyUrl, isSalesNavigatorLeadUrl } from '@/helpers/url-helpers';
-import { BASE_URL } from '@/constants/urls';
-import type { Lead } from '@/types/lead';
+import { leadService } from '@/services/lead-service';
 
 export default defineBackground(() => {
-  const lastTabUrls: Record<number, string> = {};
-
   browser.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
     if (tab.url) {
-      lastTabUrls[tabId] = tab.url;
+      leadService.setTabUrl(tabId, tab.url);
     }
 
     if (changeInfo.status !== 'loading') return;
@@ -34,50 +30,7 @@ export default defineBackground(() => {
     }
   });
 
-  async function updateLeadInStorage(urn: string, update: Partial<Lead>) {
-    const storage = await browser.storage.local.get('capturedLeads');
-    const leads: Record<string, Lead> = (storage.capturedLeads || {}) as Record<string, Lead>;
-
-    const existingLead = leads[urn] || { entityUrn: urn, updatedAt: Date.now() };
-    leads[urn] = {
-      ...existingLead,
-      ...update,
-      updatedAt: Date.now(),
-    };
-
-    await browser.storage.local.set({ capturedLeads: leads });
-  }
-
   browser.runtime.onMessage.addListener((msg, sender) => {
-    const tabUrl = sender.tab?.id ? lastTabUrls[sender.tab.id] : undefined;
-
-    if (msg.type === MessageType.LEAD_CAPTURED) {
-      const urn = msg.data.entityUrn;
-      if (urn) {
-        updateLeadInStorage(urn, { main: msg.data, profileUrl: tabUrl });
-      }
-    }
-
-    if (msg.type === MessageType.LEAD_EXTRA_CAPTURED) {
-      const urn = msg.data.entityUrn;
-      if (urn) {
-        updateLeadInStorage(urn, { extra: msg.data, profileUrl: tabUrl });
-      }
-    }
-
-    if (msg.type === MessageType.LEAD_INSIGHTS_CAPTURED) {
-      const urn = new URL(msg.url, BASE_URL).searchParams.get('profile');
-      if (urn) {
-        updateLeadInStorage(urn, { insights: msg.data });
-      }
-    }
-
-    if (msg.type === MessageType.SCRAPE_LEAD_RESULT) {
-      console.log(MessageType.SCRAPE_LEAD_RESULT, msg.data);
-    }
-
-    if (msg.type === MessageType.SCRAPE_ACCOUNT_RESULT) {
-      console.log(MessageType.SCRAPE_ACCOUNT_RESULT, msg.data);
-    }
+    leadService.handleMessage(msg, sender);
   });
 });
