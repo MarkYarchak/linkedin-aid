@@ -51,10 +51,6 @@ export class LeadService {
     if (msg.type === MessageType.SCRAPE_LEAD_RESULT) {
       console.log(MessageType.SCRAPE_LEAD_RESULT, msg.data);
     }
-
-    if (msg.type === MessageType.SCRAPE_COMPANY_RESULT) {
-      console.log(MessageType.SCRAPE_COMPANY_RESULT, msg.data);
-    }
   }
 }
 
