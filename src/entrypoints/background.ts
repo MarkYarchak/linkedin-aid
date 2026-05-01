@@ -1,6 +1,7 @@
 import { browser } from 'wxt/browser';
 import { MessageType } from '@/constants/message-types';
 import { isSalesNavigatorCompanyUrl, isSalesNavigatorLeadUrl } from '@/helpers/url-helpers';
+import { BASE_URL } from '@/constants/urls';
 import type { Lead } from '@/types/lead';
 
 export default defineBackground(() => {
@@ -47,15 +48,12 @@ export default defineBackground(() => {
     await browser.storage.local.set({ capturedLeads: leads });
   }
 
-  let lastActiveUrn: string | null = null;
-
   browser.runtime.onMessage.addListener((msg, sender) => {
     const tabUrl = sender.tab?.id ? lastTabUrls[sender.tab.id] : undefined;
 
     if (msg.type === MessageType.LEAD_CAPTURED) {
       const urn = msg.data.entityUrn;
       if (urn) {
-        lastActiveUrn = urn;
         updateLeadInStorage(urn, { main: msg.data, profileUrl: tabUrl });
       }
     }
@@ -63,14 +61,14 @@ export default defineBackground(() => {
     if (msg.type === MessageType.LEAD_EXTRA_CAPTURED) {
       const urn = msg.data.entityUrn;
       if (urn) {
-        lastActiveUrn = urn;
         updateLeadInStorage(urn, { extra: msg.data, profileUrl: tabUrl });
       }
     }
 
     if (msg.type === MessageType.LEAD_INSIGHTS_CAPTURED) {
-      if (lastActiveUrn) {
-        updateLeadInStorage(lastActiveUrn, { insights: msg.data });
+      const urn = new URL(msg.url, BASE_URL).searchParams.get('profile');
+      if (urn) {
+        updateLeadInStorage(urn, { insights: msg.data });
       }
     }
 
