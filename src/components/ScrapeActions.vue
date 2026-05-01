@@ -23,8 +23,8 @@ function onLeadScrape() {
   sendToActiveTab(MessageType.SCRAPE_LEAD);
 }
 
-function onAccountScrape() {
-  sendToActiveTab(MessageType.SCRAPE_ACCOUNT);
+function onCompanyScrape() {
+  sendToActiveTab(MessageType.SCRAPE_COMPANY);
 }
 </script>
 
@@ -37,8 +37,8 @@ function onAccountScrape() {
     </div>
 
     <div v-if="isSalesNavigatorCompanyUrl">
-      <button type="button" @click="onAccountScrape">
-        Scrape account
+      <button type="button" @click="onCompanyScrape">
+        Scrape company
       </button>
     </div>
   </div>

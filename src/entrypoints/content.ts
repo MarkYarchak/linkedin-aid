@@ -2,7 +2,7 @@ import { browser } from 'wxt/browser';
 import { MessageType } from '@/constants/message-types';
 import { proxyWindowMessages } from '@/content/window-messages';
 import { scrapeLead } from '@/content/scrape-lead';
-import { scrapeAccount } from '@/content/scrape-account';
+import { scrapeCompany } from '@/content/scrape-company';
 
 export default defineContentScript({
   matches: ['*://*.linkedin.com/*'],
@@ -22,12 +22,12 @@ export default defineContentScript({
         });
       }
 
-      if (msg.type === MessageType.SCRAPE_ACCOUNT) {
-        const account = scrapeAccount();
+      if (msg.type === MessageType.SCRAPE_COMPANY) {
+        const company = scrapeCompany();
 
         browser.runtime.sendMessage({
-          type: MessageType.SCRAPE_ACCOUNT_RESULT,
-          data: { account },
+          type: MessageType.SCRAPE_COMPANY_RESULT,
+          data: { company },
         });
       }
     });
