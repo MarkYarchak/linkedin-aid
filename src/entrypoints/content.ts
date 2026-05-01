@@ -1,5 +1,6 @@
 import { browser } from 'wxt/browser';
 import { MessageType } from '@/constants/message-types';
+import { handleWindowMessages } from '@/content/window-messages';
 import { scrapeLead } from '@/content/scrape-lead';
 import { scrapeAccount } from '@/content/scrape-account';
 
@@ -8,6 +9,8 @@ export default defineContentScript({
   runAt: 'document_idle',
   main() {
     console.log('✅ LinkedIn Extension has been initialized!');
+
+    handleWindowMessages();
 
     browser.runtime.onMessage.addListener((msg) => {
       if (msg.type === MessageType.SCRAPE_LEAD) {
