@@ -6,6 +6,9 @@ export function proxyWindowMessages() {
     MessageType.LEAD_CAPTURED,
     MessageType.LEAD_EXTRA_CAPTURED,
     MessageType.LEAD_INSIGHTS_CAPTURED,
+    MessageType.COMPANY_CAPTURED,
+    MessageType.COMPANY_EXTRA_CAPTURED,
+    MessageType.COMPANY_INSIGHTS_CAPTURED,
   ]);
 
   window.addEventListener('message', (event) => {
