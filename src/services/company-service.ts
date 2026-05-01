@@ -2,7 +2,7 @@ import { browser } from 'wxt/browser';
 import { MessageType } from '@/constants/message-types';
 import type { Company } from '@/types/company/company';
 
-export class AccountService {
+export class CompanyService {
   private lastTabUrls: Record<number, string> = {};
 
   setTabUrl(tabId: number, url: string) {
@@ -53,4 +53,4 @@ export class AccountService {
   }
 }
 
-export const accountService = new AccountService();
+export const companyService = new CompanyService();

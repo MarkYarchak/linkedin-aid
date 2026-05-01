@@ -1,13 +1,13 @@
 import { browser } from 'wxt/browser';
 import { isSalesNavigatorCompanyUrl, isSalesNavigatorLeadUrl } from '@/helpers/url-helpers';
 import { leadService } from '@/services/lead-service';
-import { accountService } from '@/services/account-service';
+import { companyService } from '@/services/company-service';
 
 export default defineBackground(() => {
   browser.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
     if (tab.url) {
       leadService.setTabUrl(tabId, tab.url);
-      accountService.setTabUrl(tabId, tab.url);
+      companyService.setTabUrl(tabId, tab.url);
     }
 
     if (changeInfo.status !== 'loading') return;
@@ -34,6 +34,6 @@ export default defineBackground(() => {
 
   browser.runtime.onMessage.addListener((msg, sender) => {
     leadService.handleMessage(msg, sender);
-    accountService.handleMessage(msg, sender);
+    companyService.handleMessage(msg, sender);
   });
 });
