@@ -25,7 +25,7 @@ export default defineBackground(() => {
         target: { tabId },
         world: 'MAIN',
         injectImmediately: true,
-        files: ['/handle-account-profile.js'],
+        files: ['/handle-company-profile.js'],
       });
     }
   });
