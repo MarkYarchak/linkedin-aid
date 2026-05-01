@@ -68,7 +68,6 @@ function copyLeadInfo() {
 
 <style scoped>
 .lead-info {
-  margin-top: 20px;
   padding: 12px;
   border: 1px solid #e0e0e0;
   border-radius: 8px;
