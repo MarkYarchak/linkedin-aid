@@ -94,7 +94,7 @@ const isLeadPage = computed(() => isSalesNavigatorLeadUrl(props.tabUrl));
 }
 
 .no-leads {
-  margin-top: 20px;
+  padding: 20px;
   text-align: center;
   color: #666;
   font-size: 0.9em;
