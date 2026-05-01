@@ -53,7 +53,6 @@ export default defineBackground(() => {
     const tabUrl = sender.tab?.id ? lastTabUrls[sender.tab.id] : undefined;
 
     if (msg.type === MessageType.LEAD_CAPTURED) {
-      console.log('Lead captured in background', msg.data);
       const urn = msg.data.entityUrn;
       if (urn) {
         lastActiveUrn = urn;
@@ -62,7 +61,6 @@ export default defineBackground(() => {
     }
 
     if (msg.type === MessageType.LEAD_EXTRA_CAPTURED) {
-      console.log('Lead extra captured in background', msg.data);
       const urn = msg.data.entityUrn;
       if (urn) {
         lastActiveUrn = urn;
@@ -71,7 +69,6 @@ export default defineBackground(() => {
     }
 
     if (msg.type === MessageType.LEAD_INSIGHTS_CAPTURED) {
-      console.log('Lead insights captured in background', msg.data);
       if (lastActiveUrn) {
         updateLeadInStorage(lastActiveUrn, { insights: msg.data });
       }

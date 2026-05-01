@@ -1,4 +1,4 @@
-import { handleLeadProfileXhr } from '@/background/handle-lead-profle-xhr';
+import { handleLeadProfileXhr } from '@/scripts/handle-lead-profle-xhr';
 
 export default defineUnlistedScript(() => {
   handleLeadProfileXhr();

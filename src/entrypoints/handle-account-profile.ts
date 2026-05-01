@@ -1,4 +1,4 @@
-import { handleAccountProfileXhr } from '@/background/handle-account-profile-xhr';
+import { handleAccountProfileXhr } from '@/scripts/handle-account-profile-xhr';
 
 export default defineUnlistedScript(() => {
   handleAccountProfileXhr();

@@ -1,4 +1,4 @@
-import { handleXhr } from '@/background/xhr-interceptor';
+import { handleXhr } from '@/scripts/xhr-interceptor';
 import { MessageType } from '@/constants/message-types';
 import type { SalesApiProfiles } from '@/types/salesApiProfiles';
 import type { SalesApiProfiles2 } from '@/types/salesApiProfiles2';
