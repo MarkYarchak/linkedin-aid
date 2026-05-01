@@ -27,7 +27,7 @@ export function handleLeadProfileXhr() {
       console.log('[LI] XHR SalesApiProfiles2 (Extra) data', data);
 
       postWindowMessage({
-        type: 'LEAD_EXTRA_CAPTURED',
+        type: MessageType.LEAD_EXTRA_CAPTURED,
         url,
         data,
       });
@@ -39,7 +39,7 @@ export function handleLeadProfileXhr() {
     console.log('[LI] XHR data', data);
 
     postWindowMessage({
-      type: 'LEAD_INSIGHTS_CAPTURED',
+      type: MessageType.LEAD_INSIGHTS_CAPTURED,
       url,
       data,
     });
