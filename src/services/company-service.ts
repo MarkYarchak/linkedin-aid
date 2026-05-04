@@ -52,14 +52,6 @@ export class CompanyService {
       }
     }
 
-    if (msg.type === MessageType.COMPANY_INSIGHTS_CAPTURED) {
-      const companyId = msg.url.split('/').pop()?.split('?')[0];
-      const company = await this.findCompanyById(companyId);
-      if (company && company.entityUrn) {
-        this.updateCompanyInStorage(company.entityUrn, { insights: msg.data });
-      }
-    }
-
     if (msg.type === MessageType.SCRAPE_COMPANY_RESULT) {
       console.log(MessageType.SCRAPE_COMPANY_RESULT, msg.data);
     }
