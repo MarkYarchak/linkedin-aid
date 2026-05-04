@@ -1,4 +1,5 @@
 import { browser } from 'wxt/browser';
+import { parseLinkedInUrn } from '@/helpers/urn';
 import { MessageType } from '@/constants/message-types';
 import type { Company } from '@/types/company/company';
 
@@ -9,9 +10,20 @@ export class CompanyService {
     this.lastTabUrls[tabId] = url;
   }
 
-  async updateCompanyInStorage(urn: string, update: Partial<Company>) {
+  async findCompanies(): Promise<Record<string, Company>> {
     const storage = await browser.storage.local.get('capturedCompanies');
-    const companies: Record<string, Company> = (storage.capturedCompanies || {}) as Record<string, Company>;
+    return (storage.capturedCompanies || {}) as Record<string, Company>;
+  }
+
+  async findCompanyById(id: string): Promise<Company | undefined> {
+    const companies = await this.findCompanies();
+    const companyEntries = Object.values(companies);
+    return companyEntries
+      .find((company) => parseLinkedInUrn(company.entityUrn).id === id);
+  }
+
+  async updateCompanyInStorage(urn: string, update: Partial<Company>) {
+    const companies = await this.findCompanies();
 
     const existingCompany = companies[urn] || { entityUrn: urn, updatedAt: Date.now() };
     companies[urn] = {
@@ -23,7 +35,7 @@ export class CompanyService {
     await browser.storage.local.set({ capturedCompanies: companies });
   }
 
-  handleMessage(msg: any, sender: any) {
+  async handleMessage(msg: any, sender: any) {
     const tabUrl = sender.tab?.id ? this.lastTabUrls[sender.tab.id] : undefined;
 
     if (msg.type === MessageType.COMPANY_CAPTURED) {
@@ -41,9 +53,10 @@ export class CompanyService {
     }
 
     if (msg.type === MessageType.COMPANY_INSIGHTS_CAPTURED) {
-      const urn = msg.url.split('/').pop()?.split('?')[0];
-      if (urn) {
-        this.updateCompanyInStorage(urn, { insights: msg.data });
+      const companyId = msg.url.split('/').pop()?.split('?')[0];
+      const company = await this.findCompanyById(companyId);
+      if (company && company.entityUrn) {
+        this.updateCompanyInStorage(company.entityUrn, { insights: msg.data });
       }
     }
 
