@@ -1,4 +1,5 @@
 <script lang="ts" setup>
+import { computed } from 'vue';
 import { browser } from 'wxt/browser';
 import { MessageType } from '@/constants/message-types';
 import { isSalesNavigatorLeadUrl as isLeadUrl, isSalesNavigatorCompanyUrl as isCompanyUrl } from '@/helpers/url-helpers';
