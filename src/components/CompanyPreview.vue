@@ -47,19 +47,15 @@ function copyCompanyInfo() {
     <div class="info-row" v-if="company.main?.website">
       <strong>Website:</strong> <a :href="company.main.website" target="_blank">{{ company.main.website }}</a>
     </div>
+    <div class="info-row" v-if="company.extra?.employeeDisplayCount">
+      <strong>Headcount:</strong> {{ company.extra.employeeDisplayCount }}
+    </div>
+    <div class="info-row" v-if="company.main?.revenueRange">
+      <strong>Revenue:</strong> {{ company.main.revenueRange.estimatedMinRevenue.amount }}{{ company.main.revenueRange.estimatedMinRevenue.unit }} - {{ company.main.revenueRange.estimatedMaxRevenue.amount }}{{ company.main.revenueRange.estimatedMaxRevenue.unit }} {{ company.main.revenueRange.estimatedMinRevenue.currencyCode }}
+    </div>
     <div class="info-row" v-if="company.main?.description">
       <strong>Description:</strong>
       <p class="description">{{ company.main.description }}</p>
-    </div>
-
-    <div v-if="company.insights" class="insights">
-      <h4>Insights</h4>
-      <div class="info-row">
-        <strong>Median Tenure:</strong> {{ company.insights.medianTenure }} years
-      </div>
-      <div class="info-row" v-if="company.insights.monthlyHeadCounts?.length">
-        <strong>Headcount:</strong> {{ company.insights.monthlyHeadCounts[0].employeeCount }}
-      </div>
     </div>
   </div>
 </template>
@@ -119,9 +115,5 @@ function copyCompanyInfo() {
   -webkit-box-orient: vertical;
   overflow: hidden;
   color: #666;
-}
-
-.insights {
-  margin-top: 10px;
 }
 </style>
