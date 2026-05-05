@@ -46,6 +46,11 @@ function copyLeadInfo() {
       <strong>Location:</strong> {{ lead.main?.location }}
     </div>
 
+    <div v-if="lead.main?.summary" class="summary">
+      <h4>Summary</h4>
+      <p class="summary-text">{{ lead.main.summary }}</p>
+    </div>
+
     <div v-if="lead.extra?.skills?.length" class="skills">
       <h4>Top Skills</h4>
       <div class="skill-tags">
@@ -126,6 +131,18 @@ function copyLeadInfo() {
   padding: 2px 8px;
   border-radius: 12px;
   font-size: 0.8em;
+}
+
+.summary-text {
+  margin: 4px 0 0 0;
+  font-size: 0.85em;
+  line-height: 1.4;
+  color: #666;
+  white-space: pre-wrap;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .insights ul {
