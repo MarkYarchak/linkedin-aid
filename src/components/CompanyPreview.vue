@@ -7,7 +7,8 @@ interface Props {
 }
 const props = defineProps<Props>();
 
-const getLogoUrl = (company: Company) => {
+const logoUrl = computed(() => {
+  const company = props.company;
   if (company.main?.companyPictureDisplayImage) {
     const img = company.main.companyPictureDisplayImage;
     if (img.artifacts && img.artifacts.length > 0) {
@@ -15,7 +16,7 @@ const getLogoUrl = (company: Company) => {
     }
   }
   return null;
-};
+});
 
 const revenueRangeString = computed(() => {
   if (props.company.main?.revenueRange) {
@@ -29,8 +30,8 @@ const revenueRangeString = computed(() => {
 <template>
   <div class="company-info">
     <div class="header">
-      <img v-if="getLogoUrl(company)"
-           :src="getLogoUrl(company)!"
+      <img v-if="logoUrl"
+           :src="logoUrl"
            :alt="company.main?.name"
            class="logo" />
       <h3>{{ company.main?.name }}</h3>
