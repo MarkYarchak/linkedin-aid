@@ -1,10 +1,11 @@
 <script lang="ts" setup>
+import { computed } from 'vue';
 import type { Company } from '@/types/company/company';
 
 interface Props {
   company: Company;
 }
-defineProps<Props>();
+const props = defineProps<Props>();
 
 const getLogoUrl = (company: Company) => {
   if (company.main?.companyPictureDisplayImage) {
@@ -15,6 +16,14 @@ const getLogoUrl = (company: Company) => {
   }
   return null;
 };
+
+const revenueRangeString = computed(() => {
+  if (props.company.main?.revenueRange) {
+    const { estimatedMinRevenue, estimatedMaxRevenue } = props.company.main.revenueRange;
+    return `${estimatedMinRevenue.currencyCode} ${estimatedMinRevenue.amount} ${estimatedMinRevenue.unit.toLowerCase()} - ${estimatedMaxRevenue.currencyCode} ${estimatedMaxRevenue.amount} ${estimatedMaxRevenue.unit.toLowerCase()}`;
+  }
+  return 'N/A';
+});
 
 function copyCompanyInfo() {
   // Placeholder for future implementation
@@ -48,10 +57,10 @@ function copyCompanyInfo() {
       <strong>Website:</strong> <a :href="company.main.website" target="_blank">{{ company.main.website }}</a>
     </div>
     <div class="info-row" v-if="company.extra?.employeeDisplayCount">
-      <strong>Headcount:</strong> {{ company.extra.employeeDisplayCount }}
+      <strong>Headcount:</strong> {{ company.extra.employeeDisplayCount }} employees
     </div>
     <div class="info-row" v-if="company.main?.revenueRange">
-      <strong>Revenue:</strong> {{ company.main.revenueRange.estimatedMinRevenue.amount }}{{ company.main.revenueRange.estimatedMinRevenue.unit }} - {{ company.main.revenueRange.estimatedMaxRevenue.amount }}{{ company.main.revenueRange.estimatedMaxRevenue.unit }} {{ company.main.revenueRange.estimatedMinRevenue.currencyCode }}
+      <strong>Revenue:</strong> {{ revenueRangeString }}
     </div>
     <div class="info-row" v-if="company.main?.description">
       <strong>Description:</strong>
