@@ -1,10 +1,14 @@
 <script lang="ts" setup>
+import { ref } from 'vue';
+import CopyLeadModal from '@/components/CopyLeadModal.vue';
 import type { Lead } from '@/types/lead/lead';
 
 interface Props {
   lead: Lead;
 }
 defineProps<Props>();
+
+const showCopyModal = ref(false);
 
 const getAvatarUrl = (lead: Lead) => {
   if (lead.extra?.profilePictureDisplayImage) {
@@ -15,7 +19,7 @@ const getAvatarUrl = (lead: Lead) => {
 };
 
 function copyLeadInfo() {
-  // Placeholder for future implementation
+  showCopyModal.value = true;
 }
 </script>
 
@@ -68,6 +72,12 @@ function copyLeadInfo() {
         </li>
       </ul>
     </div>
+
+    <CopyLeadModal
+      :show="showCopyModal"
+      :lead="lead"
+      @close="showCopyModal = false"
+    />
   </div>
 </template>
 
