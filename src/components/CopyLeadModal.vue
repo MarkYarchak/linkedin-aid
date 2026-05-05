@@ -150,7 +150,10 @@ const copyTitle = async () => {
 
         <!-- Step 4: Title Settings -->
         <div v-if="currentStep === 4">
-          <h4>Title Settings</h4>
+          <div class="step-header-with-action">
+            <h4>Title Settings</h4>
+            <button class="btn-small" @click="copyTitle">Copy Title</button>
+          </div>
           <div class="title-generator">
             <div class="title-generator-fields">
               <div class="select-group">
@@ -179,10 +182,7 @@ const copyTitle = async () => {
 
         <!-- Step 5: Preview -->
         <div v-if="currentStep === 5">
-          <div class="preview-header">
-            <h4>Preview</h4>
-            <button class="btn-small" @click="copyTitle">Create Title</button>
-          </div>
+          <h4>Preview</h4>
           <pre class="preview-box">{{ generateCopyText() }}</pre>
         </div>
       </div>
@@ -280,6 +280,17 @@ const copyTitle = async () => {
 
 .mt-1 {
   margin-top: 4px !important;
+}
+
+.step-header-with-action {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.step-header-with-action h4 {
+  margin: 0;
 }
 
 .preview-header {
