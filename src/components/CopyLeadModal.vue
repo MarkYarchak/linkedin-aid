@@ -1,6 +1,11 @@
 <script lang="ts" setup>
 import { useCopyLead } from '@/composables/useCopyLead';
 import type { Lead } from '@/types/lead/lead';
+import AppStepper from '@/components/ui/AppStepper.vue';
+import AppCheckbox from '@/components/ui/AppCheckbox.vue';
+import AppRadio from '@/components/ui/AppRadio.vue';
+import AppTag from '@/components/ui/AppTag.vue';
+import AppSelectableItem from '@/components/ui/AppSelectableItem.vue';
 
 interface Props {
   lead: Lead;
@@ -39,32 +44,29 @@ const {
         <button class="close-btn" @click="emit('close')">&times;</button>
       </div>
 
-      <div class="stepper">
-        <div v-for="step in totalSteps" :key="step"
-             :class="['step', { active: currentStep === step, completed: currentStep > step }]">
-          {{ step }}
-        </div>
-      </div>
+      <AppStepper :current-step="currentStep" :total-steps="totalSteps" />
 
       <div class="step-content">
         <!-- Step 1: Lead Info -->
         <div v-if="currentStep === 1">
           <h4>Lead Basic Info</h4>
           <div class="field-group">
-            <label><input type="checkbox" v-model="leadFields.fullName"> Full Name</label>
-            <label><input type="checkbox" v-model="leadFields.headline"> Headline</label>
-            <label><input type="checkbox" v-model="leadFields.location"> Location</label>
-            <label><input type="checkbox" v-model="leadFields.summary"> Summary</label>
+            <AppCheckbox v-model="leadFields.fullName" label="Full Name" />
+            <AppCheckbox v-model="leadFields.headline" label="Headline" />
+            <AppCheckbox v-model="leadFields.location" label="Location" />
+            <AppCheckbox v-model="leadFields.summary" label="Summary" />
           </div>
 
           <h4>Select Position</h4>
           <div v-if="currentPositions.length > 0" class="positions-list">
-            <div v-for="pos in currentPositions" :key="pos.posId" class="position-item">
-              <label>
-                <input type="radio" :value="pos.companyUrn" v-model="selectedPositionUrn">
-                <strong>{{ pos.title }}</strong> at {{ pos.companyName }}
-              </label>
-            </div>
+            <AppRadio
+              v-for="pos in currentPositions"
+              :key="pos.posId"
+              v-model="selectedPositionUrn"
+              :value="pos.companyUrn"
+            >
+              <strong>{{ pos.title }}</strong> at {{ pos.companyName }}
+            </AppRadio>
           </div>
           <div v-else>No current positions found.</div>
         </div>
@@ -73,23 +75,28 @@ const {
         <div v-if="currentStep === 2">
           <h4>Insights</h4>
           <div v-if="lead.insights?.elements?.length" class="insights-list">
-            <div v-for="insight in lead.insights.elements" :key="insight.insightId"
-                 :class="['insight-item', { selected: selectedInsights.includes(insight.insightId) }]"
-                 @click="toggleInsight(insight.insightId)">
+            <AppSelectableItem
+              v-for="insight in lead.insights.elements"
+              :key="insight.insightId"
+              :selected="selectedInsights.includes(insight.insightId)"
+              @toggle="toggleInsight(insight.insightId)"
+            >
               <div class="insight-item__text">
                 {{ insight.activityUnion?.postActivity?.message?.text || 'Post' }}
               </div>
-            </div>
+            </AppSelectableItem>
           </div>
           <div v-else>No insights found.</div>
 
           <h4 class="mt-6">Skills</h4>
           <div v-if="lead.extra?.skills?.length" class="tags-list">
-            <button v-for="skill in lead.extra.skills" :key="skill.name"
-                    :class="['tag', { selected: selectedSkills.includes(skill.name) }]"
-                    @click="toggleSkill(skill.name)">
-              {{ skill.name }}
-            </button>
+            <AppTag
+              v-for="skill in lead.extra.skills"
+              :key="skill.name"
+              :label="skill.name"
+              :selected="selectedSkills.includes(skill.name)"
+              @toggle="toggleSkill(skill.name)"
+            />
           </div>
           <div v-else>No skills found.</div>
         </div>
@@ -101,15 +108,15 @@ const {
           <div v-else-if="selectedCompany">
             <p>Data for: <strong>{{ selectedCompany.main?.name }}</strong></p>
             <div class="field-group grid">
-              <label><input type="checkbox" v-model="companyFields.name"> Name</label>
-              <label><input type="checkbox" v-model="companyFields.industry"> Industry</label>
-              <label><input type="checkbox" v-model="companyFields.location"> Location</label>
-              <label><input type="checkbox" v-model="companyFields.revenueRange"> Revenue</label>
-              <label><input type="checkbox" v-model="companyFields.type"> Type</label>
-              <label><input type="checkbox" v-model="companyFields.yearFounded"> Year Founded</label>
-              <label><input type="checkbox" v-model="companyFields.employeeCount"> Headcount</label>
-              <label><input type="checkbox" v-model="companyFields.description"> Description</label>
-              <label><input type="checkbox" v-model="companyFields.specialties"> Specialties</label>
+              <AppCheckbox v-model="companyFields.name" label="Name" />
+              <AppCheckbox v-model="companyFields.industry" label="Industry" />
+              <AppCheckbox v-model="companyFields.location" label="Location" />
+              <AppCheckbox v-model="companyFields.revenueRange" label="Revenue" />
+              <AppCheckbox v-model="companyFields.type" label="Type" />
+              <AppCheckbox v-model="companyFields.yearFounded" label="Year Founded" />
+              <AppCheckbox v-model="companyFields.employeeCount" label="Headcount" />
+              <AppCheckbox v-model="companyFields.description" label="Description" />
+              <AppCheckbox v-model="companyFields.specialties" label="Specialties" />
             </div>
           </div>
           <div v-else>
@@ -167,46 +174,23 @@ const {
   margin-bottom: 16px;
 }
 
-.modal-header h3 {
-  margin: 0;
-  font-size: 1.2rem;
-}
-
 .close-btn {
   background: none;
   border: none;
   font-size: 1.5rem;
   cursor: pointer;
   padding: 0 5px;
+  line-height: 1;
+  color: #64748b;
 }
 
-.stepper {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 20px;
-  position: relative;
+.close-btn:hover {
+  color: #1e293b;
 }
 
-.step {
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  background: #eee;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.8rem;
-  z-index: 1;
-}
-
-.step.active {
-  background: #0a66c2;
-  color: white;
-}
-
-.step.completed {
-  background: #057642;
-  color: white;
+.modal-header h3 {
+  margin: 0;
+  font-size: 1.2rem;
 }
 
 .step-content {
@@ -214,38 +198,36 @@ const {
   overflow-y: auto;
   margin-bottom: 16px;
   min-height: 200px;
+  padding-right: 4px;
+}
+
+.step-content h4 {
+  margin: 0 0 12px 0;
+  color: #1e293b;
+  font-size: 1rem;
+}
+
+.mt-6 {
+  margin-top: 24px !important;
 }
 
 .field-group {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  margin-bottom: 16px;
+  gap: 4px;
+  margin-bottom: 20px;
 }
 
 .field-group.grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-}
-
-.field-group label {
-  font-size: 0.9rem;
-  display: flex;
-  align-items: center;
   gap: 8px;
-  cursor: pointer;
 }
 
 .positions-list {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-}
-
-.position-item {
-  padding: 8px;
-  border: 1px solid #eee;
-  border-radius: 4px;
+  gap: 8px;
 }
 
 .tags-list {
@@ -255,39 +237,10 @@ const {
   margin-bottom: 16px;
 }
 
-.tag {
-  padding: 4px 12px;
-  border-radius: 16px;
-  border: 1px solid #ddd;
-  background: white;
-  cursor: pointer;
-  font-size: 0.8rem;
-}
-
-.tag.selected {
-  background: #0a66c2;
-  color: white;
-  border-color: #0a66c2;
-}
-
 .insights-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-}
-
-.insight-item {
-  padding: 8px;
-  border: 1px solid #eee;
-  border-radius: 4px;
-  font-size: 0.8rem;
-  line-height: 1rem;
-  cursor: pointer;
-}
-
-.insight-item.selected {
-  border-color: #0a66c2;
-  background: #f0f7ff;
+  gap: 12px;
 }
 
 .insight-item__text {
