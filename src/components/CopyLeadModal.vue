@@ -71,7 +71,19 @@ const {
 
         <!-- Step 2: Insights & Skills -->
         <div v-if="currentStep === 2">
-          <h4>Skills</h4>
+          <h4>Insights</h4>
+          <div v-if="lead.insights?.elements?.length" class="insights-list">
+            <div v-for="insight in lead.insights.elements" :key="insight.insightId"
+                 :class="['insight-item', { selected: selectedInsights.includes(insight.insightId) }]"
+                 @click="toggleInsight(insight.insightId)">
+              <div class="insight-item__text">
+                {{ insight.activityUnion?.postActivity?.message?.text || 'Post' }}
+              </div>
+            </div>
+          </div>
+          <div v-else>No insights found.</div>
+
+          <h4 class="mt-6">Skills</h4>
           <div v-if="lead.extra?.skills?.length" class="tags-list">
             <button v-for="skill in lead.extra.skills" :key="skill.name"
                     :class="['tag', { selected: selectedSkills.includes(skill.name) }]"
@@ -80,16 +92,6 @@ const {
             </button>
           </div>
           <div v-else>No skills found.</div>
-
-          <h4>Insights</h4>
-          <div v-if="lead.insights?.elements?.length" class="insights-list">
-            <div v-for="insight in lead.insights.elements" :key="insight.insightId"
-                 :class="['insight-item', { selected: selectedInsights.includes(insight.insightId) }]"
-                 @click="toggleInsight(insight.insightId)">
-              {{ insight.activityUnion?.postActivity?.message?.text || 'Post' }}
-            </div>
-          </div>
-          <div v-else>No insights found.</div>
         </div>
 
         <!-- Step 3: Company Info -->
@@ -150,6 +152,7 @@ const {
   width: 90%;
   max-width: 400px;
   max-height: 90vh;
+  height: 100%;
   border-radius: 8px;
   display: flex;
   flex-direction: column;
@@ -277,18 +280,22 @@ const {
   padding: 8px;
   border: 1px solid #eee;
   border-radius: 4px;
-  font-size: 0.85rem;
+  font-size: 0.8rem;
+  line-height: 1rem;
   cursor: pointer;
-  max-height: 60px;
-  overflow: hidden;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
 }
 
 .insight-item.selected {
   border-color: #0a66c2;
   background: #f0f7ff;
+}
+
+.insight-item__text {
+  white-space: pre-wrap;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 7;
+  -webkit-box-orient: vertical;
 }
 
 .preview-box {
