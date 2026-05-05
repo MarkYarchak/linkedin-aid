@@ -44,8 +44,15 @@ export function useCopyLead(lead: Lead, emit: (event: 'close') => void) {
 
   const selectedCompany = ref<Company | null>(null);
   const isLoadingCompany = ref(false);
+  const capturedCompanyUrns = ref<string[]>([]);
+
+  const loadCapturedCompanyUrns = async () => {
+    const companies = await companyService.findCompanies();
+    capturedCompanyUrns.value = Object.keys(companies);
+  };
 
   onMounted(async () => {
+    await loadCapturedCompanyUrns();
     // Load default settings if any
     const settings = await browser.storage.local.get('copyLeadSettings');
     if (settings.copyLeadSettings) {
@@ -182,6 +189,7 @@ export function useCopyLead(lead: Lead, emit: (event: 'close') => void) {
     companyFields,
     selectedCompany,
     isLoadingCompany,
+    capturedCompanyUrns,
     nextStep,
     prevStep,
     generateCopyText,

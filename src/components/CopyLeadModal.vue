@@ -1,11 +1,11 @@
 <script lang="ts" setup>
 import { useCopyLead } from '@/composables/useCopyLead';
-import type { Lead } from '@/types/lead/lead';
 import AppStepper from '@/components/ui/AppStepper.vue';
 import AppCheckbox from '@/components/ui/AppCheckbox.vue';
 import AppRadio from '@/components/ui/AppRadio.vue';
 import AppTag from '@/components/ui/AppTag.vue';
 import AppSelectableItem from '@/components/ui/AppSelectableItem.vue';
+import type { Lead } from '@/types/lead/lead';
 
 interface Props {
   lead: Lead;
@@ -26,6 +26,7 @@ const {
   companyFields,
   selectedCompany,
   isLoadingCompany,
+  capturedCompanyUrns,
   nextStep,
   prevStep,
   generateCopyText,
@@ -65,7 +66,15 @@ const {
               v-model="selectedPositionUrn"
               :value="pos.companyUrn"
             >
-              <strong>{{ pos.title }}</strong> at {{ pos.companyName }}
+              <strong>{{ pos.title }}</strong> at
+              <span
+                :class="[
+                  'company-name-label',
+                  pos.companyUrn && capturedCompanyUrns.includes(pos.companyUrn) ? 'is-captured' : 'is-not-captured'
+                ]"
+              >
+                {{ pos.companyName }}
+              </span>
             </AppRadio>
           </div>
           <div v-else>No current positions found.</div>
@@ -260,6 +269,16 @@ const {
   word-break: break-all;
   max-height: 300px;
   overflow-y: auto;
+}
+
+.company-name-label.is-captured {
+  color: #059669;
+  font-weight: 600;
+}
+
+.company-name-label.is-not-captured {
+  color: #94a3b8;
+  font-style: italic;
 }
 
 .modal-footer {
