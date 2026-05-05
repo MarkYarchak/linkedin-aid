@@ -73,8 +73,6 @@ const isShowTabs = computed(() => isLeadPage.value || isCompanyPage.value);
 
 <style scoped>
 .scrapper-view {
-  min-width: 320px;
-  max-height: 500px;
   display: flex;
   flex-direction: column;
 }
