@@ -24,10 +24,6 @@ const revenueRangeString = computed(() => {
   }
   return 'N/A';
 });
-
-function copyCompanyInfo() {
-  // Placeholder for future implementation
-}
 </script>
 
 <template>
@@ -38,13 +34,6 @@ function copyCompanyInfo() {
            :alt="company.main?.name"
            class="logo" />
       <h3>{{ company.main?.name }}</h3>
-
-      <button
-        type="button"
-        @click="copyCompanyInfo"
-      >
-        Copy info
-      </button>
     </div>
 
     <div class="info-row">
