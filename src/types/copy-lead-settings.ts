@@ -16,4 +16,6 @@ export interface CopyLeadSettings {
     yearFounded: boolean;
     employeeCount: boolean;
   };
+  selectedTarget?: string;
+  selectedState?: string;
 }

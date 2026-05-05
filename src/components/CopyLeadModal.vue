@@ -27,13 +27,28 @@ const {
   selectedCompany,
   isLoadingCompany,
   capturedCompanyUrns,
+  isCopied,
+  targets,
+  states,
+  selectedTarget,
+  selectedState,
   nextStep,
   prevStep,
   generateCopyText,
+  generateTitle,
   copyToClipboard,
   toggleInsight,
   toggleSkill,
 } = useCopyLead(props.lead, emit);
+
+const copyTitle = async () => {
+  await navigator.clipboard.writeText(generateTitle());
+  // We can reuse isCopied for feedback
+  isCopied.value = true;
+  setTimeout(() => {
+    isCopied.value = false;
+  }, 2000);
+};
 
 </script>
 
@@ -133,17 +148,52 @@ const {
           </div>
         </div>
 
-        <!-- Step 4: Preview -->
+        <!-- Step 4: Title Settings -->
         <div v-if="currentStep === 4">
-          <h4>Preview</h4>
+          <h4>Title Settings</h4>
+          <div class="title-generator">
+            <div class="title-generator-fields">
+              <div class="select-group">
+                <label>Target</label>
+                <select v-model="selectedTarget">
+                  <option v-for="t in targets" :key="t.value" :value="t.value">
+                    {{ t.emoji }} {{ t.label }}
+                  </option>
+                </select>
+              </div>
+              <div class="select-group">
+                <label>State</label>
+                <select v-model="selectedState">
+                  <option v-for="s in states" :key="s.value" :value="s.value">
+                    {{ s.emoji }} {{ s.label }}
+                  </option>
+                </select>
+              </div>
+            </div>
+            <div class="generated-title-preview mt-4">
+              <strong>Title Preview:</strong>
+              <div class="preview-box mini mt-1">{{ generateTitle() }}</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 5: Preview -->
+        <div v-if="currentStep === 5">
+          <div class="preview-header">
+            <h4>Preview</h4>
+            <button class="btn-small" @click="copyTitle">Create Title</button>
+          </div>
           <pre class="preview-box">{{ generateCopyText() }}</pre>
         </div>
       </div>
 
       <div class="modal-footer">
+        <div v-if="isCopied" class="copied-feedback">Copied!</div>
         <button v-if="currentStep > 1" @click="prevStep">Back</button>
         <button v-if="currentStep < totalSteps" @click="nextStep" class="primary">Next</button>
-        <button v-else @click="copyToClipboard" class="primary">Copy & Close</button>
+        <button v-else @click="copyToClipboard" class="primary">
+          {{ isCopied ? 'Copied!' : 'Copy Info' }}
+        </button>
       </div>
     </div>
   </div>
@@ -220,6 +270,68 @@ const {
   margin-top: 24px !important;
 }
 
+.mt-4 {
+  margin-top: 16px !important;
+}
+
+.mt-2 {
+  margin-top: 8px !important;
+}
+
+.mt-1 {
+  margin-top: 4px !important;
+}
+
+.preview-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.preview-header h4 {
+  margin: 0;
+}
+
+.btn-small {
+  padding: 4px 8px;
+  font-size: 0.75rem;
+  background: #0a66c2;
+  color: white;
+  border: none;
+}
+
+.title-generator-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.select-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.select-group label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.select-group select {
+  padding: 6px;
+  border-radius: 4px;
+  border: 1px solid #cbd5e1;
+  font-size: 0.85rem;
+  background: white;
+}
+
+.preview-box.mini {
+  max-height: none;
+  font-weight: 500;
+}
+
 .field-group {
   display: flex;
   flex-direction: column;
@@ -284,9 +396,17 @@ const {
 .modal-footer {
   display: flex;
   justify-content: flex-end;
+  align-items: center;
   gap: 10px;
   border-top: 1px solid #eee;
   padding-top: 16px;
+}
+
+.copied-feedback {
+  color: #059669;
+  font-weight: 600;
+  font-size: 0.9rem;
+  margin-right: auto;
 }
 
 button {

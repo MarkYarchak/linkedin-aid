@@ -1,5 +1,6 @@
 import { ref, computed, onMounted, watch } from 'vue';
 import { companyService } from '@/services/company-service';
+import { titleTargets, titleStates, generateLeadTitle } from '@/helpers/title-helper';
 import { parseLinkedInUrn } from '@/helpers/urn';
 import { browser } from 'wxt/browser';
 import type { Lead } from '@/types/lead/lead';
@@ -8,7 +9,7 @@ import type { CopyLeadSettings } from '@/types/copy-lead-settings';
 
 export function useCopyLead(lead: Lead, emit: (event: 'close') => void) {
   const currentStep = ref(1);
-  const totalSteps = 4;
+  const totalSteps = 5;
 
   // Lead Fields
   const leadFields = ref({
@@ -46,6 +47,12 @@ export function useCopyLead(lead: Lead, emit: (event: 'close') => void) {
   const isLoadingCompany = ref(false);
   const capturedCompanyUrns = ref<string[]>([]);
 
+  const isCopied = ref(false);
+  const copyTimeout = ref<ReturnType<typeof setTimeout> | null>(null);
+
+  const selectedTarget = ref(titleTargets[0].value);
+  const selectedState = ref(titleStates[0].value);
+
   const loadCapturedCompanyUrns = async () => {
     const companies = await companyService.findCompanies();
     capturedCompanyUrns.value = Object.keys(companies);
@@ -59,6 +66,8 @@ export function useCopyLead(lead: Lead, emit: (event: 'close') => void) {
       const s = settings.copyLeadSettings as CopyLeadSettings;
       if (s.leadFields) leadFields.value = { ...leadFields.value, ...s.leadFields };
       if (s.companyFields) companyFields.value = { ...companyFields.value, ...s.companyFields };
+      if (s.selectedTarget) selectedTarget.value = s.selectedTarget;
+      if (s.selectedState) selectedState.value = s.selectedState;
     }
 
     // Set default position
@@ -152,6 +161,19 @@ export function useCopyLead(lead: Lead, emit: (event: 'close') => void) {
     return text;
   };
 
+  const generateTitle = () => {
+    const main = lead.main;
+    const pos = main?.positions.find(p => p.companyUrn === selectedPositionUrn.value);
+
+    return generateLeadTitle({
+      fullName: main?.fullName,
+      positionTitle: pos?.title,
+      companyName: pos?.companyName,
+      targetValue: selectedTarget.value,
+      stateValue: selectedState.value,
+    });
+  };
+
   const copyToClipboard = async () => {
     const text = generateCopyText();
     await navigator.clipboard.writeText(text);
@@ -160,10 +182,16 @@ export function useCopyLead(lead: Lead, emit: (event: 'close') => void) {
     const settings: CopyLeadSettings = {
       leadFields: leadFields.value,
       companyFields: companyFields.value,
+      selectedTarget: selectedTarget.value,
+      selectedState: selectedState.value,
     };
     await browser.storage.local.set({ copyLeadSettings: settings });
 
-    emit('close');
+    isCopied.value = true;
+    if (copyTimeout.value) clearTimeout(copyTimeout.value);
+    copyTimeout.value = setTimeout(() => {
+      isCopied.value = false;
+    }, 2000);
   };
 
   const toggleInsight = (id: string) => {
@@ -190,9 +218,15 @@ export function useCopyLead(lead: Lead, emit: (event: 'close') => void) {
     selectedCompany,
     isLoadingCompany,
     capturedCompanyUrns,
+    isCopied,
+    targets: titleTargets,
+    states: titleStates,
+    selectedTarget,
+    selectedState,
     nextStep,
     prevStep,
     generateCopyText,
+    generateTitle,
     copyToClipboard,
     toggleInsight,
     toggleSkill,
