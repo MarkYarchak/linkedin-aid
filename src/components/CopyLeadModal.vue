@@ -1,10 +1,11 @@
 <script lang="ts" setup>
 import { ref, computed, onMounted, watch } from 'vue';
-import type { Lead } from '@/types/lead/lead';
-import type { Company } from '@/types/company/company';
 import { companyService } from '@/services/company-service';
 import { parseLinkedInUrn } from '@/helpers/urn';
 import { browser } from 'wxt/browser';
+import type { Lead } from '@/types/lead/lead';
+import type { Company } from '@/types/company/company';
+import type { CopyLeadSettings } from '@/types/copy-lead-settings';
 
 interface Props {
   lead: Lead;
@@ -27,7 +28,6 @@ const leadFields = ref({
 
 // Positions
 const selectedPositionUrn = ref<string>('');
-const includePositions = ref(true);
 
 const currentPositions = computed(() => {
   return props.lead.main?.positions?.filter(p => p.current) || [];
@@ -37,9 +37,9 @@ onMounted(async () => {
   // Load default settings if any
   const settings = await browser.storage.local.get('copyLeadSettings');
   if (settings.copyLeadSettings) {
-    const s = settings.copyLeadSettings;
+    const s = settings.copyLeadSettings as CopyLeadSettings;
     if (s.leadFields) leadFields.value = { ...leadFields.value, ...s.leadFields };
-    includePositions.value = s.includePositions ?? true;
+    if (s.companyFields) companyFields.value = { ...companyFields.value, ...s.companyFields };
   }
 
   // Set default position
@@ -47,7 +47,7 @@ onMounted(async () => {
     const defPos = props.lead.main.defaultPosition;
     const found = props.lead.main.positions.find(p => p.posId === defPos.posId);
     if (found) {
-        selectedPositionUrn.value = found.companyUrn || '';
+      selectedPositionUrn.value = found.companyUrn || '';
     }
   } else if (currentPositions.value.length > 0) {
     selectedPositionUrn.value = currentPositions.value[0].companyUrn || '';
@@ -112,7 +112,7 @@ const generateCopyText = () => {
     if (leadFields.value.summary && main.summary) text += `Summary: ${main.summary}\n`;
   }
 
-  if (includePositions.value && selectedPositionUrn.value) {
+  if (selectedPositionUrn.value) {
     const pos = main?.positions.find(p => p.companyUrn === selectedPositionUrn.value);
     if (pos) {
       text += `Current Position: ${pos.title} at ${pos.companyName}\n`;
@@ -159,12 +159,11 @@ const copyToClipboard = async () => {
   await navigator.clipboard.writeText(text);
 
   // Save settings
-  await browser.storage.local.set({
-    copyLeadSettings: {
-      leadFields: leadFields.value,
-      companyFields: companyFields.value,
-    }
-  });
+  const settings: CopyLeadSettings = {
+    leadFields: leadFields.value,
+    companyFields: companyFields.value,
+  };
+  await browser.storage.local.set({ copyLeadSettings: settings });
 
   emit('close');
 };
