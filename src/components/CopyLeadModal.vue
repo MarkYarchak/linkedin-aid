@@ -1,4 +1,5 @@
 <script lang="ts" setup>
+import { ref } from 'vue';
 import { useCopyLead } from '@/composables/useCopyLead';
 import AppStepper from '@/components/ui/AppStepper.vue';
 import AppCheckbox from '@/components/ui/AppCheckbox.vue';
@@ -14,6 +15,8 @@ interface Props {
 
 const props = defineProps<Props>();
 const emit = defineEmits(['close']);
+
+const wrapText = ref(false);
 
 const {
   currentStep,
@@ -182,8 +185,11 @@ const copyTitle = async () => {
 
         <!-- Step 5: Preview -->
         <div v-if="currentStep === 5">
-          <h4>Preview</h4>
-          <pre class="preview-box">{{ generateCopyText() }}</pre>
+          <div class="step-header-with-action">
+            <h4>Preview</h4>
+            <AppCheckbox v-model="wrapText" label="Wrap text" />
+          </div>
+          <pre class="preview-box" :style="{ whiteSpace: wrapText ? 'pre-wrap' : 'pre' }">{{ generateCopyText() }}</pre>
         </div>
       </div>
 
@@ -388,10 +394,9 @@ const copyTitle = async () => {
   padding: 10px;
   border-radius: 4px;
   font-size: 0.8rem;
-  white-space: pre-wrap;
-  word-break: break-all;
+  word-break: break-word;
   max-height: 300px;
-  overflow-y: auto;
+  overflow: auto;
 }
 
 .company-name-label.is-captured {
