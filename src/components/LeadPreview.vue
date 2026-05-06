@@ -65,7 +65,7 @@ function copyLeadInfo() {
     </div>
 
     <div v-if="lead.insights?.elements?.length" class="insights">
-      <h4>Recent Insights</h4>
+      <h4>Recent Activity / Post(s)</h4>
       <ul>
         <li v-for="insight in lead.insights.elements.slice(0, 3)" :key="insight.insightId">
           <span class="insight-text">{{ insight.activityUnion?.postActivity?.message?.text || 'Activity' }}</span>

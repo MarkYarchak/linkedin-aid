@@ -109,56 +109,65 @@ export function useCopyLead(lead: Lead, emit: (event: 'close') => void) {
   };
 
   const generateCopyText = () => {
-    let text = '';
+    let sections: string[] = [];
     const main = lead.main;
 
     if (main) {
-      if (leadFields.value.fullName) text += `Name: ${main.fullName}\n`;
-      if (leadFields.value.headline) text += `Headline: ${main.headline}\n`;
-      if (leadFields.value.location) text += `Location: ${main.location}\n`;
-      if (leadFields.value.summary && main.summary) text += `Summary: ${main.summary}\n`;
+      let leadInfo = '### LEAD INFO\n';
+      if (leadFields.value.fullName) leadInfo += `Name: ${main.fullName}\n`;
+      if (leadFields.value.headline) leadInfo += `Headline: ${main.headline}\n`;
+      if (leadFields.value.location) leadInfo += `Location: ${main.location}\n`;
+      if (leadFields.value.summary && main.summary) {
+        leadInfo += `Summary:\n${main.summary}\n`;
+      }
+      sections.push(leadInfo.trim());
     }
 
     if (selectedPositionUrn.value) {
       const pos = main?.positions.find(p => p.companyUrn === selectedPositionUrn.value);
       if (pos) {
-        text += `Current Position: ${pos.title} at ${pos.companyName}\n`;
+        sections.push(`### CURRENT POSITION\n${pos.title} at ${pos.companyName}`);
       }
     }
 
     if (selectedSkills.value.length > 0) {
-      text += `Skills: ${selectedSkills.value.join(', ')}\n`;
+      sections.push(`### SKILLS\n${selectedSkills.value.join(', ')}`);
     }
 
     if (selectedInsights.value.length > 0) {
-      text += `Insights:\n`;
-      selectedInsights.value.forEach(insightId => {
+      let insightsText = '### RECENT ACTIVITY / POST(S)\n\n';
+      selectedInsights.value.forEach((insightId, index) => {
         const insight = lead.insights?.elements.find(e => e.insightId === insightId);
         if (insight?.activityUnion?.postActivity?.message?.text) {
-          text += `- ${insight.activityUnion.postActivity.message.text}\n`;
+          insightsText += `${insight.activityUnion.postActivity.message.text}\n`;
+          if (index < selectedInsights.value.length - 1) {
+            insightsText += `\n==================================================\n\n`;
+          }
         }
       });
+      sections.push(insightsText.trim());
     }
 
     if (selectedCompany.value) {
       const cMain = selectedCompany.value.main;
       const cExtra = selectedCompany.value.extra;
-      text += `\nCompany Info (${cMain?.name}):\n`;
-      if (companyFields.value.description && cMain?.description) text += `Description: ${cMain.description}\n`;
-      if (companyFields.value.industry && cMain?.industry) text += `Industry: ${cMain.industry}\n`;
-      if (companyFields.value.location && cMain?.location) text += `Location: ${cMain.location}\n`;
-      if (companyFields.value.yearFounded && cMain?.yearFounded) text += `Founded: ${cMain.yearFounded}\n`;
-      if (companyFields.value.type && cMain?.type) text += `Type: ${cMain.type}\n`;
-      if (companyFields.value.specialties && cMain?.specialties?.length) text += `Specialties: ${cMain.specialties.join(', ')}\n`;
-      if (companyFields.value.employeeCount && cExtra?.employeeDisplayCount) text += `Headcount: ${cExtra.employeeDisplayCount}\n`;
+      let companyInfo = `### COMPANY INFO (${cMain?.name})\n`;
+      if (companyFields.value.industry && cMain?.industry) companyInfo += `Industry: ${cMain.industry}\n`;
+      if (companyFields.value.location && cMain?.location) companyInfo += `Location: ${cMain.location}\n`;
+      if (companyFields.value.yearFounded && cMain?.yearFounded) companyInfo += `Founded: ${cMain.yearFounded}\n`;
+      if (companyFields.value.type && cMain?.type) companyInfo += `Type: ${cMain.type}\n`;
+      if (companyFields.value.specialties && cMain?.specialties?.length) companyInfo += `Specialties: ${cMain.specialties.join(', ')}\n`;
+      if (companyFields.value.employeeCount && cExtra?.employeeDisplayCount) companyInfo += `Headcount: ${cExtra.employeeDisplayCount}\n`;
       if (companyFields.value.revenueRange && cMain?.revenueRange) {
         const { estimatedMinRevenue, estimatedMaxRevenue } = cMain.revenueRange;
         const rev = `${estimatedMinRevenue.currencyCode} ${estimatedMinRevenue.amount}${estimatedMinRevenue.unit} - ${estimatedMaxRevenue.amount}${estimatedMaxRevenue.unit}`;
-        text += `Revenue: ${rev}\n`;
+        companyInfo += `Revenue: ${rev}\n`;
       }
+      if (companyFields.value.description && cMain?.description) companyInfo += `Description:\n${cMain.description}\n`;
+      sections.push(companyInfo.trim());
     }
 
-    return text;
+    return sections.join('\n\n');
   };
 
   const generateTitle = () => {

@@ -100,7 +100,7 @@ const copyTitle = async () => {
 
         <!-- Step 2: Insights & Skills -->
         <div v-if="currentStep === 2">
-          <h4>Insights</h4>
+          <h4>Recent Activity / Post(s)</h4>
           <div v-if="lead.insights?.elements?.length" class="insights-list">
             <AppSelectableItem
               v-for="insight in lead.insights.elements"
@@ -113,7 +113,7 @@ const copyTitle = async () => {
               </div>
             </AppSelectableItem>
           </div>
-          <div v-else>No insights found.</div>
+          <div v-else>No recent activity found.</div>
 
           <h4 class="mt-6">Skills</h4>
           <div v-if="lead.extra?.skills?.length" class="tags-list">
