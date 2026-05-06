@@ -68,7 +68,7 @@ function copyLeadInfo() {
       <h4>Recent Insights</h4>
       <ul>
         <li v-for="insight in lead.insights.elements.slice(0, 3)" :key="insight.insightId">
-          {{ insight.activityUnion?.postActivity?.message?.text || 'Activity' }}
+          <span class="insight-text">{{ insight.activityUnion?.postActivity?.message?.text || 'Activity' }}</span>
         </li>
       </ul>
     </div>
@@ -149,23 +149,28 @@ function copyLeadInfo() {
   line-height: 1.4;
   color: #666;
   white-space: pre-wrap;
-  display: -webkit-box;
-  -webkit-line-clamp: 4;
-  -webkit-box-orient: vertical;
   overflow: hidden;
 }
 
 .insights ul {
   margin: 0;
-  padding-left: 20px;
+  padding-left: 0;
   font-size: 0.85em;
 }
 
 .insights li {
-  margin-bottom: 4px;
   display: -webkit-box;
-  -webkit-line-clamp: 2;
+  margin-bottom: 8px;
+  padding: 10px;
+  border: 1px solid #eee;
+  border-radius: 8px;
+}
+
+.insight-text {
+  display: -webkit-box;
+  -webkit-line-clamp: 7;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  white-space: pre-wrap;
 }
 </style>
