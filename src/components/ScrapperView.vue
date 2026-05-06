@@ -24,7 +24,7 @@ const isShowTabs = computed(() => isLeadPage.value || isCompanyPage.value);
 
 <template>
   <div class="scrapper-view">
-    <div v-if="isShowTabs" class="tabs">
+    <div v-if="isShowTabs" class="tabs _fixed">
       <button
         :class="{ active: activeTab === 'preview' }"
         @click="activeTab = 'preview'"
@@ -76,11 +76,22 @@ const isShowTabs = computed(() => isLeadPage.value || isCompanyPage.value);
   display: flex;
   flex-direction: column;
 }
+.scrapper-view:has(.tabs._fixed) {
+  padding-top: 36px;
+}
 
 .tabs {
   display: flex;
   border-bottom: 1px solid #ddd;
   background: #f5f5f5;
+}
+
+.tabs._fixed {
+  z-index: 5;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
 }
 
 .tabs button {
