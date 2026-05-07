@@ -1,4 +1,8 @@
-export function sanitizeText(text: string | undefined | null): string {
+export function sanitizeText(text: string | undefined | null, collapseNewLines = false): string {
   if (!text) return '';
-  return text.replace(/\t/g, ' ');
+  let result = text.replace(/\t/g, ' ');
+  if (collapseNewLines) {
+    result = result.replace(/\n\s*\n/g, '\n');
+  }
+  return result;
 }
