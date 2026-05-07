@@ -9,6 +9,7 @@ import AppRadio from '@/components/ui/AppRadio.vue';
 import AppTag from '@/components/ui/AppTag.vue';
 import AppSelectableItem from '@/components/ui/AppSelectableItem.vue';
 import AppPreviewBox from '@/components/ui/AppPreviewBox.vue';
+import IconCopy from '@/components/icons/IconCopy.vue';
 import type { Lead } from '@/types/lead/lead';
 
 interface Props {
@@ -233,7 +234,18 @@ const selectedCompanyUrl = computed(() => {
             </div>
             <div class="generated-title-preview mt-4">
               <strong>Title Preview:</strong>
-              <AppPreviewBox mini class="mt-1">{{ generateTitle() }}</AppPreviewBox>
+              <AppPreviewBox
+                mini
+                wrap-text
+                class="mt-1"
+              >
+                {{ generateTitle() }}
+                <template #append>
+                  <button class="btn-icon" title="Copy Title" @click="copyTitle">
+                    <IconCopy :size="16" />
+                  </button>
+                </template>
+              </AppPreviewBox>
             </div>
           </div>
         </div>
@@ -544,5 +556,27 @@ button.primary {
 
 button:hover {
   opacity: 0.9;
+}
+
+.btn-icon {
+  padding: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: #64748b;
+  transition: all 0.2s;
+}
+
+.btn-icon:hover {
+  background: #e2e8f0;
+  color: #1e293b;
+  border-color: #cbd5e1;
+}
+
+.btn-icon:focus {
+  outline: none;
 }
 </style>
