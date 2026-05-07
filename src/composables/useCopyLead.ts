@@ -1,5 +1,6 @@
 import { ref, computed, onMounted, watch } from 'vue';
 import { companyService } from '@/services/company-service';
+import { sanitizeText } from '@/helpers/text-helper';
 import { titleTargets, titleStates, generateLeadTitle } from '@/helpers/title-helper';
 import { parseLinkedInUrn } from '@/helpers/urn';
 import { getRelativeTime } from '@/helpers/date-helper';
@@ -129,10 +130,10 @@ export function useCopyLead(lead: Lead, emit: (event: 'close') => void) {
         leadInfo += `Job Location: ${main.defaultPosition.location}\n`;
       }
       if (leadFields.value.summary && main.summary) {
-        leadInfo += `Summary:\n${main.summary}\n`;
+        leadInfo += `Summary:\n${sanitizeText(main.summary)}\n`;
       }
       if (leadFields.value.position.description && main.defaultPosition?.description) {
-        leadInfo += `Job Description:\n${main.defaultPosition.description}\n`;
+        leadInfo += `Job Description:\n${sanitizeText(main.defaultPosition.description)}\n`;
       }
       sections.push(leadInfo.trim());
     }
@@ -149,7 +150,7 @@ export function useCopyLead(lead: Lead, emit: (event: 'close') => void) {
           posInfo += `Started: ${getRelativeTime(date.getTime())}\n`;
         }
         if (leadFields.value.position.description && pos.description) {
-          posInfo += `Description:\n${pos.description}\n`;
+          posInfo += `Description:\n${sanitizeText(pos.description)}\n`;
         }
 
         if (posInfo.trim() !== '### CURRENT POSITION') {
@@ -183,7 +184,7 @@ export function useCopyLead(lead: Lead, emit: (event: 'close') => void) {
         }
 
         if (activityText) {
-          insightsText += `[${type}]${dateStr}\n${activityText}\n`;
+          insightsText += `[${type}]${dateStr}\n${sanitizeText(activityText)}\n`;
           if (index < selectedInsights.value.length - 1) {
             insightsText += `\n==================================================\n\n`;
           }
@@ -207,7 +208,7 @@ export function useCopyLead(lead: Lead, emit: (event: 'close') => void) {
         const rev = `${estimatedMinRevenue.currencyCode} ${estimatedMinRevenue.amount}${estimatedMinRevenue.unit} - ${estimatedMaxRevenue.amount}${estimatedMaxRevenue.unit}`;
         companyInfo += `Revenue: ${rev}\n`;
       }
-      if (companyFields.value.description && cMain?.description) companyInfo += `Description:\n${cMain.description}\n`;
+      if (companyFields.value.description && cMain?.description) companyInfo += `Description:\n${sanitizeText(cMain.description)}\n`;
       sections.push(companyInfo.trim());
     }
 
