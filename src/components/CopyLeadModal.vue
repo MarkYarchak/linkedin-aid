@@ -19,19 +19,26 @@ const emit = defineEmits(['close']);
 
 const wrapText = ref(false);
 
-const getInsightDisplayText = (insight: any) => {
+const getInsightData = (insight: any) => {
   const activity = insight.activityUnion;
   const date = insight.createdAt ? getRelativeTime(insight.createdAt) : '';
-  const dateStr = date ? ` (${date})` : '';
 
   if (activity.postActivity) {
     const post = activity.postActivity;
-    const type = post.rootActivity ? '[ReShare] ' : '[POST] ';
-    return type + (post.message?.text || post.rootActivity?.message?.text || 'Post content') + dateStr;
+    const type = post.rootActivity ? 'RESHARED POST' : 'POST';
+    return {
+      type,
+      date,
+      text: post.message?.text || post.rootActivity?.message?.text || 'Post content'
+    };
   } else if (activity.commentActivity) {
-    return '[COMMENT] ' + (activity.commentActivity.commentary?.text || 'Comment content') + dateStr;
+    return {
+      type: 'COMMENT',
+      date,
+      text: activity.commentActivity.commentary?.text || 'Comment content'
+    };
   }
-  return 'Activity' + dateStr;
+  return { type: 'Activity', date, text: 'Unknown activity' };
 };
 
 const {
@@ -124,8 +131,14 @@ const copyTitle = async () => {
               :selected="selectedInsights.includes(insight.insightId)"
               @toggle="toggleInsight(insight.insightId)"
             >
-              <div class="insight-item__text">
-                {{ getInsightDisplayText(insight) }}
+              <div class="insight-item">
+                <div class="insight-item__header">
+                  <span class="insight-item__type">{{ getInsightData(insight).type }}</span>
+                  <span v-if="getInsightData(insight).date" class="insight-item__date">{{ getInsightData(insight).date }}</span>
+                </div>
+                <div class="insight-item__text">
+                  {{ getInsightData(insight).text }}
+                </div>
               </div>
             </AppSelectableItem>
           </div>
@@ -397,12 +410,40 @@ const copyTitle = async () => {
   gap: 12px;
 }
 
+.insight-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+}
+
+.insight-item__header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.insight-item__type {
+  text-transform: uppercase;
+  color: #0a66c2;
+}
+
+.insight-item__date {
+  font-weight: normal;
+}
+
 .insight-item__text {
   white-space: pre-wrap;
   overflow: hidden;
   display: -webkit-box;
   -webkit-line-clamp: 7;
   -webkit-box-orient: vertical;
+  font-size: 0.85rem;
+  line-height: 1.4;
+  color: #1e293b;
 }
 
 .preview-box {

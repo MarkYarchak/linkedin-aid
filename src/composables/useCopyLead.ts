@@ -148,7 +148,7 @@ export function useCopyLead(lead: Lead, emit: (event: 'close') => void) {
 
         if (insight.activityUnion?.postActivity) {
           const post = insight.activityUnion.postActivity;
-          type = post.rootActivity ? 'ReShared POST' : 'POST';
+          type = post.rootActivity ? 'RESHARED POST' : 'POST';
           activityText = post.message?.text || post.rootActivity?.message?.text || '';
         } else if (insight.activityUnion?.commentActivity) {
           type = 'COMMENT';
