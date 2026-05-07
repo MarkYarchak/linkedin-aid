@@ -1,7 +1,8 @@
 <script lang="ts" setup>
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import { useCopyLead } from '@/composables/useCopyLead';
 import { getRelativeTime } from '@/helpers/date-helper';
+import { getSalesNavigatorCompanyUrl } from '@/helpers/url-helpers';
 import AppStepper from '@/components/ui/AppStepper.vue';
 import AppCheckbox from '@/components/ui/AppCheckbox.vue';
 import AppRadio from '@/components/ui/AppRadio.vue';
@@ -75,6 +76,11 @@ const copyTitle = async () => {
     isCopied.value = false;
   }, 2000);
 };
+
+const selectedCompanyUrl = computed(() => {
+  if (!selectedPositionUrn.value) return null;
+  return getSalesNavigatorCompanyUrl(selectedPositionUrn.value);
+});
 
 </script>
 
@@ -175,8 +181,15 @@ const copyTitle = async () => {
               <AppCheckbox v-model="companyFields.specialties" label="Specialties" />
             </div>
           </div>
-          <div v-else>
-            No captured data found for the selected company.
+          <div v-else class="no-company-data">
+            <p>No captured data found for the selected company.</p>
+            <p v-if="selectedCompanyUrl">
+              You can open the company page to capture its data:
+              <br />
+              <a :href="selectedCompanyUrl" target="_blank" class="company-link">
+                Open LinkedIn Company Page
+              </a>
+            </p>
           </div>
         </div>
 
@@ -464,6 +477,36 @@ const copyTitle = async () => {
 .company-name-label.is-not-captured {
   color: #94a3b8;
   font-style: italic;
+}
+
+.no-company-data {
+  text-align: center;
+  padding: 20px;
+  background: #f8fafc;
+  border-radius: 8px;
+  border: 1px dashed #cbd5e1;
+  color: #64748b;
+}
+
+.no-company-data p {
+  margin: 8px 0;
+}
+
+.company-link {
+  display: inline-block;
+  margin-top: 8px;
+  padding: 8px 16px;
+  background-color: #0a66c2;
+  color: white;
+  text-decoration: none;
+  border-radius: 4px;
+  font-weight: 600;
+  transition: background-color 0.2s;
+}
+
+.company-link:hover {
+  background-color: #004182;
+  color: white;
 }
 
 .modal-footer {
