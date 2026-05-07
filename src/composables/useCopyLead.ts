@@ -126,14 +126,8 @@ export function useCopyLead(lead: Lead, emit: (event: 'close') => void) {
       if (leadFields.value.fullName) leadInfo += `Name: ${main.fullName}\n`;
       if (leadFields.value.headline) leadInfo += `Headline: ${main.headline}\n`;
       if (leadFields.value.location) leadInfo += `Location: ${main.location}\n`;
-      if (leadFields.value.position.location && main.defaultPosition?.location) {
-        leadInfo += `Job Location: ${main.defaultPosition.location}\n`;
-      }
       if (leadFields.value.summary && main.summary) {
         leadInfo += `Summary:\n${sanitizeText(main.summary, true)}\n`;
-      }
-      if (leadFields.value.position.description && main.defaultPosition?.description) {
-        leadInfo += `Job Description:\n${sanitizeText(main.defaultPosition.description, true)}\n`;
       }
       sections.push(leadInfo.trim());
     }
