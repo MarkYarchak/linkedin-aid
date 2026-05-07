@@ -196,7 +196,8 @@ export function useCopyLead(lead: Lead, emit: (event: 'close') => void) {
     if (selectedCompany.value) {
       const cMain = selectedCompany.value.main;
       const cExtra = selectedCompany.value.extra;
-      let companyInfo = `### COMPANY INFO (${cMain?.name})\n`;
+      let companyInfo = `### COMPANY INFO\n`;
+      companyInfo += `Name: ${cMain?.name}\n`;
       if (companyFields.value.industry && cMain?.industry) companyInfo += `Industry: ${cMain.industry}\n`;
       if (companyFields.value.location && cMain?.location) companyInfo += `Location: ${cMain.location}\n`;
       if (companyFields.value.yearFounded && cMain?.yearFounded) companyInfo += `Founded: ${cMain.yearFounded}\n`;
