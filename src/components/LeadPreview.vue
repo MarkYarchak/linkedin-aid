@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import { ref } from 'vue';
 import CopyLeadModal from '@/components/CopyLeadModal.vue';
+import AppCopyButton from '@/components/ui/AppCopyButton.vue';
 import { getRelativeTime } from '@/helpers/date-helper';
 import type { Lead } from '@/types/lead/lead';
 
@@ -63,13 +64,7 @@ function copyLeadInfo() {
            :alt="`${lead.main?.firstName} ${lead.main?.lastName}`"
            class="avatar" />
       <h3>{{ lead.main?.firstName }} {{ lead.main?.lastName }}</h3>
-
-      <button
-        type="button"
-        @click="copyLeadInfo"
-      >
-        Copy info
-      </button>
+      <AppCopyButton primary @click="copyLeadInfo" />
     </div>
 
     <div class="info-row">
