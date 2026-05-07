@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import { ref } from 'vue';
 import { useCopyLead } from '@/composables/useCopyLead';
+import { getRelativeTime } from '@/helpers/date-helper';
 import AppStepper from '@/components/ui/AppStepper.vue';
 import AppCheckbox from '@/components/ui/AppCheckbox.vue';
 import AppRadio from '@/components/ui/AppRadio.vue';
@@ -17,6 +18,21 @@ const props = defineProps<Props>();
 const emit = defineEmits(['close']);
 
 const wrapText = ref(false);
+
+const getInsightDisplayText = (insight: any) => {
+  const activity = insight.activityUnion;
+  const date = insight.createdAt ? getRelativeTime(insight.createdAt) : '';
+  const dateStr = date ? ` (${date})` : '';
+
+  if (activity.postActivity) {
+    const post = activity.postActivity;
+    const type = post.rootActivity ? '[ReShare] ' : '[POST] ';
+    return type + (post.message?.text || post.rootActivity?.message?.text || 'Post content') + dateStr;
+  } else if (activity.commentActivity) {
+    return '[COMMENT] ' + (activity.commentActivity.commentary?.text || 'Comment content') + dateStr;
+  }
+  return 'Activity' + dateStr;
+};
 
 const {
   currentStep,
@@ -100,7 +116,7 @@ const copyTitle = async () => {
 
         <!-- Step 2: Insights & Skills -->
         <div v-if="currentStep === 2">
-          <h4>Recent Activity / Post(s)</h4>
+          <h4>Recent Activity</h4>
           <div v-if="lead.insights?.elements?.length" class="insights-list">
             <AppSelectableItem
               v-for="insight in lead.insights.elements"
@@ -109,7 +125,7 @@ const copyTitle = async () => {
               @toggle="toggleInsight(insight.insightId)"
             >
               <div class="insight-item__text">
-                {{ insight.activityUnion?.postActivity?.message?.text || 'Post' }}
+                {{ getInsightDisplayText(insight) }}
               </div>
             </AppSelectableItem>
           </div>

@@ -2,6 +2,7 @@ import { ref, computed, onMounted, watch } from 'vue';
 import { companyService } from '@/services/company-service';
 import { titleTargets, titleStates, generateLeadTitle } from '@/helpers/title-helper';
 import { parseLinkedInUrn } from '@/helpers/urn';
+import { getRelativeTime } from '@/helpers/date-helper';
 import { browser } from 'wxt/browser';
 import type { Lead } from '@/types/lead/lead';
 import type { Company } from '@/types/company/company';
@@ -135,11 +136,27 @@ export function useCopyLead(lead: Lead, emit: (event: 'close') => void) {
     }
 
     if (selectedInsights.value.length > 0) {
-      let insightsText = '### RECENT ACTIVITY / POST(S)\n\n';
+      let insightsText = '### RECENT ACTIVITY\n\n';
       selectedInsights.value.forEach((insightId, index) => {
         const insight = lead.insights?.elements.find(e => e.insightId === insightId);
-        if (insight?.activityUnion?.postActivity?.message?.text) {
-          insightsText += `${insight.activityUnion.postActivity.message.text}\n`;
+        if (!insight) return;
+
+        let activityText = '';
+        let type = '';
+        const date = insight.createdAt ? getRelativeTime(insight.createdAt) : '';
+        const dateStr = date ? ` (${date})` : '';
+
+        if (insight.activityUnion?.postActivity) {
+          const post = insight.activityUnion.postActivity;
+          type = post.rootActivity ? 'ReShared POST' : 'POST';
+          activityText = post.message?.text || post.rootActivity?.message?.text || '';
+        } else if (insight.activityUnion?.commentActivity) {
+          type = 'COMMENT';
+          activityText = insight.activityUnion.commentActivity.commentary?.text || '';
+        }
+
+        if (activityText) {
+          insightsText += `[${type}]${dateStr}\n${activityText}\n`;
           if (index < selectedInsights.value.length - 1) {
             insightsText += `\n==================================================\n\n`;
           }

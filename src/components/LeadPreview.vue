@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import { ref } from 'vue';
 import CopyLeadModal from '@/components/CopyLeadModal.vue';
+import { getRelativeTime } from '@/helpers/date-helper';
 import type { Lead } from '@/types/lead/lead';
 
 interface Props {
@@ -16,6 +17,37 @@ const getAvatarUrl = (lead: Lead) => {
     return img.rootUrl + img.artifacts[0].fileIdentifyingUrlPathSegment;
   }
   return null;
+};
+
+const getInsightContent = (insight: any) => {
+  const activity = insight.activityUnion;
+  const date = insight.createdAt ? getRelativeTime(insight.createdAt) : '';
+
+  if (activity.postActivity) {
+    const post = activity.postActivity;
+    if (post.rootActivity) {
+      return {
+        type: 'Reshared Post',
+        text: post.message?.text || post.rootActivity.message?.text || 'Reshared content',
+        url: post.activityUrl,
+        date
+      };
+    }
+    return {
+      type: 'Post',
+      text: post.message?.text || 'Post content',
+      url: post.activityUrl,
+      date
+    };
+  } else if (activity.commentActivity) {
+    return {
+      type: 'Comment',
+      text: activity.commentActivity.commentary?.text || 'Comment content',
+      url: activity.commentActivity.activityUrl,
+      date
+    };
+  }
+  return { type: 'Activity', text: 'Unknown activity', date };
 };
 
 function copyLeadInfo() {
@@ -65,10 +97,21 @@ function copyLeadInfo() {
     </div>
 
     <div v-if="lead.insights?.elements?.length" class="insights">
-      <h4>Recent Activity / Post(s)</h4>
+      <h4>Recent Activity</h4>
       <ul>
-        <li v-for="insight in lead.insights.elements.slice(0, 3)" :key="insight.insightId">
-          <span class="insight-text">{{ insight.activityUnion?.postActivity?.message?.text || 'Activity' }}</span>
+        <li v-for="insight in lead.insights.elements.slice(0, 5)" :key="insight.insightId">
+          <div class="insight-header">
+            <div class="insight-header-left">
+              <span class="insight-type">{{ getInsightContent(insight).type }}</span>
+              <span>&middot;</span>
+              <span class="insight-date">{{ getInsightContent(insight).date }}</span>
+            </div>
+            <a v-if="getInsightContent(insight).url"
+               :href="getInsightContent(insight).url"
+               target="_blank"
+               class="insight-link">View</a>
+          </div>
+          <span class="insight-text">{{ getInsightContent(insight).text }}</span>
         </li>
       </ul>
     </div>
@@ -153,17 +196,53 @@ function copyLeadInfo() {
 }
 
 .insights ul {
+  list-style-type: none;
   margin: 0;
   padding-left: 0;
   font-size: 0.85em;
 }
 
 .insights li {
-  display: -webkit-box;
   margin-bottom: 8px;
   padding: 10px;
   border: 1px solid #eee;
   border-radius: 8px;
+  background-color: #fafafa;
+}
+
+.insight-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.insight-header-left {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.insight-type {
+  font-size: 0.8em;
+  font-weight: bold;
+  text-transform: uppercase;
+  color: #666;
+}
+
+.insight-date {
+  font-size: 0.8em;
+  color: #606060;
+}
+
+.insight-link {
+  font-size: 0.8em;
+  color: #0a66c2;
+  text-decoration: none;
+}
+
+.insight-link:hover {
+  text-decoration: underline;
 }
 
 .insight-text {
