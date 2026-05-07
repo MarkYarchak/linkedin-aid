@@ -33,6 +33,9 @@ export interface DefaultPosition {
   createdAt: number;
   current: boolean;
   startedOn: DateRange;
+  new?: boolean;
+  description?: string;
+  location?: string;
 }
 
 export interface ProfileUnlockInfo {
@@ -54,7 +57,7 @@ export interface SalesApiProfiles {
   headline: string;
   profileUnlockInfo: ProfileUnlockInfo;
   crmManualMatched: boolean;
-  summary: string;
+  summary?: string;
   pendingInvitation: boolean;
   defaultPosition: DefaultPosition;
   degree: number;
