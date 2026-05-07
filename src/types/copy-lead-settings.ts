@@ -4,6 +4,13 @@ export interface CopyLeadSettings {
     headline: boolean;
     location: boolean;
     summary: boolean;
+    position: {
+      title: boolean;
+      companyName: boolean;
+      location: boolean;
+      startedOn: boolean;
+      description: boolean;
+    };
   };
   companyFields: {
     name: boolean;

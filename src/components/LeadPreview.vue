@@ -87,6 +87,16 @@ function copyLeadInfo() {
       <p class="summary-text">{{ lead.main.summary }}</p>
     </div>
 
+    <div v-if="lead.main?.defaultPosition?.description" class="summary">
+      <h4>
+        Job Description
+        <span v-if="lead.main?.defaultPosition?.location" class="sub-info">
+          &middot; {{ lead.main.defaultPosition.location }}
+        </span>
+      </h4>
+      <p class="summary-text">{{ lead.main.defaultPosition.description }}</p>
+    </div>
+
     <div v-if="lead.extra?.skills?.length" class="skills">
       <h4>Top Skills</h4>
       <div class="skill-tags">
@@ -172,6 +182,12 @@ function copyLeadInfo() {
   line-height: 1.4;
 }
 
+.sub-info {
+  font-size: 0.85em;
+  font-weight: normal;
+  color: #666;
+}
+
 .skill-tags {
   display: flex;
   flex-wrap: wrap;
@@ -190,7 +206,7 @@ function copyLeadInfo() {
   margin: 4px 0 0 0;
   font-size: 0.85em;
   line-height: 1.4;
-  color: #666;
+  color: #555;
   white-space: pre-wrap;
   overflow: hidden;
 }

@@ -18,6 +18,13 @@ export function useCopyLead(lead: Lead, emit: (event: 'close') => void) {
     headline: true,
     location: true,
     summary: true,
+    position: {
+      title: true,
+      companyName: true,
+      location: true,
+      startedOn: true,
+      description: true,
+    },
   });
 
   // Positions
@@ -118,8 +125,14 @@ export function useCopyLead(lead: Lead, emit: (event: 'close') => void) {
       if (leadFields.value.fullName) leadInfo += `Name: ${main.fullName}\n`;
       if (leadFields.value.headline) leadInfo += `Headline: ${main.headline}\n`;
       if (leadFields.value.location) leadInfo += `Location: ${main.location}\n`;
+      if (leadFields.value.position.location && main.defaultPosition?.location) {
+        leadInfo += `Job Location: ${main.defaultPosition.location}\n`;
+      }
       if (leadFields.value.summary && main.summary) {
         leadInfo += `Summary:\n${main.summary}\n`;
+      }
+      if (leadFields.value.position.description && main.defaultPosition?.description) {
+        leadInfo += `Job Description:\n${main.defaultPosition.description}\n`;
       }
       sections.push(leadInfo.trim());
     }
@@ -127,7 +140,21 @@ export function useCopyLead(lead: Lead, emit: (event: 'close') => void) {
     if (selectedPositionUrn.value) {
       const pos = main?.positions.find(p => p.companyUrn === selectedPositionUrn.value);
       if (pos) {
-        sections.push(`### CURRENT POSITION\n${pos.title} at ${pos.companyName}`);
+        let posInfo = '### CURRENT POSITION\n';
+        if (leadFields.value.position.title) posInfo += `Title: ${pos.title}\n`;
+        if (leadFields.value.position.companyName) posInfo += `Company: ${pos.companyName}\n`;
+        if (leadFields.value.position.location && pos.location) posInfo += `Location: ${pos.location}\n`;
+        if (leadFields.value.position.startedOn && pos.startedOn) {
+          const date = new Date(pos.startedOn.year, (pos.startedOn.month || 1) - 1);
+          posInfo += `Started: ${getRelativeTime(date.getTime())}\n`;
+        }
+        if (leadFields.value.position.description && pos.description) {
+          posInfo += `Description:\n${pos.description}\n`;
+        }
+
+        if (posInfo.trim() !== '### CURRENT POSITION') {
+          sections.push(posInfo.trim());
+        }
       }
     }
 

@@ -98,11 +98,23 @@ const selectedCompanyUrl = computed(() => {
         <!-- Step 1: Lead Info -->
         <div v-if="currentStep === 1">
           <h4>Lead Basic Info</h4>
-          <div class="field-group">
-            <AppCheckbox v-model="leadFields.fullName" label="Full Name" />
-            <AppCheckbox v-model="leadFields.headline" label="Headline" />
-            <AppCheckbox v-model="leadFields.location" label="Location" />
-            <AppCheckbox v-model="leadFields.summary" label="Summary" />
+          <div class="field-group grid _three-cols">
+              <AppCheckbox v-model="leadFields.fullName" label="Full Name" />
+              <AppCheckbox v-model="leadFields.headline" label="Headline" />
+              <AppCheckbox v-model="leadFields.location" label="Location" />
+              <AppCheckbox v-model="leadFields.summary" label="Summary" />
+          </div>
+          <h4>Current Position Fields</h4>
+          <div class="field-group grid _three-cols">
+            <AppCheckbox v-model="leadFields.position.title" label="Job Title" />
+            <AppCheckbox v-model="leadFields.position.companyName" label="Company" />
+            <AppCheckbox v-model="leadFields.position.location" label="Location" />
+            <AppCheckbox v-model="leadFields.position.startedOn" label="Started On" />
+            <AppCheckbox
+              v-if="lead.main?.defaultPosition?.description"
+              v-model="leadFields.position.description"
+              label="Description"
+            />
           </div>
 
           <h4>Select Position</h4>
@@ -248,6 +260,12 @@ const selectedCompanyUrl = computed(() => {
 </template>
 
 <style scoped>
+.field-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -320,10 +338,6 @@ const selectedCompanyUrl = computed(() => {
 
 .mt-4 {
   margin-top: 16px !important;
-}
-
-.mt-2 {
-  margin-top: 8px !important;
 }
 
 .mt-1 {
@@ -400,8 +414,11 @@ const selectedCompanyUrl = computed(() => {
 
 .field-group.grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(2, 1fr);
   gap: 8px;
+}
+.field-group.grid._three-cols {
+  grid-template-columns: repeat(3, 1fr);
 }
 
 .positions-list {
