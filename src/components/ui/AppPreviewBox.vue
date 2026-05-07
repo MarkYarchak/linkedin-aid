@@ -14,9 +14,19 @@ withDefaults(defineProps<Props>(), {
   <div
     class="preview-box"
     :class="{ mini }"
-    :style="{ whiteSpace: wrapText ? 'pre-wrap' : 'pre' }"
   >
-    <slot />
+    <div v-if="$slots.prepend" class="preview-prepend">
+      <slot name="prepend" />
+    </div>
+    <div
+      class="preview-content"
+      :style="{ whiteSpace: wrapText ? 'pre-wrap' : 'pre' }"
+    >
+      <slot />
+    </div>
+    <div v-if="$slots.append" class="preview-append">
+      <slot name="append" />
+    </div>
   </div>
 </template>
 
@@ -30,10 +40,24 @@ withDefaults(defineProps<Props>(), {
   max-height: 300px;
   overflow: auto;
   color: #333;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.preview-content {
+  flex: 1;
 }
 
 .preview-box.mini {
   max-height: none;
   font-weight: 500;
+}
+
+.preview-prepend,
+.preview-append {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
 }
 </style>
