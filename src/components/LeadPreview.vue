@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import { ref } from 'vue';
+import { sanitizeText } from '@/helpers/text-helper';
 import CopyLeadModal from '@/components/CopyLeadModal.vue';
 import AppCopyButton from '@/components/ui/AppCopyButton.vue';
 import { getRelativeTime } from '@/helpers/date-helper';
@@ -79,7 +80,7 @@ function copyLeadInfo() {
 
     <div v-if="lead.main?.summary" class="summary">
       <h4>Summary</h4>
-      <p class="summary-text">{{ lead.main.summary }}</p>
+      <p class="summary-text">{{ sanitizeText(lead.main.summary) }}</p>
     </div>
 
     <div v-if="lead.main?.defaultPosition?.description" class="summary">
@@ -89,7 +90,7 @@ function copyLeadInfo() {
           &middot; {{ lead.main.defaultPosition.location }}
         </span>
       </h4>
-      <p class="summary-text">{{ lead.main.defaultPosition.description }}</p>
+      <p class="summary-text">{{ sanitizeText(lead.main.defaultPosition.description) }}</p>
     </div>
 
     <div v-if="lead.extra?.skills?.length" class="skills">
@@ -116,7 +117,7 @@ function copyLeadInfo() {
                target="_blank"
                class="insight-link">View</a>
           </div>
-          <span class="insight-text">{{ getInsightContent(insight).text }}</span>
+          <span class="insight-text">{{ sanitizeText(getInsightContent(insight).text) }}</span>
         </li>
       </ul>
     </div>

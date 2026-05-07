@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import { computed } from 'vue';
+import { sanitizeText } from '@/helpers/text-helper';
 import type { Company } from '@/types/company/company';
 
 interface Props {
@@ -54,7 +55,7 @@ const revenueRangeString = computed(() => {
     </div>
     <div class="info-row" v-if="company.main?.description">
       <strong>Description:</strong>
-      <p class="description">{{ company.main.description }}</p>
+      <p class="description">{{ sanitizeText(company.main.description) }}</p>
     </div>
   </div>
 </template>
