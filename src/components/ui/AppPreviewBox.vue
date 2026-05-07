@@ -37,8 +37,6 @@ withDefaults(defineProps<Props>(), {
   border-radius: 4px;
   font-size: 0.8rem;
   word-break: break-word;
-  max-height: 300px;
-  overflow: auto;
   color: #333;
   display: flex;
   align-items: center;
@@ -46,6 +44,8 @@ withDefaults(defineProps<Props>(), {
 }
 
 .preview-content {
+  max-height: 310px;
+  overflow: auto;
   flex: 1;
 }
 
