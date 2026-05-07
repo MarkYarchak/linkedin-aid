@@ -8,6 +8,7 @@ import AppCheckbox from '@/components/ui/AppCheckbox.vue';
 import AppRadio from '@/components/ui/AppRadio.vue';
 import AppTag from '@/components/ui/AppTag.vue';
 import AppSelectableItem from '@/components/ui/AppSelectableItem.vue';
+import AppPreviewBox from '@/components/ui/AppPreviewBox.vue';
 import type { Lead } from '@/types/lead/lead';
 
 interface Props {
@@ -99,10 +100,10 @@ const selectedCompanyUrl = computed(() => {
         <div v-if="currentStep === 1">
           <h4>Lead Basic Info</h4>
           <div class="field-group grid _three-cols">
-              <AppCheckbox v-model="leadFields.fullName" label="Full Name" />
-              <AppCheckbox v-model="leadFields.headline" label="Headline" />
-              <AppCheckbox v-model="leadFields.location" label="Location" />
-              <AppCheckbox v-model="leadFields.summary" label="Summary" />
+            <AppCheckbox v-model="leadFields.fullName" label="Full Name" />
+            <AppCheckbox v-model="leadFields.headline" label="Headline" />
+            <AppCheckbox v-model="leadFields.location" label="Location" />
+            <AppCheckbox v-model="leadFields.summary" label="Summary" />
           </div>
           <h4>Current Position Fields</h4>
           <div class="field-group grid _three-cols">
@@ -232,7 +233,7 @@ const selectedCompanyUrl = computed(() => {
             </div>
             <div class="generated-title-preview mt-4">
               <strong>Title Preview:</strong>
-              <div class="preview-box mini mt-1">{{ generateTitle() }}</div>
+              <AppPreviewBox mini class="mt-1">{{ generateTitle() }}</AppPreviewBox>
             </div>
           </div>
         </div>
@@ -243,7 +244,7 @@ const selectedCompanyUrl = computed(() => {
             <h4>Preview</h4>
             <AppCheckbox v-model="wrapText" label="Wrap text" />
           </div>
-          <pre class="preview-box" :style="{ whiteSpace: wrapText ? 'pre-wrap' : 'pre' }">{{ generateCopyText() }}</pre>
+          <AppPreviewBox :wrap-text="wrapText">{{ generateCopyText() }}</AppPreviewBox>
         </div>
       </div>
 
@@ -400,18 +401,12 @@ const selectedCompanyUrl = computed(() => {
   background: white;
 }
 
-.preview-box.mini {
-  max-height: none;
-  font-weight: 500;
-}
-
 .field-group {
   display: flex;
   flex-direction: column;
   gap: 4px;
   margin-bottom: 20px;
 }
-
 .field-group.grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -474,16 +469,6 @@ const selectedCompanyUrl = computed(() => {
   font-size: 0.85rem;
   line-height: 1.4;
   color: #1e293b;
-}
-
-.preview-box {
-  background: #f5f5f5;
-  padding: 10px;
-  border-radius: 4px;
-  font-size: 0.8rem;
-  word-break: break-word;
-  max-height: 300px;
-  overflow: auto;
 }
 
 .company-name-label.is-captured {
