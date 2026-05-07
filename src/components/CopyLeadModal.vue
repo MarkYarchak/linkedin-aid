@@ -10,6 +10,7 @@ import AppTag from '@/components/ui/AppTag.vue';
 import AppSelectableItem from '@/components/ui/AppSelectableItem.vue';
 import AppPreviewBox from '@/components/ui/AppPreviewBox.vue';
 import IconCopy from '@/components/icons/IconCopy.vue';
+import IconCross from '@/components/icons/IconCross.vue';
 import type { Lead } from '@/types/lead/lead';
 
 interface Props {
@@ -91,7 +92,9 @@ const selectedCompanyUrl = computed(() => {
     <div class="modal-content">
       <div class="modal-header">
         <h3>Copy Lead Information</h3>
-        <button class="close-btn" @click="emit('close')">&times;</button>
+        <button class="close-btn" @click="emit('close')">
+          <IconCross size="20" />
+        </button>
       </div>
 
       <AppStepper :current-step="currentStep" :total-steps="totalSteps" />
@@ -315,14 +318,17 @@ const selectedCompanyUrl = computed(() => {
 .close-btn {
   background: none;
   border: none;
-  font-size: 1.5rem;
-  cursor: pointer;
-  padding: 0 5px;
-  line-height: 1;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   color: #64748b;
+  border-radius: 4px;
+  transition: all 0.2s;
 }
 
 .close-btn:hover {
+  background: #f1f5f9;
   color: #1e293b;
 }
 
