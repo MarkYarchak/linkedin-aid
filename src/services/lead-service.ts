@@ -2,6 +2,7 @@ import { browser } from 'wxt/browser';
 import { MessageType } from '@/constants/message-types';
 import { BASE_URL } from '@/constants/urls';
 import type { Lead } from '@/types/lead/lead';
+import type { SalesApiInsightsV2 } from '@/types/lead/salesApiInsightsV2';
 
 export class LeadService {
   private lastTabUrls: Record<number, string> = {};
@@ -24,7 +25,34 @@ export class LeadService {
     await browser.storage.local.set({ capturedLeads: leads });
   }
 
-  handleMessage(msg: any, sender: any) {
+  async updateLeadInsightsInStorage(urn: string, data: SalesApiInsightsV2) {
+    const isPagination = data.paging?.start > 0;
+
+    if (isPagination) {
+      const storage = await browser.storage.local.get('capturedLeads');
+      const leads: Record<string, Lead> = (storage.capturedLeads || {}) as Record<string, Lead>;
+      const existingLead = leads[urn];
+
+      if (existingLead?.insights) {
+        const mergedElements = [...(existingLead.insights.elements || []), ...(data.elements || [])];
+        // Remove duplicates by insightId if necessary, though LinkedIn usually doesn't send them
+        const uniqueElements = Array.from(new Map(mergedElements.map((item) => [item.insightId, item])).values());
+
+        await this.updateLeadInStorage(urn, {
+          insights: {
+            ...data,
+            elements: uniqueElements,
+          },
+        });
+      } else {
+        await this.updateLeadInStorage(urn, { insights: data });
+      }
+    } else {
+      await this.updateLeadInStorage(urn, { insights: data });
+    }
+  }
+
+  async handleMessage(msg: any, sender: any) {
     const tabUrl = sender.tab?.id ? this.lastTabUrls[sender.tab.id] : undefined;
 
     if (msg.type === MessageType.LEAD_CAPTURED) {
@@ -44,7 +72,8 @@ export class LeadService {
     if (msg.type === MessageType.LEAD_INSIGHTS_CAPTURED) {
       const urn = new URL(msg.url, BASE_URL).searchParams.get('profile');
       if (urn) {
-        this.updateLeadInStorage(urn, { insights: msg.data });
+        const data = msg.data as SalesApiInsightsV2;
+        this.updateLeadInsightsInStorage(urn, data);
       }
     }
 
