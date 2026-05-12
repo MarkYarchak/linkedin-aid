@@ -1,4 +1,4 @@
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, onUnmounted, computed } from 'vue';
 import { browser } from 'wxt/browser';
 import type { Lead } from '@/types/lead/lead';
 
@@ -22,17 +22,21 @@ export function useLeads(tabUrl?: string) {
     }
   };
 
+
+  const changesListener = (changes: any, areaName: string) => {
+    if (areaName === 'local' && changes.capturedLeads) {
+      leads.value = changes.capturedLeads.newValue as Record<string, Lead>;
+    }
+  };
+
   onMounted(() => {
     loadLeads();
 
-    const listener = (changes: any, areaName: string) => {
-      if (areaName === 'local' && changes.capturedLeads) {
-        leads.value = changes.capturedLeads.newValue as Record<string, Lead>;
-      }
-    };
+    browser.storage.onChanged.addListener(changesListener);
+  });
 
-    browser.storage.onChanged.addListener(listener);
-    return () => browser.storage.onChanged.removeListener(listener);
+  onUnmounted(() => {
+    browser.storage.onChanged.removeListener(changesListener);
   });
 
   return {

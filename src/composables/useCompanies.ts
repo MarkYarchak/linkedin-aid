@@ -1,4 +1,4 @@
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, computed, onUnmounted } from 'vue';
 import { browser } from 'wxt/browser';
 import type { Company } from '@/types/company/company';
 
@@ -22,17 +22,20 @@ export function useCompanies(tabUrl?: string) {
     }
   };
 
+  const changesListener = (changes: any, areaName: string) => {
+    if (areaName === 'local' && changes.capturedCompanies) {
+      companies.value = changes.capturedCompanies.newValue as Record<string, Company>;
+    }
+  };
+
   onMounted(() => {
     loadCompanies();
 
-    const listener = (changes: any, areaName: string) => {
-      if (areaName === 'local' && changes.capturedCompanies) {
-        companies.value = changes.capturedCompanies.newValue as Record<string, Company>;
-      }
-    };
+    browser.storage.onChanged.addListener(changesListener);
+  });
 
-    browser.storage.onChanged.addListener(listener);
-    return () => browser.storage.onChanged.removeListener(listener);
+  onUnmounted(() => {
+    browser.storage.onChanged.removeListener(changesListener);
   });
 
   return {
