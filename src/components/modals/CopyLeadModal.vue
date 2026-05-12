@@ -4,13 +4,13 @@ import { useCopyLead } from '@/composables/useCopyLead';
 import { getRelativeTime } from '@/helpers/date-helper';
 import { getSalesNavigatorCompanyUrl } from '@/helpers/url-helpers';
 import AppStepper from '@/components/ui/AppStepper.vue';
+import AppModal from '@/components/ui/AppModal.vue';
 import AppCheckbox from '@/components/ui/AppCheckbox.vue';
 import AppRadio from '@/components/ui/AppRadio.vue';
 import AppTag from '@/components/ui/AppTag.vue';
 import AppSelectableItem from '@/components/ui/AppSelectableItem.vue';
 import AppPreviewBox from '@/components/ui/AppPreviewBox.vue';
 import IconCopy from '@/components/icons/IconCopy.vue';
-import IconCross from '@/components/icons/IconCross.vue';
 import type { Lead } from '@/types/lead/lead';
 
 interface Props {
@@ -88,191 +88,186 @@ const selectedCompanyUrl = computed(() => {
 </script>
 
 <template>
-  <div v-if="show" class="modal-overlay" @click.self="emit('close')">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h3>Copy Lead Information</h3>
-        <button class="close-btn" @click="emit('close')">
-          <IconCross size="20" />
-        </button>
+  <AppModal
+    :show="show"
+    title="Copy Lead Information"
+    @close="emit('close')"
+  >
+    <AppStepper :current-step="currentStep" :total-steps="totalSteps" />
+
+    <div class="step-content">
+      <!-- Step 1: Lead Info -->
+      <div v-if="currentStep === 1">
+        <h4>Lead Basic Info</h4>
+        <div class="field-group grid _three-cols">
+          <AppCheckbox v-model="leadFields.fullName" label="Full Name" />
+          <AppCheckbox v-model="leadFields.headline" label="Headline" />
+          <AppCheckbox v-model="leadFields.location" label="Location" />
+          <AppCheckbox v-model="leadFields.summary" label="Summary" />
+        </div>
+        <h4>Current Position Fields</h4>
+        <div class="field-group grid _three-cols">
+          <AppCheckbox v-model="leadFields.position.title" label="Job Title" />
+          <AppCheckbox v-model="leadFields.position.companyName" label="Company" />
+          <AppCheckbox v-model="leadFields.position.location" label="Location" />
+          <AppCheckbox v-model="leadFields.position.startedOn" label="Started On" />
+          <AppCheckbox
+            v-if="lead.main?.defaultPosition?.description"
+            v-model="leadFields.position.description"
+            label="Description"
+          />
+        </div>
+
+        <h4>Select Position</h4>
+        <div v-if="currentPositions.length > 0" class="positions-list">
+          <AppRadio
+            v-for="pos in currentPositions"
+            :key="pos.posId"
+            v-model="selectedPositionUrn"
+            :value="pos.companyUrn"
+          >
+            <strong>{{ pos.title }}</strong> at
+            <span
+              :class="[
+                'company-name-label',
+                pos.companyUrn && capturedCompanyUrns.includes(pos.companyUrn) ? 'is-captured' : 'is-not-captured'
+              ]"
+            >
+              {{ pos.companyName }}
+            </span>
+          </AppRadio>
+        </div>
+        <div v-else>No current positions found.</div>
       </div>
 
-      <AppStepper :current-step="currentStep" :total-steps="totalSteps" />
-
-      <div class="step-content">
-        <!-- Step 1: Lead Info -->
-        <div v-if="currentStep === 1">
-          <h4>Lead Basic Info</h4>
-          <div class="field-group grid _three-cols">
-            <AppCheckbox v-model="leadFields.fullName" label="Full Name" />
-            <AppCheckbox v-model="leadFields.headline" label="Headline" />
-            <AppCheckbox v-model="leadFields.location" label="Location" />
-            <AppCheckbox v-model="leadFields.summary" label="Summary" />
-          </div>
-          <h4>Current Position Fields</h4>
-          <div class="field-group grid _three-cols">
-            <AppCheckbox v-model="leadFields.position.title" label="Job Title" />
-            <AppCheckbox v-model="leadFields.position.companyName" label="Company" />
-            <AppCheckbox v-model="leadFields.position.location" label="Location" />
-            <AppCheckbox v-model="leadFields.position.startedOn" label="Started On" />
-            <AppCheckbox
-              v-if="lead.main?.defaultPosition?.description"
-              v-model="leadFields.position.description"
-              label="Description"
-            />
-          </div>
-
-          <h4>Select Position</h4>
-          <div v-if="currentPositions.length > 0" class="positions-list">
-            <AppRadio
-              v-for="pos in currentPositions"
-              :key="pos.posId"
-              v-model="selectedPositionUrn"
-              :value="pos.companyUrn"
-            >
-              <strong>{{ pos.title }}</strong> at
-              <span
-                :class="[
-                  'company-name-label',
-                  pos.companyUrn && capturedCompanyUrns.includes(pos.companyUrn) ? 'is-captured' : 'is-not-captured'
-                ]"
-              >
-                {{ pos.companyName }}
-              </span>
-            </AppRadio>
-          </div>
-          <div v-else>No current positions found.</div>
-        </div>
-
-        <!-- Step 2: Insights & Skills -->
-        <div v-if="currentStep === 2">
-          <h4>Recent Activity</h4>
-          <div v-if="lead.insights?.elements?.length" class="insights-list">
-            <AppSelectableItem
-              v-for="insight in lead.insights.elements"
-              :key="insight.insightId"
-              :selected="selectedInsights.includes(insight.insightId)"
-              @toggle="toggleInsight(insight.insightId)"
-            >
-              <div class="insight-item">
-                <div class="insight-item__header">
-                  <span class="insight-item__type">{{ getInsightData(insight).type }}</span>
-                  <span v-if="getInsightData(insight).date" class="insight-item__date">{{ getInsightData(insight).date }}</span>
-                </div>
-                <div class="insight-item__text">
-                  {{ getInsightData(insight).text }}
-                </div>
+      <!-- Step 2: Insights & Skills -->
+      <div v-if="currentStep === 2">
+        <h4>Recent Activity</h4>
+        <div v-if="lead.insights?.elements?.length" class="insights-list">
+          <AppSelectableItem
+            v-for="insight in lead.insights.elements"
+            :key="insight.insightId"
+            :selected="selectedInsights.includes(insight.insightId)"
+            @toggle="toggleInsight(insight.insightId)"
+          >
+            <div class="insight-item">
+              <div class="insight-item__header">
+                <span class="insight-item__type">{{ getInsightData(insight).type }}</span>
+                <span v-if="getInsightData(insight).date" class="insight-item__date">{{ getInsightData(insight).date }}</span>
               </div>
-            </AppSelectableItem>
-          </div>
-          <div v-else>No recent activity found.</div>
-
-          <h4 class="mt-6">Skills</h4>
-          <div v-if="lead.extra?.skills?.length" class="tags-list">
-            <AppTag
-              v-for="skill in lead.extra.skills"
-              :key="skill.name"
-              :label="skill.name"
-              :selected="selectedSkills.includes(skill.name)"
-              @toggle="toggleSkill(skill.name)"
-            />
-          </div>
-          <div v-else>No skills found.</div>
-        </div>
-
-        <!-- Step 3: Company Info -->
-        <div v-if="currentStep === 3">
-          <h4>Company Fields</h4>
-          <div v-if="isLoadingCompany">Loading company data...</div>
-          <div v-else-if="selectedCompany">
-            <p>Data for: <strong>{{ selectedCompany.main?.name }}</strong></p>
-            <div class="field-group grid">
-              <AppCheckbox v-model="companyFields.name" label="Name" />
-              <AppCheckbox v-model="companyFields.industry" label="Industry" />
-              <AppCheckbox v-model="companyFields.location" label="Location" />
-              <AppCheckbox v-model="companyFields.revenueRange" label="Revenue" />
-              <AppCheckbox v-model="companyFields.type" label="Type" />
-              <AppCheckbox v-model="companyFields.yearFounded" label="Year Founded" />
-              <AppCheckbox v-model="companyFields.employeeCount" label="Headcount" />
-              <AppCheckbox v-model="companyFields.description" label="Description" />
-              <AppCheckbox v-model="companyFields.specialties" label="Specialties" />
-            </div>
-          </div>
-          <div v-else class="no-company-data">
-            <p>No collected data found for the selected company.</p>
-            <p v-if="selectedCompanyUrl">
-              You can open the company page to collect its data:
-              <br />
-              <a :href="selectedCompanyUrl" target="_blank" class="company-link">
-                Open LinkedIn Company Page
-              </a>
-            </p>
-          </div>
-        </div>
-
-        <!-- Step 4: Title Settings -->
-        <div v-if="currentStep === 4">
-          <div class="step-header-with-action">
-            <h4>Title Settings</h4>
-            <button class="btn-small" @click="copyTitle">Copy Title</button>
-          </div>
-          <div class="title-generator">
-            <div class="title-generator-fields">
-              <div class="select-group">
-                <label>Target</label>
-                <select v-model="selectedTarget">
-                  <option v-for="t in targets" :key="t.value" :value="t.value">
-                    {{ t.emoji }} {{ t.label }}
-                  </option>
-                </select>
-              </div>
-              <div class="select-group">
-                <label>State</label>
-                <select v-model="selectedState">
-                  <option v-for="s in states" :key="s.value" :value="s.value">
-                    {{ s.emoji }} {{ s.label }}
-                  </option>
-                </select>
+              <div class="insight-item__text">
+                {{ getInsightData(insight).text }}
               </div>
             </div>
-            <div class="generated-title-preview mt-4">
-              <strong>Title Preview:</strong>
-              <AppPreviewBox
-                mini
-                wrap-text
-                class="mt-1"
-              >
-                {{ generateTitle() }}
-                <template #append>
-                  <button class="btn-icon" title="Copy Title" @click="copyTitle">
-                    <IconCopy :size="16" />
-                  </button>
-                </template>
-              </AppPreviewBox>
-            </div>
+          </AppSelectableItem>
+        </div>
+        <div v-else>No recent activity found.</div>
+
+        <h4 class="mt-6">Skills</h4>
+        <div v-if="lead.extra?.skills?.length" class="tags-list">
+          <AppTag
+            v-for="skill in lead.extra.skills"
+            :key="skill.name"
+            :label="skill.name"
+            :selected="selectedSkills.includes(skill.name)"
+            @toggle="toggleSkill(skill.name)"
+          />
+        </div>
+        <div v-else>No skills found.</div>
+      </div>
+
+      <!-- Step 3: Company Info -->
+      <div v-if="currentStep === 3">
+        <h4>Company Fields</h4>
+        <div v-if="isLoadingCompany">Loading company data...</div>
+        <div v-else-if="selectedCompany">
+          <p>Data for: <strong>{{ selectedCompany.main?.name }}</strong></p>
+          <div class="field-group grid">
+            <AppCheckbox v-model="companyFields.name" label="Name" />
+            <AppCheckbox v-model="companyFields.industry" label="Industry" />
+            <AppCheckbox v-model="companyFields.location" label="Location" />
+            <AppCheckbox v-model="companyFields.revenueRange" label="Revenue" />
+            <AppCheckbox v-model="companyFields.type" label="Type" />
+            <AppCheckbox v-model="companyFields.yearFounded" label="Year Founded" />
+            <AppCheckbox v-model="companyFields.employeeCount" label="Headcount" />
+            <AppCheckbox v-model="companyFields.description" label="Description" />
+            <AppCheckbox v-model="companyFields.specialties" label="Specialties" />
           </div>
         </div>
-
-        <!-- Step 5: Preview -->
-        <div v-if="currentStep === 5">
-          <div class="step-header-with-action">
-            <h4>Preview</h4>
-            <AppCheckbox v-model="wrapText" label="Wrap text" />
-          </div>
-          <AppPreviewBox :wrap-text="wrapText">{{ generateCopyText() }}</AppPreviewBox>
+        <div v-else class="no-company-data">
+          <p>No collected data found for the selected company.</p>
+          <p v-if="selectedCompanyUrl">
+            You can open the company page to collect its data:
+            <br />
+            <a :href="selectedCompanyUrl" target="_blank" class="company-link">
+              Open LinkedIn Company Page
+            </a>
+          </p>
         </div>
       </div>
 
-      <div class="modal-footer">
-        <div v-if="isCopied" class="copied-feedback">Copied!</div>
-        <button v-if="currentStep > 1" @click="prevStep">Back</button>
-        <button v-if="currentStep < totalSteps" @click="nextStep" class="primary">Next</button>
-        <button v-else @click="copyToClipboard" class="primary">
-          {{ isCopied ? 'Copied!' : 'Copy Info' }}
-        </button>
+      <!-- Step 4: Title Settings -->
+      <div v-if="currentStep === 4">
+        <div class="step-header-with-action">
+          <h4>Title Settings</h4>
+          <button class="btn-small" @click="copyTitle">Copy Title</button>
+        </div>
+        <div class="title-generator">
+          <div class="title-generator-fields">
+            <div class="select-group">
+              <label>Target</label>
+              <select v-model="selectedTarget">
+                <option v-for="t in targets" :key="t.value" :value="t.value">
+                  {{ t.emoji }} {{ t.label }}
+                </option>
+              </select>
+            </div>
+            <div class="select-group">
+              <label>State</label>
+              <select v-model="selectedState">
+                <option v-for="s in states" :key="s.value" :value="s.value">
+                  {{ s.emoji }} {{ s.label }}
+                </option>
+              </select>
+            </div>
+          </div>
+          <div class="generated-title-preview mt-4">
+            <strong>Title Preview:</strong>
+            <AppPreviewBox
+              mini
+              wrap-text
+              class="mt-1"
+            >
+              {{ generateTitle() }}
+              <template #append>
+                <button class="btn-icon" title="Copy Title" @click="copyTitle">
+                  <IconCopy :size="16" />
+                </button>
+              </template>
+            </AppPreviewBox>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 5: Preview -->
+      <div v-if="currentStep === 5">
+        <div class="step-header-with-action">
+          <h4>Preview</h4>
+          <AppCheckbox v-model="wrapText" label="Wrap text" />
+        </div>
+        <AppPreviewBox :wrap-text="wrapText">{{ generateCopyText() }}</AppPreviewBox>
       </div>
     </div>
-  </div>
+
+    <template #footer>
+      <div v-if="isCopied" class="copied-feedback">Copied!</div>
+      <button v-if="currentStep > 1" @click="prevStep">Back</button>
+      <button v-if="currentStep < totalSteps" @click="nextStep" class="primary">Next</button>
+      <button v-else @click="copyToClipboard" class="primary">
+        {{ isCopied ? 'Copied!' : 'Copy Info' }}
+      </button>
+    </template>
+  </AppModal>
 </template>
 
 <style scoped>
@@ -280,61 +275,6 @@ const selectedCompanyUrl = computed(() => {
   display: flex;
   align-items: center;
   gap: 16px;
-}
-
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0,0,0,0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-}
-
-.modal-content {
-  background: white;
-  width: 90%;
-  max-width: 400px;
-  max-height: 90vh;
-  height: 100%;
-  border-radius: 8px;
-  display: flex;
-  flex-direction: column;
-  padding: 16px;
-  color: #333;
-}
-
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
-}
-
-.close-btn {
-  background: none;
-  border: none;
-  padding: 4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #64748b;
-  border-radius: 4px;
-  transition: all 0.2s;
-}
-
-.close-btn:hover {
-  background: #f1f5f9;
-  color: #1e293b;
-}
-
-.modal-header h3 {
-  margin: 0;
-  font-size: 1.2rem;
 }
 
 .step-content {
@@ -527,15 +467,6 @@ const selectedCompanyUrl = computed(() => {
 .company-link:hover {
   background-color: #004182;
   color: white;
-}
-
-.modal-footer {
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  gap: 10px;
-  border-top: 1px solid #eee;
-  padding-top: 16px;
 }
 
 .copied-feedback {
