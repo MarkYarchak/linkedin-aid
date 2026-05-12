@@ -9,6 +9,14 @@ export function isSalesNavigatorCompanyUrl(url: string): boolean {
   return /\/sales\/company\/[^/?#]+/.test(url);
 }
 
+export function isSalesNavigatorPeopleSearchUrl(url: string): boolean {
+  return /\/sales\/search\/people/.test(url);
+}
+
+export function isSalesNavigatorCompanySearchUrl(url: string): boolean {
+  return /\/sales\/search\/company/.test(url);
+}
+
 export function getSalesNavigatorCompanyUrl(urn: string): string | null {
   try {
     const { id } = parseLinkedInUrn(urn);

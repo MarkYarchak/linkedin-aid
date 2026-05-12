@@ -1,5 +1,9 @@
 import { browser } from 'wxt/browser';
-import { isSalesNavigatorCompanyUrl, isSalesNavigatorLeadUrl } from '@/helpers/url-helpers';
+import {
+  isSalesNavigatorCompanyUrl,
+  isSalesNavigatorLeadUrl,
+  isSalesNavigatorPeopleSearchUrl,
+} from '@/helpers/url-helpers';
 import { leadService } from '@/services/lead-service';
 import { companyService } from '@/services/company-service';
 
@@ -28,6 +32,15 @@ export default defineBackground(() => {
         world: 'MAIN',
         injectImmediately: true,
         files: ['/handle-company-profile.js'],
+      });
+    }
+
+    if (isSalesNavigatorPeopleSearchUrl(tab.url)) {
+      browser.scripting.executeScript({
+        target: { tabId },
+        world: 'MAIN',
+        injectImmediately: true,
+        files: ['/handle-lead-search.js'],
       });
     }
   });
