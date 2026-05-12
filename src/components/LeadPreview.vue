@@ -1,9 +1,9 @@
 <script lang="ts" setup>
 import { ref } from 'vue';
 import { sanitizeText } from '@/helpers/text-helper';
-import CopyLeadModal from '@/components/CopyLeadModal.vue';
-import AppCopyButton from '@/components/ui/AppCopyButton.vue';
 import { getRelativeTime } from '@/helpers/date-helper';
+import AppCopyButton from '@/components/ui/AppCopyButton.vue';
+import CopyLeadModal from '@/components/modals/CopyLeadModal.vue';
 import type { Lead } from '@/types/lead/lead';
 
 interface Props {
