@@ -5,7 +5,12 @@ import LeadPreview from '@/components/LeadPreview.vue';
 import CompanyPreview from '@/components/CompanyPreview.vue';
 import { useLeads } from '@/composables/useLeads';
 import { useCompanies } from '@/composables/useCompanies';
-import { isSalesNavigatorLeadUrl, isSalesNavigatorCompanyUrl } from '@/helpers/url-helpers';
+import {
+  isSalesNavigatorLeadUrl,
+  isSalesNavigatorCompanyUrl,
+  isSalesNavigatorPeopleSearchUrl,
+  isSalesNavigatorCompanySearchUrl,
+} from '@/helpers/url-helpers';
 
 interface Props {
   tabUrl: string;
@@ -19,7 +24,16 @@ const activeTab = ref<'preview' | 'scrape'>('preview');
 
 const isLeadPage = computed(() => isSalesNavigatorLeadUrl(props.tabUrl));
 const isCompanyPage = computed(() => isSalesNavigatorCompanyUrl(props.tabUrl));
-const isShowTabs = computed(() => isLeadPage.value || isCompanyPage.value);
+const isPeopleSearchPage = computed(() => isSalesNavigatorPeopleSearchUrl(props.tabUrl));
+const isCompanySearchPage = computed(() => isSalesNavigatorCompanySearchUrl(props.tabUrl));
+
+const isShowTabs = computed(() => isLeadPage.value || isCompanyPage.value || isPeopleSearchPage.value || isCompanySearchPage.value);
+
+const tabLabel = computed(() => {
+  if (isLeadPage.value || isPeopleSearchPage.value) return 'Leads';
+  if (isCompanyPage.value || isCompanySearchPage.value) return 'Companies';
+  return 'Captured';
+});
 </script>
 
 <template>
@@ -29,7 +43,7 @@ const isShowTabs = computed(() => isLeadPage.value || isCompanyPage.value);
         :class="{ active: activeTab === 'preview' }"
         @click="activeTab = 'preview'"
       >
-        View {{ isLeadPage ? 'Lead' : 'Company' }}
+        View {{ tabLabel }}
       </button>
       <button
         :class="{ active: activeTab === 'scrape' }"
@@ -40,21 +54,21 @@ const isShowTabs = computed(() => isLeadPage.value || isCompanyPage.value);
     </div>
 
     <div v-if="!isShowTabs || activeTab === 'preview'" class="tab-content">
-      <template v-if="isLeadPage">
+      <template v-if="isLeadPage || isPeopleSearchPage">
         <div v-if="sortedLeads.length" class="leads-list">
           <LeadPreview v-for="lead in sortedLeads" :key="lead.entityUrn" :lead="lead" />
         </div>
         <div v-else class="no-leads">
-          No leads captured yet. Navigate to a Sales Navigator lead profile to capture data.
+          No leads captured yet. {{ isPeopleSearchPage ? 'Capture leads from search results.' : 'Navigate to a Sales Navigator lead profile to capture data.' }}
         </div>
       </template>
 
-      <template v-else-if="isCompanyPage">
+      <template v-else-if="isCompanyPage || isCompanySearchPage">
         <div v-if="sortedCompanies.length" class="leads-list">
           <CompanyPreview v-for="company in sortedCompanies" :key="company.entityUrn" :company="company" />
         </div>
         <div v-else class="no-leads">
-          No company captured yet. Navigate to a Sales Navigator company profile to capture data.
+          No company captured yet. {{ isCompanySearchPage ? 'Capture companies from search results.' : 'Navigate to a Sales Navigator company profile to capture data.' }}
         </div>
       </template>
 

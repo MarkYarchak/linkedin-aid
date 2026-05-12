@@ -2,7 +2,12 @@
 import { computed } from 'vue';
 import { browser } from 'wxt/browser';
 import { MessageType } from '@/constants/message-types';
-import { isSalesNavigatorLeadUrl as isLeadUrl, isSalesNavigatorCompanyUrl as isCompanyUrl } from '@/helpers/url-helpers';
+import {
+  isSalesNavigatorLeadUrl as isLeadUrl,
+  isSalesNavigatorCompanyUrl as isCompanyUrl,
+  isSalesNavigatorPeopleSearchUrl as isPeopleSearchUrl,
+  isSalesNavigatorCompanySearchUrl as isCompanySearchUrl,
+} from '@/helpers/url-helpers';
 
 interface Props {
   tabUrl: string;
@@ -11,6 +16,8 @@ const props = defineProps<Props>();
 
 const isSalesNavigatorLeadUrl = computed(() => isLeadUrl(props.tabUrl));
 const isSalesNavigatorCompanyUrl = computed(() => isCompanyUrl(props.tabUrl));
+const isSalesNavigatorPeopleSearchUrl = computed(() => isPeopleSearchUrl(props.tabUrl));
+const isSalesNavigatorCompanySearchUrl = computed(() => isCompanySearchUrl(props.tabUrl));
 
 async function sendToActiveTab(type: MessageType, data?: any) {
   const [tab] = await browser.tabs.query({ active: true, currentWindow: true });
@@ -31,15 +38,15 @@ function onCompanyScrape() {
 
 <template>
   <div class="scraper-actions">
-    <div v-if="isSalesNavigatorLeadUrl">
+    <div v-if="isSalesNavigatorLeadUrl || isSalesNavigatorPeopleSearchUrl">
       <button type="button" @click="onLeadScrape">
-        Scrape lead
+        Scrape {{ isSalesNavigatorPeopleSearchUrl ? 'search results' : 'lead' }}
       </button>
     </div>
 
-    <div v-if="isSalesNavigatorCompanyUrl">
+    <div v-if="isSalesNavigatorCompanyUrl || isSalesNavigatorCompanySearchUrl">
       <button type="button" @click="onCompanyScrape">
-        Scrape company
+        Scrape {{ isSalesNavigatorCompanySearchUrl ? 'search results' : 'company' }}
       </button>
     </div>
   </div>
