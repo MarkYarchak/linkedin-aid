@@ -51,10 +51,6 @@ export class CompanyService {
         this.updateCompanyInStorage(urn, { extra: msg.data, profileUrl: tabUrl });
       }
     }
-
-    if (msg.type === MessageType.SCRAPE_COMPANY_RESULT) {
-      console.log(MessageType.SCRAPE_COMPANY_RESULT, msg.data);
-    }
   }
 }
 

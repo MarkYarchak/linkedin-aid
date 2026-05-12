@@ -76,10 +76,6 @@ export class LeadService {
         this.updateLeadInsightsInStorage(urn, data);
       }
     }
-
-    if (msg.type === MessageType.SCRAPE_LEAD_RESULT) {
-      console.log(MessageType.SCRAPE_LEAD_RESULT, msg.data);
-    }
   }
 }
 

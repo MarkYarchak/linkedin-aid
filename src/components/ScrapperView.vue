@@ -1,6 +1,5 @@
 <script lang="ts" setup>
 import { ref, computed } from 'vue';
-import ScrapeActions from '@/components/ScrapeActions.vue';
 import LeadPreview from '@/components/LeadPreview.vue';
 import CompanyPreview from '@/components/CompanyPreview.vue';
 import { useLeads } from '@/composables/useLeads';
@@ -80,7 +79,7 @@ const tabLabel = computed(() => {
     </div>
 
     <div v-if="isShowTabs && activeTab === 'scrape'" class="tab-content">
-      <ScrapeActions :tab-url="tabUrl" />
+      <span>Scrape is no more available</span>
     </div>
   </div>
 </template>
