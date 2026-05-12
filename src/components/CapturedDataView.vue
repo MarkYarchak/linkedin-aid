@@ -26,14 +26,14 @@ const isCompanySearchPage = computed(() => isSalesNavigatorCompanySearchUrl(prop
 </script>
 
 <template>
-  <div class="scrapper-view">
+  <div class="captured-data-view">
     <div class="tab-content">
       <template v-if="isLeadPage || isPeopleSearchPage">
         <div v-if="sortedLeads.length" class="leads-list">
           <LeadPreview v-for="lead in sortedLeads" :key="lead.entityUrn" :lead="lead" />
         </div>
         <div v-else class="no-leads">
-          No leads captured yet. {{ isPeopleSearchPage ? 'Capture leads from search results.' : 'Navigate to a Sales Navigator lead profile to capture data.' }}
+          No leads collected yet. {{ isPeopleSearchPage ? 'Collect leads from search results.' : 'Navigate to a Sales Navigator lead profile to collect data.' }}
         </div>
       </template>
 
@@ -42,13 +42,13 @@ const isCompanySearchPage = computed(() => isSalesNavigatorCompanySearchUrl(prop
           <CompanyPreview v-for="company in sortedCompanies" :key="company.entityUrn" :company="company" />
         </div>
         <div v-else class="no-leads">
-          No company captured yet. {{ isCompanySearchPage ? 'Capture companies from search results.' : 'Navigate to a Sales Navigator company profile to capture data.' }}
+          No company collected yet. {{ isCompanySearchPage ? 'Collect companies from search results.' : 'Navigate to a Sales Navigator company profile to collect data.' }}
         </div>
       </template>
 
       <template v-else>
         <div class="no-leads">
-          Navigate to a Sales Navigator profile to capture data.
+          Navigate to a Sales Navigator profile to collect data.
         </div>
       </template>
     </div>
@@ -56,7 +56,7 @@ const isCompanySearchPage = computed(() => isSalesNavigatorCompanySearchUrl(prop
 </template>
 
 <style scoped>
-.scrapper-view {
+.captured-data-view {
   display: flex;
   flex-direction: column;
 }

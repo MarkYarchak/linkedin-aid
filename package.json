@@ -1,6 +1,6 @@
 {
-  "name": "linkedin-dxh",
-  "description": "LinkedIn SN data scrapper & helper",
+  "name": "linkedin-aid",
+  "description": "LinkedIn SN data interceptor & assistant",
   "private": true,
   "version": "1.0.0",
   "type": "module",

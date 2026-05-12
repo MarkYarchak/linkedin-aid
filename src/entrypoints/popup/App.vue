@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import ScrapperView from '@/components/ScrapperView.vue';
+import CapturedDataView from '@/components/CapturedDataView.vue';
 import { onMounted, ref } from 'vue';
 import { browser } from 'wxt/browser';
 
@@ -25,7 +25,7 @@ onMounted(async () => {
     Loading...
   </div>
   <div v-else-if="isLinkedIn">
-    <ScrapperView :tab-url="tabUrl" />
+    <CapturedDataView :tab-url="tabUrl" />
   </div>
   <div v-else class="not-linkedin">
     <p>This extension only works on LinkedIn.</p>

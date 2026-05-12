@@ -199,9 +199,9 @@ const selectedCompanyUrl = computed(() => {
             </div>
           </div>
           <div v-else class="no-company-data">
-            <p>No captured data found for the selected company.</p>
+            <p>No collected data found for the selected company.</p>
             <p v-if="selectedCompanyUrl">
-              You can open the company page to capture its data:
+              You can open the company page to collect its data:
               <br />
               <a :href="selectedCompanyUrl" target="_blank" class="company-link">
                 Open LinkedIn Company Page

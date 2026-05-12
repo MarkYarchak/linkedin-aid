@@ -4,8 +4,8 @@ import { defineConfig } from 'wxt';
 export default defineConfig({
   srcDir: 'src',
   manifest: {
-    name: 'LinkedIn DSH',
-    description: 'LinkedIn SN data interceptor & helper',
+    name: 'LinkedIn AID',
+    description: 'LinkedIn SN data interceptor & assistant',
     permissions: ['scripting', 'storage', 'tabs'],
     host_permissions: ['*://*.linkedin.com/*'],
   },
