@@ -16,8 +16,8 @@ interface Props {
 }
 const props = defineProps<Props>();
 
-const { sortedLeads } = useLeads(props.tabUrl);
-const { sortedCompanies } = useCompanies(props.tabUrl);
+const { currentUrlLead } = useLeads(props.tabUrl);
+const { currentUrlCompany } = useCompanies(props.tabUrl);
 
 const isLeadPage = computed(() => isSalesNavigatorLeadUrl(props.tabUrl));
 const isCompanyPage = computed(() => isSalesNavigatorCompanyUrl(props.tabUrl));
@@ -28,9 +28,9 @@ const isCompanySearchPage = computed(() => isSalesNavigatorCompanySearchUrl(prop
 <template>
   <div class="captured-data-view">
     <div class="tab-content">
-      <template v-if="isLeadPage || isPeopleSearchPage">
-        <div v-if="sortedLeads.length" class="leads-list">
-          <LeadPreview v-for="lead in sortedLeads" :key="lead.entityUrn" :lead="lead" />
+      <template v-if="isLeadPage">
+        <div v-if="currentUrlLead" class="leads-list">
+          <LeadPreview :lead="currentUrlLead" />
         </div>
         <div v-else class="no-leads">
           No leads collected yet. {{ isPeopleSearchPage ? 'Collect leads from search results.' : 'Navigate to a Sales Navigator lead profile to collect data.' }}
@@ -38,8 +38,8 @@ const isCompanySearchPage = computed(() => isSalesNavigatorCompanySearchUrl(prop
       </template>
 
       <template v-else-if="isCompanyPage || isCompanySearchPage">
-        <div v-if="sortedCompanies.length" class="leads-list">
-          <CompanyPreview v-for="company in sortedCompanies" :key="company.entityUrn" :company="company" />
+        <div v-if="currentUrlCompany" class="leads-list">
+          <CompanyPreview :company="currentUrlCompany" />
         </div>
         <div v-else class="no-leads">
           No company collected yet. {{ isCompanySearchPage ? 'Collect companies from search results.' : 'Navigate to a Sales Navigator company profile to collect data.' }}

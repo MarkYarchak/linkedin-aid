@@ -3,29 +3,28 @@ import { browser } from 'wxt/browser';
 import type { Lead } from '@/types/lead/lead';
 
 export function useLeads(tabUrl?: string) {
-  const leads = ref<Record<string, Lead>>({});
+  const leadsMap = ref<Record<string, Lead>>({});
 
-  const sortedLeads = computed(() => {
-    let result = Object.values(leads.value);
+  const leads = computed(() => {
+    return Object.values(leadsMap.value).sort((a, b) => b.updatedAt - a.updatedAt);
+  });
 
-    if (tabUrl) {
-      result = result.filter(lead => lead.profileUrl === tabUrl);
-    }
-
-    return result.sort((a, b) => b.updatedAt - a.updatedAt);
+  const currentUrlLead = computed(() => {
+    if (!tabUrl) return null;
+    return leads.value.find(lead => lead.profileUrl === tabUrl) || null;
   });
 
   const loadLeads = async () => {
     const storage = await browser.storage.local.get(['capturedLeads']);
     if (storage.capturedLeads) {
-      leads.value = storage.capturedLeads as Record<string, Lead>;
+      leadsMap.value = storage.capturedLeads as Record<string, Lead>;
     }
   };
 
 
   const changesListener = (changes: any, areaName: string) => {
     if (areaName === 'local' && changes.capturedLeads) {
-      leads.value = changes.capturedLeads.newValue as Record<string, Lead>;
+      leadsMap.value = changes.capturedLeads.newValue as Record<string, Lead>;
     }
   };
 
@@ -41,7 +40,7 @@ export function useLeads(tabUrl?: string) {
 
   return {
     leads,
-    sortedLeads,
+    currentUrlLead,
     loadLeads,
   };
 }
