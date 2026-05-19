@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import { computed } from 'vue';
 import { sanitizeText } from '@/helpers/text-helper';
+import AppAvatar from '@/components/ui/AppAvatar.vue';
 import type { Company } from '@/types/company/company';
 
 interface Props {
@@ -31,10 +32,12 @@ const revenueRangeString = computed(() => {
 <template>
   <div class="company-info">
     <div class="header">
-      <img v-if="logoUrl"
-           :src="logoUrl"
-           :alt="company.main?.name"
-           class="logo" />
+      <AppAvatar
+        :src="logoUrl"
+        :alt="company.main?.name"
+        shape="square"
+        size="md"
+      />
       <h3>{{ company.main?.name }}</h3>
     </div>
 
@@ -78,14 +81,6 @@ const revenueRangeString = computed(() => {
 
 .header button {
   margin-left: auto;
-}
-
-.logo {
-  width: 48px;
-  height: 48px;
-  border-radius: 4px;
-  object-fit: cover;
-  border: 1px solid #eee;
 }
 
 .company-info h3 {

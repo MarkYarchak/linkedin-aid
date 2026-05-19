@@ -3,6 +3,7 @@ import { ref } from 'vue';
 import { sanitizeText } from '@/helpers/text-helper';
 import { getRelativeTime } from '@/helpers/date-helper';
 import AppCopyButton from '@/components/ui/AppCopyButton.vue';
+import AppAvatar from '@/components/ui/AppAvatar.vue';
 import CopyLeadModal from '@/components/modals/CopyLeadModal.vue';
 import type { Lead } from '@/types/lead/lead';
 
@@ -64,10 +65,11 @@ function copyLeadInfo() {
 <template>
   <div class="lead-info">
     <div class="header">
-      <img v-if="getAvatarUrl(lead)"
-           :src="getAvatarUrl(lead)!"
-           :alt="`${lead.main?.firstName || lead.searchResult?.firstName} ${lead.main?.lastName || lead.searchResult?.lastName}`"
-           class="avatar" />
+      <AppAvatar
+        :src="getAvatarUrl(lead)"
+        :alt="`${lead.main?.firstName || lead.searchResult?.firstName} ${lead.main?.lastName || lead.searchResult?.lastName}`"
+        size="md"
+      />
       <h3>{{ lead.main?.firstName || lead.searchResult?.firstName }} {{ lead.main?.lastName || lead.searchResult?.lastName }}</h3>
       <AppCopyButton primary @click="copyLeadInfo" />
     </div>
@@ -152,14 +154,6 @@ function copyLeadInfo() {
 
 .header button {
   margin-left: auto;
-}
-
-.avatar {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 1px solid #eee;
 }
 
 .lead-info h3 {

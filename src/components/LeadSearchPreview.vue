@@ -1,6 +1,7 @@
 <script lang="ts" setup>
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import AppCopyButton from '@/components/ui/AppCopyButton.vue';
+import AppAvatar from '@/components/ui/AppAvatar.vue';
 import CopyLeadModal from '@/components/modals/CopyLeadModal.vue';
 import type { Lead } from '@/types/lead/lead';
 
@@ -32,10 +33,11 @@ function copyLeadInfo() {
 <template>
   <div class="lead-search-preview">
     <div class="content">
-      <img v-if="avatarUrl"
-           :src="avatarUrl"
-           :alt="`${lead.main?.firstName || lead.searchResult?.firstName} ${lead.main?.lastName || lead.searchResult?.lastName}`"
-           class="avatar" />
+      <AppAvatar
+        :src="avatarUrl"
+        :alt="`${lead.main?.firstName || lead.searchResult?.firstName} ${lead.main?.lastName || lead.searchResult?.lastName}`"
+        size="sm"
+      />
       <div class="info">
         <div class="name-row">
           <h3>{{ lead.main?.firstName || lead.searchResult?.firstName }} {{ lead.main?.lastName || lead.searchResult?.lastName }}</h3>
@@ -75,15 +77,6 @@ function copyLeadInfo() {
   display: flex;
   gap: 12px;
   align-items: flex-start;
-}
-
-.avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 1px solid #eee;
-  flex-shrink: 0;
 }
 
 .info {
