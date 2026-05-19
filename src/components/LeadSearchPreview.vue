@@ -96,6 +96,7 @@ function copyLeadInfo() {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 2px;
+  gap: 4px;
 }
 
 .name-row h3 {

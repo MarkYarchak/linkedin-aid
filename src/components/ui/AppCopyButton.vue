@@ -29,6 +29,7 @@ const emit = defineEmits(['click']);
 .app-copy-button {
   display: inline-flex;
   align-items: center;
+  text-wrap: nowrap;
   gap: 6px;
   padding: 6px 12px;
   border-radius: 6px;
