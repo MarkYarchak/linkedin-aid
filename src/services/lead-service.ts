@@ -3,6 +3,8 @@ import { MessageType } from '@/constants/message-types';
 import { BASE_URL } from '@/constants/urls';
 import type { Lead } from '@/types/lead/lead';
 import type { SalesApiInsightsV2 } from '@/types/lead/salesApiInsightsV2';
+import type { SalesApiLeadSearchResponse } from '@/types/search/salesApiLeadSearch';
+import type { SearchSession } from '@/types/search/search';
 
 export class LeadService {
   private lastTabUrls: Record<number, string> = {};
@@ -16,6 +18,7 @@ export class LeadService {
     const leads: Record<string, Lead> = (storage.capturedLeads || {}) as Record<string, Lead>;
 
     const existingLead = leads[urn] || { entityUrn: urn, updatedAt: Date.now() };
+
     leads[urn] = {
       ...existingLead,
       ...update,
@@ -74,6 +77,56 @@ export class LeadService {
       if (urn) {
         const data = msg.data as SalesApiInsightsV2;
         this.updateLeadInsightsInStorage(urn, data);
+      }
+    }
+
+    if (msg.type === MessageType.LEAD_SEARCH_CAPTURED) {
+      const data = msg.data as SalesApiLeadSearchResponse;
+      const recentSearchId = data.metadata?.recentSearchId;
+
+      if (recentSearchId) {
+        const storage = await browser.storage.local.get('searchSessions');
+        const sessions: Record<number, SearchSession> = (storage.searchSessions || {}) as Record<number, SearchSession>;
+
+        const session = sessions[recentSearchId] || {
+          recentSearchId,
+          total: data.paging.total,
+          pageSize: data.paging.count,
+          leadUrnsByPage: {},
+          updatedAt: Date.now(),
+          searchTitle: data.metadata.searchTitle,
+        };
+
+        const page = Math.floor(data.paging.start / data.paging.count);
+        const leadUrns = data.elements.map(e => e.entityUrn).filter((urn): urn is string => !!urn);
+
+        session.leadUrnsByPage[page] = leadUrns;
+        session.updatedAt = Date.now();
+        session.total = data.paging.total;
+        session.pageSize = data.paging.count;
+        session.searchTitle = data.metadata.searchTitle;
+
+        sessions[recentSearchId] = session;
+        await browser.storage.local.set({ searchSessions: sessions });
+
+        if (data.elements) {
+          for (const element of data.elements) {
+            const urn = element.entityUrn;
+            if (urn) {
+              await this.updateLeadInStorage(urn, {
+                searchResult: element,
+                profileUrl: tabUrl,
+              });
+            }
+          }
+        }
+      } else if (data.elements) {
+        for (const element of data.elements) {
+          const urn = element.entityUrn;
+          if (urn) {
+            await this.updateLeadInStorage(urn, { searchResult: element, profileUrl: tabUrl });
+          }
+        }
       }
     }
   }
