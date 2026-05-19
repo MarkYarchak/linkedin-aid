@@ -1,0 +1,131 @@
+<script lang="ts" setup>
+import { computed, ref } from 'vue';
+import LeadSearchPreview from '@/components/LeadSearchPreview.vue';
+import { useSearchSessions } from '@/composables/useSearchSessions';
+import type { Lead } from '@/types/lead/lead';
+
+interface Props {
+  leads: Lead[];
+}
+const props = defineProps<Props>();
+
+const {
+  sessions,
+  currentSessionId,
+  currentSession,
+} = useSearchSessions();
+
+const displayedLeads = computed(() => {
+  if (currentSession.value) {
+    const urns = currentSession.value.leadUrnsByPage[currentPage.value] || [];
+    return urns.map(urn => props.leads.find(l => l.entityUrn === urn)).filter(Boolean) as Lead[];
+  }
+
+  return props.leads;
+});
+
+// Set default session to the most recent one when on search page
+watchEffect(() => {
+  if (sessions.value.length > 0 && currentSessionId.value === null) {
+    currentSessionId.value = sessions.value[0].recentSearchId;
+  }
+});
+
+const currentPage = ref(0);
+const totalPages = computed(() => {
+  if (!currentSession.value) return 0;
+  return Math.ceil(currentSession.value.total / currentSession.value.pageSize);
+});
+
+const changePage = (page: number) => {
+  currentPage.value = page;
+};
+</script>
+
+<template>
+  <div class="lead-search-page">
+    <div v-if="sessions.length > 1" class="session-selector">
+      <select v-model="currentSessionId">
+        <option v-for="session in sessions" :key="session.recentSearchId" :value="session.recentSearchId">
+          {{ session.searchTitle || 'Search' }} ({{ new Date(session.updatedAt).toLocaleDateString() }})
+        </option>
+      </select>
+    </div>
+
+    <div v-if="displayedLeads.length" class="leads-list">
+      <LeadSearchPreview
+        v-for="lead in displayedLeads"
+        :key="lead.entityUrn"
+        :lead="lead"
+      />
+    </div>
+    <div v-else class="no-leads">
+      No leads collected for this page yet.
+    </div>
+
+    <div v-if="totalPages > 1" class="pagination">
+      <button
+        v-for="page in totalPages"
+        :key="page"
+        :class="{ active: currentPage === page - 1 }"
+        @click="changePage(page - 1)"
+      >
+        {{ page }}
+      </button>
+    </div>
+  </div>
+</template>
+
+<style scoped>
+.lead-search-page {
+  display: flex;
+  flex-direction: column;
+}
+
+.leads-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.session-selector {
+  margin-bottom: 15px;
+}
+
+.session-selector select {
+  width: 100%;
+  padding: 8px;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+}
+
+.pagination {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 15px;
+  justify-content: center;
+}
+
+.pagination button {
+  padding: 4px 8px;
+  border: 1px solid #ddd;
+  background: white;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.8em;
+}
+
+.pagination button.active {
+  background: #0a66c2;
+  color: white;
+  border-color: #0a66c2;
+}
+
+.no-leads {
+  padding: 20px;
+  text-align: center;
+  color: #666;
+  font-size: 0.9em;
+}
+</style>

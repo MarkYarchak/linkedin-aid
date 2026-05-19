@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import { computed } from 'vue';
 import LeadPreview from '@/components/LeadPreview.vue';
+import LeadSearchPage from '@/components/LeadSearchPage.vue';
 import CompanyPreview from '@/components/CompanyPreview.vue';
 import { useLeads } from '@/composables/useLeads';
 import { useCompanies } from '@/composables/useCompanies';
@@ -16,7 +17,7 @@ interface Props {
 }
 const props = defineProps<Props>();
 
-const { currentUrlLead } = useLeads(props.tabUrl);
+const { leads, currentUrlLead } = useLeads(props.tabUrl);
 const { currentUrlCompany } = useCompanies(props.tabUrl);
 
 const isLeadPage = computed(() => isSalesNavigatorLeadUrl(props.tabUrl));
@@ -33,8 +34,12 @@ const isCompanySearchPage = computed(() => isSalesNavigatorCompanySearchUrl(prop
           <LeadPreview :lead="currentUrlLead" />
         </div>
         <div v-else class="no-leads">
-          No leads collected yet. {{ isPeopleSearchPage ? 'Collect leads from search results.' : 'Navigate to a Sales Navigator lead profile to collect data.' }}
+          No leads collected yet. Navigate to a Sales Navigator lead profile to collect data.
         </div>
+      </template>
+
+      <template v-else-if="isPeopleSearchPage">
+        <LeadSearchPage :leads="leads" />
       </template>
 
       <template v-else-if="isCompanyPage || isCompanySearchPage">
@@ -70,7 +75,7 @@ const isCompanySearchPage = computed(() => isSalesNavigatorCompanySearchUrl(prop
 .leads-list {
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 10px;
 }
 
 .no-leads {

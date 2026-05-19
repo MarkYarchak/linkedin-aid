@@ -18,6 +18,10 @@ const getAvatarUrl = (lead: Lead) => {
     const img = lead.extra.profilePictureDisplayImage;
     return img.rootUrl + img.artifacts[0].fileIdentifyingUrlPathSegment;
   }
+  if (lead.searchResult?.profilePictureDisplayImage) {
+    const img = lead.searchResult.profilePictureDisplayImage;
+    return img.rootUrl + img.artifacts[0].fileIdentifyingUrlPathSegment;
+  }
   return null;
 };
 
@@ -62,25 +66,25 @@ function copyLeadInfo() {
     <div class="header">
       <img v-if="getAvatarUrl(lead)"
            :src="getAvatarUrl(lead)!"
-           :alt="`${lead.main?.firstName} ${lead.main?.lastName}`"
+           :alt="`${lead.main?.firstName || lead.searchResult?.firstName} ${lead.main?.lastName || lead.searchResult?.lastName}`"
            class="avatar" />
-      <h3>{{ lead.main?.firstName }} {{ lead.main?.lastName }}</h3>
+      <h3>{{ lead.main?.firstName || lead.searchResult?.firstName }} {{ lead.main?.lastName || lead.searchResult?.lastName }}</h3>
       <AppCopyButton primary @click="copyLeadInfo" />
     </div>
 
     <div class="info-row">
-      <strong>Headline:</strong> {{ lead.main?.headline }}
+      <strong>Headline:</strong> {{ lead.main?.headline || lead.searchResult?.headline }}
     </div>
     <div class="info-row">
-      <strong>Company:</strong> {{ lead.main?.defaultPosition?.companyName || 'N/A' }}
+      <strong>Company:</strong> {{ lead.main?.defaultPosition?.companyName || lead.searchResult?.currentPositions?.[0]?.companyName || 'N/A' }}
     </div>
     <div class="info-row">
-      <strong>Location:</strong> {{ lead.main?.location }}
+      <strong>Location:</strong> {{ lead.main?.location || lead.searchResult?.geoRegion }}
     </div>
 
-    <div v-if="lead.main?.summary" class="summary">
+    <div v-if="lead.main?.summary || lead.searchResult?.summary" class="summary">
       <h4>Summary</h4>
-      <p class="summary-text">{{ sanitizeText(lead.main.summary) }}</p>
+      <p class="summary-text">{{ sanitizeText(lead.main?.summary || lead.searchResult?.summary || '') }}</p>
     </div>
 
     <div v-if="lead.main?.defaultPosition?.description" class="summary">
