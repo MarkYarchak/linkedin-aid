@@ -37,6 +37,17 @@ const totalPages = computed(() => {
   return Math.ceil(currentSession.value.total / currentSession.value.pageSize);
 });
 
+const loadedPagesCount = computed(() => {
+  if (!currentSession.value) return 0;
+  return Object.keys(currentSession.value.leadUrnsByPage).length;
+});
+
+const loadedLeadsCount = computed(() => {
+  if (!currentSession.value) return 0;
+  const allUrns = Object.values(currentSession.value.leadUrnsByPage).flat();
+  return new Set(allUrns).size;
+});
+
 const changePage = (page: number) => {
   currentPage.value = page;
 };
@@ -61,6 +72,10 @@ const changePage = (page: number) => {
     </div>
     <div v-else class="no-leads">
       No leads collected for this page yet.
+    </div>
+
+    <div v-if="totalPages > 0 && currentSession" class="pages-info">
+      Loaded {{ loadedPagesCount }}/{{ totalPages }} pages ({{ loadedLeadsCount }}/{{ currentSession.total }} leads)
     </div>
 
     <div v-if="totalPages > 1" class="pagination">
@@ -97,6 +112,13 @@ const changePage = (page: number) => {
   padding: 8px;
   border-radius: 4px;
   border: 1px solid #ddd;
+}
+
+.pages-info {
+  margin-top: 15px;
+  text-align: center;
+  font-size: 0.85em;
+  color: #666;
 }
 
 .pagination {
