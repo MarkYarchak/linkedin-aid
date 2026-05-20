@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import { sanitizeText } from '@/helpers/text-helper';
 import { getRelativeTime } from '@/helpers/date-helper';
 import AppCopyButton from '@/components/ui/AppCopyButton.vue';
@@ -10,11 +10,13 @@ import type { Lead } from '@/types/lead/lead';
 interface Props {
   lead: Lead;
 }
-defineProps<Props>();
+const props = defineProps<Props>();
 
 const showCopyModal = ref(false);
 
-const getAvatarUrl = (lead: Lead) => {
+const avatarUrl = computed(() => {
+  const lead = props.lead;
+
   if (lead.extra?.profilePictureDisplayImage) {
     const img = lead.extra.profilePictureDisplayImage;
     return img.rootUrl + img.artifacts[0].fileIdentifyingUrlPathSegment;
@@ -24,7 +26,7 @@ const getAvatarUrl = (lead: Lead) => {
     return img.rootUrl + img.artifacts[0].fileIdentifyingUrlPathSegment;
   }
   return null;
-};
+});
 
 const getInsightContent = (insight: any) => {
   const activity = insight.activityUnion;
@@ -66,7 +68,7 @@ function copyLeadInfo() {
   <div class="lead-info">
     <div class="header">
       <AppAvatar
-        :src="getAvatarUrl(lead)"
+        :src="avatarUrl"
         :alt="`${lead.main?.firstName || lead.searchResult?.firstName} ${lead.main?.lastName || lead.searchResult?.lastName}`"
         size="md"
       />

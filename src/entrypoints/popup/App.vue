@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import CapturedDataView from '@/components/CapturedDataView.vue';
+import CapturedDataView from '@/components/views/CapturedDataView.vue';
 import { onMounted, ref } from 'vue';
 import { browser } from 'wxt/browser';
 
@@ -28,24 +28,14 @@ onMounted(async () => {
     v-else-if="isLinkedIn"
     :tab-url="tabUrl"
   />
-  <div v-else class="not-linkedin">
-    <p>This extension only works on LinkedIn.</p>
+  <div v-else class="no-data">
+    This extension only works on LinkedIn.
   </div>
 </template>
 
 <style scoped>
-.not-linkedin {
-  padding: 20px;
-  text-align: center;
-  min-width: 200px;
-}
-
 .loading {
   padding: 20px;
   text-align: center;
-}
-
-.not-linkedin p {
-  margin-bottom: 10px;
 }
 </style>

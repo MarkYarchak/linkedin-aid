@@ -1,15 +1,16 @@
 <script lang="ts" setup>
 import { computed, ref } from 'vue';
-import LeadSearchPreview from '@/components/LeadSearchPreview.vue';
+import { useLeads } from '@/composables/useLeads';
 import { useSearchSessions } from '@/composables/useSearchSessions';
+import LeadSearchPreview from '@/components/lead-search/LeadSearchPreview.vue';
 import type { Lead } from '@/types/lead/lead';
 
 interface Props {
-  leads: Lead[];
   tabUrl?: string;
 }
 const props = defineProps<Props>();
 
+const { leads } = useLeads(props.tabUrl);
 const {
   sessions,
   currentSessionId,
@@ -19,10 +20,10 @@ const {
 const displayedLeads = computed(() => {
   if (currentSession.value) {
     const urns = currentSession.value.leadUrnsByPage[currentPage.value] || [];
-    return urns.map(urn => props.leads.find(l => l.entityUrn === urn)).filter(Boolean) as Lead[];
+    return urns.map(urn => leads.value.find(l => l.entityUrn === urn)).filter(Boolean) as Lead[];
   }
 
-  return props.leads;
+  return leads.value;
 });
 
 const currentPage = ref(0);
@@ -87,6 +88,7 @@ const changePage = (page: number) => {
 
 <style scoped>
 .lead-search-page {
+  padding: 10px;
   display: flex;
   flex-direction: column;
 }
