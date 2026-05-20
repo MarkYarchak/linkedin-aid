@@ -1,4 +1,7 @@
 :root {
+  --app-width: 500px;
+  --app-height: 600px;
+
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
@@ -15,10 +18,17 @@
 
 body {
   margin: 0;
-  min-width: 500px;
-  min-height: 600px;
-  max-height: 600px;
 }
+
+#app {
+  min-width: var(--app-width);
+  height: var(--app-height);
+  min-height: var(--app-height);
+  max-height: var(--app-height);
+  display: flex;
+  flex-direction: column;
+}
+
 
 h1 {
   font-size: 3.2em;
