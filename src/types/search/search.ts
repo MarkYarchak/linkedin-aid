@@ -1,5 +1,5 @@
 export interface SearchSession {
-  recentSearchId: number;
+  sessionId: string;
   total: number;
   pageSize: number;
   leadUrnsByPage: Record<number, string[]>;

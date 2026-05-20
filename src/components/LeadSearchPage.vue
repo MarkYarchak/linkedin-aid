@@ -6,6 +6,7 @@ import type { Lead } from '@/types/lead/lead';
 
 interface Props {
   leads: Lead[];
+  tabUrl?: string;
 }
 const props = defineProps<Props>();
 
@@ -13,7 +14,7 @@ const {
   sessions,
   currentSessionId,
   currentSession,
-} = useSearchSessions();
+} = useSearchSessions(props.tabUrl);
 
 const displayedLeads = computed(() => {
   if (currentSession.value) {
@@ -22,13 +23,6 @@ const displayedLeads = computed(() => {
   }
 
   return props.leads;
-});
-
-// Set default session to the most recent one when on search page
-watchEffect(() => {
-  if (sessions.value.length > 0 && currentSessionId.value === null) {
-    currentSessionId.value = sessions.value[0].recentSearchId;
-  }
 });
 
 const currentPage = ref(0);
@@ -57,7 +51,7 @@ const changePage = (page: number) => {
   <div class="lead-search-page">
     <div v-if="sessions.length > 1" class="session-selector">
       <select v-model="currentSessionId">
-        <option v-for="session in sessions" :key="session.recentSearchId" :value="session.recentSearchId">
+        <option v-for="session in sessions" :key="session.sessionId" :value="session.sessionId">
           {{ session.searchTitle || 'Search' }} ({{ new Date(session.updatedAt).toLocaleDateString() }})
         </option>
       </select>

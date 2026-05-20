@@ -39,7 +39,7 @@ const isCompanySearchPage = computed(() => isSalesNavigatorCompanySearchUrl(prop
       </template>
 
       <template v-else-if="isPeopleSearchPage">
-        <LeadSearchPage :leads="leads" />
+        <LeadSearchPage :leads="leads" :tab-url="props.tabUrl" />
       </template>
 
       <template v-else-if="isCompanyPage || isCompanySearchPage">

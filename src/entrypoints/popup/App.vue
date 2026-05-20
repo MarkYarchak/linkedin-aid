@@ -24,9 +24,10 @@ onMounted(async () => {
   <div v-if="isLoading" class="loading">
     Loading...
   </div>
-  <div v-else-if="isLinkedIn">
-    <CapturedDataView :tab-url="tabUrl" />
-  </div>
+  <CapturedDataView
+    v-else-if="isLinkedIn"
+    :tab-url="tabUrl"
+  />
   <div v-else class="not-linkedin">
     <p>This extension only works on LinkedIn.</p>
   </div>

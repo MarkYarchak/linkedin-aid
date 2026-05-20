@@ -82,14 +82,14 @@ export class LeadService {
 
     if (msg.type === MessageType.LEAD_SEARCH_CAPTURED) {
       const data = msg.data as SalesApiLeadSearchResponse;
-      const recentSearchId = data.metadata?.recentSearchId;
+      const sessionId = data.metadata?.tracking?.sessionId || (tabUrl ? new URL(tabUrl).searchParams.get('sessionId') : null);
 
-      if (recentSearchId) {
-        const storage = await browser.storage.local.get('searchSessions');
-        const sessions: Record<number, SearchSession> = (storage.searchSessions || {}) as Record<number, SearchSession>;
+      if (sessionId) {
+        const storage = await browser.storage.session.get('searchSessions');
+        const sessions: Record<string, SearchSession> = (storage.searchSessions || {}) as Record<string, SearchSession>;
 
-        const session = sessions[recentSearchId] || {
-          recentSearchId,
+        const session = sessions[sessionId] || {
+          sessionId,
           total: data.paging.total,
           pageSize: data.paging.count,
           leadUrnsByPage: {},
@@ -106,8 +106,8 @@ export class LeadService {
         session.pageSize = data.paging.count;
         session.searchTitle = data.metadata.searchTitle;
 
-        sessions[recentSearchId] = session;
-        await browser.storage.local.set({ searchSessions: sessions });
+        sessions[sessionId] = session;
+        await browser.storage.session.set({ searchSessions: sessions });
 
         if (data.elements) {
           for (const element of data.elements) {
