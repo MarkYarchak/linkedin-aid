@@ -11,11 +11,7 @@ interface Props {
 const props = defineProps<Props>();
 
 const { leads } = useLeads(props.tabUrl);
-const {
-  sessions,
-  currentSessionId,
-  currentSession,
-} = useSearchSessions(props.tabUrl);
+const { currentSession } = useSearchSessions(props.tabUrl);
 
 const displayedLeads = computed(() => {
   if (currentSession.value) {
@@ -23,7 +19,7 @@ const displayedLeads = computed(() => {
     return urns.map(urn => leads.value.find(l => l.entityUrn === urn)).filter(Boolean) as Lead[];
   }
 
-  return leads.value;
+  return [];
 });
 
 const currentPage = ref(0);
@@ -50,14 +46,6 @@ const changePage = (page: number) => {
 
 <template>
   <div class="lead-search-page">
-    <div v-if="sessions.length > 1" class="session-selector">
-      <select v-model="currentSessionId">
-        <option v-for="session in sessions" :key="session.sessionId" :value="session.sessionId">
-          {{ session.searchTitle || 'Search' }} ({{ new Date(session.updatedAt).toLocaleDateString() }})
-        </option>
-      </select>
-    </div>
-
     <div v-if="displayedLeads.length" class="leads-list">
       <LeadSearchPreview
         v-for="lead in displayedLeads"
@@ -65,7 +53,7 @@ const changePage = (page: number) => {
         :lead="lead"
       />
     </div>
-    <div v-else class="no-leads">
+    <div v-else class="no-data">
       No leads collected for this page yet.
     </div>
 
@@ -99,17 +87,6 @@ const changePage = (page: number) => {
   gap: 10px;
 }
 
-.session-selector {
-  margin-bottom: 15px;
-}
-
-.session-selector select {
-  width: 100%;
-  padding: 8px;
-  border-radius: 4px;
-  border: 1px solid #ddd;
-}
-
 .pages-info {
   margin-top: 15px;
   text-align: center;
@@ -138,12 +115,5 @@ const changePage = (page: number) => {
   background: #0a66c2;
   color: white;
   border-color: #0a66c2;
-}
-
-.no-leads {
-  padding: 20px;
-  text-align: center;
-  color: #666;
-  font-size: 0.9em;
 }
 </style>
