@@ -146,7 +146,6 @@ export interface LeadSearchResult {
   listCount: number;
   firstName: string;
   $recipeType: 'com.linkedin.sales.deco.desktop.searchv2.LeadSearchResult';
-  headline?: string;
   unlocked?: boolean;
 }
 
