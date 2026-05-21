@@ -1,6 +1,8 @@
 <script lang="ts" setup>
 import { computed } from 'vue';
 import AppAvatar from '@/components/ui/AppAvatar.vue';
+import IconLocation from '@/components/icons/IconLocation.vue';
+import IconIndustry from '@/components/icons/IconIndustry.vue';
 import type { Lead } from '@/types/lead/lead';
 
 interface Props {
@@ -37,6 +39,33 @@ const currentPositions = computed(() => {
   return props.lead.searchResult?.currentPositions || props.lead.main?.positions.filter(p => p.current) || [];
 });
 
+const primaryPosition = computed(() => currentPositions.value[0]);
+
+const tenure = computed(() => {
+  const pos = primaryPosition.value;
+  if (!pos) return '';
+
+  const tenureAtPosition = pos.tenureAtPosition || (pos as any).tenureAtPosition; // Handle potential differences in types
+  const parts = [];
+
+  if (tenureAtPosition?.numYears) parts.push(`${tenureAtPosition.numYears}y`);
+  if (tenureAtPosition?.numMonths) parts.push(`${tenureAtPosition.numMonths}m`);
+
+  return parts.length > 0 ? parts.join(' ') : '';
+});
+
+const industry = computed(() => {
+  return primaryPosition.value?.companyUrnResolutionResult?.industry || '';
+});
+
+const skills = computed(() => {
+  return props.lead.extra?.skills?.slice(0, 3).map(s => s.name) || [];
+});
+
+const connections = computed(() => {
+  return props.lead.extra?.numOfConnections || 0;
+});
+
 const secondDegreeBadge = computed(() => {
   return props.lead.searchResult?.spotlightBadges?.find(b => b.id === 'SECOND_DEGREE_CONNECTION');
 });
@@ -57,11 +86,30 @@ const secondDegreeBadge = computed(() => {
           <span v-if="isSaved" class="saved-badge">Saved</span>
           <span v-if="secondDegreeBadge" class="connection-badge">{{ secondDegreeBadge.displayValue }}</span>
         </div>
-        <div class="meta-row">
-          <span class="company">{{ currentPositions[0]?.companyName || lead.main?.defaultPosition?.companyName || 'N/A' }}</span>
-          <span class="dot">&middot;</span>
-          <span class="location">{{ lead.searchResult?.geoRegion || lead.main?.location }}</span>
+
+        <div v-if="primaryPosition" class="position-info">
+          <div class="company-row">
+            <span class="title">{{ primaryPosition.title }}</span>
+            <span>&middot;</span>
+            <span class="company-name">{{ primaryPosition.companyName }}</span>
+            <span v-if="tenure" class="tenure">({{ tenure }})</span>
+          </div>
+          <div v-if="industry" class="industry">
+            <IconIndustry size="10" color="#666" />
+            <span>{{ industry }}</span>
+          </div>
         </div>
+
+        <div class="location-row">
+          <IconLocation size="10" color="#666" />
+          <span class="location">{{ lead.searchResult?.geoRegion || lead.main?.location }}</span>
+          <span v-if="connections" class="connections-count">&middot; {{ connections }}+ connections</span>
+        </div>
+
+        <div v-if="skills.length > 0" class="skills-row">
+          <span v-for="skill in skills" :key="skill" class="skill-tag">{{ skill }}</span>
+        </div>
+
         <p v-if="summary" class="summary">{{ summary }}</p>
       </div>
     </div>
@@ -136,34 +184,63 @@ const secondDegreeBadge = computed(() => {
   border-radius: 4px;
 }
 
-.meta-row {
+.company-row {
   display: flex;
   align-items: center;
   gap: 4px;
-  font-size: 0.8em;
+  font-size: 0.9em;
+}
+
+.title {
+  font-weight: 600;
+  color: #333;
+}
+
+.tenure {
   color: #666;
 }
 
-.company {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+.industry {
+  font-size: 0.8em;
+  color: #666;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 1px;
 }
 
-.dot {
-  flex-shrink: 0;
+.location-row {
+  margin-top: 2px;
+  font-size: 0.8em;
+  color: #666;
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
-.location {
+.connections-count {
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+}
+
+.skills-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 6px;
+}
+
+.skill-tag {
+  font-size: 0.75em;
+  background-color: #f3f3f3;
+  color: #666;
+  padding: 1px 6px;
+  border-radius: 10px;
 }
 
 .summary {
   margin-top: 6px;
   font-size: 0.8em;
-  color: #666;
+  color: #222;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
