@@ -3,6 +3,7 @@ import { computed } from 'vue';
 import AppAvatar from '@/components/ui/AppAvatar.vue';
 import IconLocation from '@/components/icons/IconLocation.vue';
 import IconIndustry from '@/components/icons/IconIndustry.vue';
+import AppDivider from '@/components/ui/AppDivider.vue';
 import type { Lead } from '@/types/lead/lead';
 
 interface Props {
@@ -87,6 +88,12 @@ const secondDegreeBadge = computed(() => {
           <span v-if="secondDegreeBadge" class="connection-badge">{{ secondDegreeBadge.displayValue }}</span>
         </div>
 
+        <div class="location-row">
+          <IconLocation size="10" color="#666" />
+          <span class="location">{{ lead.searchResult?.geoRegion || lead.main?.location }}</span>
+          <span v-if="connections" class="connections-count">&middot; {{ connections }}+ connections</span>
+        </div>
+
         <div v-if="primaryPosition" class="position-info">
           <div class="company-row">
             <span class="title">{{ primaryPosition.title }}</span>
@@ -100,17 +107,18 @@ const secondDegreeBadge = computed(() => {
           </div>
         </div>
 
-        <div class="location-row">
-          <IconLocation size="10" color="#666" />
-          <span class="location">{{ lead.searchResult?.geoRegion || lead.main?.location }}</span>
-          <span v-if="connections" class="connections-count">&middot; {{ connections }}+ connections</span>
+        <div v-if="primaryPosition.description" class="position-description">
+          {{ primaryPosition.description }}
         </div>
 
         <div v-if="skills.length > 0" class="skills-row">
           <span v-for="skill in skills" :key="skill" class="skill-tag">{{ skill }}</span>
         </div>
 
-        <p v-if="summary" class="summary">{{ summary }}</p>
+        <template v-if="summary">
+          <AppDivider class="mt-1" />
+          <p class="summary">{{ summary }}</p>
+        </template>
       </div>
     </div>
   </div>
@@ -143,13 +151,12 @@ const secondDegreeBadge = computed(() => {
 .name-row {
   display: flex;
   align-items: center;
-  margin-bottom: 2px;
   gap: 6px;
 }
 
 .name-row h3 {
   margin: 0;
-  font-size: 0.95em;
+  font-size: 0.96em;
   color: #0a66c2;
   white-space: nowrap;
   overflow: hidden;
@@ -200,6 +207,10 @@ const secondDegreeBadge = computed(() => {
   color: #666;
 }
 
+.position-info {
+  margin-top: 4px;
+}
+
 .industry {
   font-size: 0.8em;
   color: #666;
@@ -209,8 +220,18 @@ const secondDegreeBadge = computed(() => {
   margin-top: 1px;
 }
 
+.position-description {
+  margin-top: 4px;
+  font-size: 0.8em;
+  color: #222;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  line-height: 1.4;
+}
+
 .location-row {
-  margin-top: 2px;
   font-size: 0.8em;
   color: #666;
   display: flex;
@@ -238,7 +259,7 @@ const secondDegreeBadge = computed(() => {
 }
 
 .summary {
-  margin-top: 6px;
+  margin: 4px 0 0;
   font-size: 0.8em;
   color: #222;
   display: -webkit-box;
