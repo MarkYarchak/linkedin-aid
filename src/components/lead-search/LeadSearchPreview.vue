@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import AppAvatar from '@/components/ui/AppAvatar.vue';
 import IconLocation from '@/components/icons/IconLocation.vue';
 import IconIndustry from '@/components/icons/IconIndustry.vue';
@@ -67,13 +67,28 @@ const connections = computed(() => {
   return props.lead.extra?.numOfConnections || 0;
 });
 
+const isExpanded = ref(false);
+
+const toggleExpand = () => {
+  isExpanded.value = !isExpanded.value;
+};
+
+const displaySkills = computed(() => {
+  const allSkills = props.lead.extra?.skills?.map(s => s.name) || [];
+  return isExpanded.value ? allSkills : allSkills.slice(0, 3);
+});
+
 const secondDegreeBadge = computed(() => {
   return props.lead.searchResult?.spotlightBadges?.find(b => b.id === 'SECOND_DEGREE_CONNECTION');
 });
 </script>
 
 <template>
-  <div class="lead-search-preview">
+  <div
+    class="lead-search-preview"
+    :class="{ expanded: isExpanded }"
+    @click="toggleExpand"
+  >
     <div class="content">
       <AppAvatar
         :src="avatarUrl"
@@ -107,17 +122,24 @@ const secondDegreeBadge = computed(() => {
           </div>
         </div>
 
-        <div v-if="primaryPosition.description" class="position-description">
-          {{ primaryPosition.description }}
-        </div>
+        <template v-if="primaryPosition.description">
+          <pre v-if="isExpanded" class="position-description">{{ primaryPosition.description }}</pre>
+          <div v-else class="position-description">
+            {{ primaryPosition.description }}
+          </div>
+        </template>
 
-        <div v-if="skills.length > 0" class="skills-row">
-          <span v-for="skill in skills" :key="skill" class="skill-tag">{{ skill }}</span>
+        <div v-if="displaySkills.length > 0" class="skills-row">
+          <span v-for="skill in displaySkills" :key="skill" class="skill-tag">{{ skill }}</span>
         </div>
 
         <template v-if="summary">
           <AppDivider class="mt-1" />
-          <p class="summary">{{ summary }}</p>
+          <div v-if="isExpanded" class="about-section">
+            <h4 class="about-header">About</h4>
+            <pre class="summary">{{ summary }}</pre>
+          </div>
+          <p v-else class="summary">{{ summary }}</p>
         </template>
       </div>
     </div>
@@ -130,7 +152,8 @@ const secondDegreeBadge = computed(() => {
   border: 1px solid #e0e0e0;
   border-radius: 8px;
   background-color: #ffffff;
-  transition: box-shadow 0.2s;
+  transition: all 0.2s;
+  cursor: pointer;
 }
 
 .lead-search-preview:hover {
@@ -161,6 +184,12 @@ const secondDegreeBadge = computed(() => {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.expanded .name-row h3 {
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
 }
 
 .premium-icon {
@@ -231,6 +260,11 @@ const secondDegreeBadge = computed(() => {
   line-height: 1.4;
 }
 
+.expanded .position-description {
+  display: block;
+  overflow: visible;
+}
+
 .location-row {
   font-size: 0.8em;
   color: #666;
@@ -267,5 +301,24 @@ const secondDegreeBadge = computed(() => {
   -webkit-box-orient: vertical;
   overflow: hidden;
   line-height: 1.4;
+}
+
+pre.summary,
+pre.position-description {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  font-family: inherit;
+}
+
+.about-header {
+  margin: 8px 0 4px;
+  font-size: 0.85em;
+  font-weight: 600;
+  color: #333;
+}
+
+.expanded .summary {
+  display: block;
+  overflow: visible;
 }
 </style>
