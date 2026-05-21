@@ -3,6 +3,7 @@ import { computed, ref } from 'vue';
 import { useLeads } from '@/composables/useLeads';
 import { useSearchSessions } from '@/composables/useSearchSessions';
 import LeadSearchPreview from '@/components/lead-search/LeadSearchPreview.vue';
+import AppDivider from '@/components/ui/AppDivider.vue';
 import type { Lead } from '@/types/lead/lead';
 
 interface Props {
@@ -46,6 +47,14 @@ const changePage = (page: number) => {
 
 <template>
   <div class="lead-search-page">
+    <template v-if="totalPages > 0 && currentSession">
+      <div class="pages-info">
+        Loaded {{ loadedPagesCount }}/{{ totalPages }} pages ({{ loadedLeadsCount }}/{{ currentSession.total }} leads)
+      </div>
+
+      <AppDivider class="mt-3 mb-3" />
+    </template>
+
     <div v-if="displayedLeads.length" class="leads-list">
       <LeadSearchPreview
         v-for="lead in displayedLeads"
@@ -55,10 +64,6 @@ const changePage = (page: number) => {
     </div>
     <div v-else class="no-data">
       No leads collected for this page yet.
-    </div>
-
-    <div v-if="totalPages > 0 && currentSession" class="pages-info">
-      Loaded {{ loadedPagesCount }}/{{ totalPages }} pages ({{ loadedLeadsCount }}/{{ currentSession.total }} leads)
     </div>
 
     <div v-if="totalPages > 1" class="pagination">
@@ -81,17 +86,16 @@ const changePage = (page: number) => {
   flex-direction: column;
 }
 
+.pages-info {
+  text-align: center;
+  font-size: 0.85em;
+  color: #666;
+}
+
 .leads-list {
   display: flex;
   flex-direction: column;
   gap: 10px;
-}
-
-.pages-info {
-  margin-top: 15px;
-  text-align: center;
-  font-size: 0.85em;
-  color: #666;
 }
 
 .pagination {

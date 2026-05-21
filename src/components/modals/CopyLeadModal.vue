@@ -291,18 +291,6 @@ const selectedCompanyUrl = computed(() => {
   font-size: 1rem;
 }
 
-.mt-6 {
-  margin-top: 24px !important;
-}
-
-.mt-4 {
-  margin-top: 16px !important;
-}
-
-.mt-1 {
-  margin-top: 4px !important;
-}
-
 .step-header-with-action {
   display: flex;
   justify-content: space-between;
