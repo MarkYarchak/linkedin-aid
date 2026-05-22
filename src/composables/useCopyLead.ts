@@ -22,6 +22,7 @@ export function useCopyLead(lead: Lead) {
     position: {
       title: true,
       companyName: true,
+      industry: true,
       location: true,
       startedOn: true,
       description: true,
@@ -138,6 +139,13 @@ export function useCopyLead(lead: Lead) {
         let posInfo = '### CURRENT POSITION\n';
         if (leadFields.value.position.title) posInfo += `Title: ${pos.title}\n`;
         if (leadFields.value.position.companyName) posInfo += `Company: ${pos.companyName}\n`;
+        if (leadFields.value.position.industry) {
+          const industry = pos.companyUrnResolutionResult?.industry || 
+                          (selectedCompany.value?.main?.entityUrn === pos.companyUrn ? selectedCompany.value?.main?.industry : null);
+          if (industry) {
+            posInfo += `Industry: ${industry}\n`;
+          }
+        }
         if (leadFields.value.position.location && pos.location) posInfo += `Location: ${pos.location}\n`;
         if (leadFields.value.position.startedOn && pos.startedOn) {
           const date = new Date(pos.startedOn.year, (pos.startedOn.month || 1) - 1);

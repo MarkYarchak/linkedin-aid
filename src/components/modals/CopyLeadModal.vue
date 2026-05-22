@@ -109,6 +109,7 @@ const selectedCompanyUrl = computed(() => {
         <div class="field-group grid _three-cols">
           <AppCheckbox v-model="leadFields.position.title" label="Job Title" />
           <AppCheckbox v-model="leadFields.position.companyName" label="Company" />
+          <AppCheckbox v-model="leadFields.position.industry" label="Industry" />
           <AppCheckbox v-model="leadFields.position.location" label="Location" />
           <AppCheckbox v-model="leadFields.position.startedOn" label="Started On" />
           <AppCheckbox

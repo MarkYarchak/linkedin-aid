@@ -16,6 +16,7 @@ export function useBulkCopyLeads(leads: Lead[]) {
     position: {
       title: true,
       companyName: true,
+      industry: true,
       location: true,
       startedOn: true,
       description: true,
@@ -60,6 +61,9 @@ export function useBulkCopyLeads(leads: Lead[]) {
         let posInfo = '';
         if (leadFields.value.position.title) posInfo += `Title: ${pos.title}\n`;
         if (leadFields.value.position.companyName) posInfo += `Company: ${pos.companyName}\n`;
+        if (leadFields.value.position.industry && pos.companyUrnResolutionResult?.industry) {
+          posInfo += `Industry: ${pos.companyUrnResolutionResult.industry}\n`;
+        }
         if (leadFields.value.position.location && pos.companyUrnResolutionResult?.location) {
             posInfo += `Location: ${pos.companyUrnResolutionResult.location}\n`;
         }

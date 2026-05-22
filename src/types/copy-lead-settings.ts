@@ -7,6 +7,7 @@ export interface CopyLeadSettings {
     position: {
       title: boolean;
       companyName: boolean;
+      industry: boolean;
       location: boolean;
       startedOn: boolean;
       description: boolean;
