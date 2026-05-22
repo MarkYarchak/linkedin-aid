@@ -80,7 +80,7 @@ const copyAllPages = () => {
         <div class="copy-actions">
           <AppCopyButton
             label="Copy Page"
-            :disabled="displayedLeads.length === 0"
+            :disabled="displayedLeads.length === 0 || totalPages <= 1"
             @click="copyCurrentPage"
           />
           <AppCopyButton
