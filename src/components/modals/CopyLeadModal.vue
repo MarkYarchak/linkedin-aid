@@ -69,7 +69,7 @@ const {
   copyToClipboard,
   toggleInsight,
   toggleSkill,
-} = useCopyLead(props.lead, emit);
+} = useCopyLead(props.lead);
 
 const copyTitle = async () => {
   await navigator.clipboard.writeText(generateTitle());
@@ -271,16 +271,9 @@ const selectedCompanyUrl = computed(() => {
 </template>
 
 <style scoped>
-.field-row {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
 .step-content {
   flex: 1;
   overflow-y: auto;
-  margin-bottom: 16px;
   min-height: 200px;
   padding-right: 4px;
 }

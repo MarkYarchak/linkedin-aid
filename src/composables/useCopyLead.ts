@@ -9,7 +9,7 @@ import type { Lead } from '@/types/lead/lead';
 import type { Company } from '@/types/company/company';
 import type { CopyLeadSettings } from '@/types/copy-lead-settings';
 
-export function useCopyLead(lead: Lead, emit: (event: 'close') => void) {
+export function useCopyLead(lead: Lead) {
   const currentStep = ref(1);
   const totalSteps = 5;
 
