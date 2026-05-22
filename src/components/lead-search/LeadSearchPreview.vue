@@ -12,13 +12,9 @@ interface Props {
 const props = defineProps<Props>();
 
 const avatarUrl = computed(() => {
-  const { extra, searchResult } = props.lead;
+  const { searchResult } = props.lead;
   if (searchResult?.profilePictureDisplayImage) {
     const img = searchResult.profilePictureDisplayImage;
-    return img.rootUrl + img.artifacts[0].fileIdentifyingUrlPathSegment;
-  }
-  if (extra?.profilePictureDisplayImage) {
-    const img = extra.profilePictureDisplayImage;
     return img.rootUrl + img.artifacts[0].fileIdentifyingUrlPathSegment;
   }
   return null;
@@ -29,7 +25,7 @@ const isSaved = computed(() => {
 });
 
 const isPremium = computed(() => {
-  return props.lead.searchResult?.premium || props.lead.extra?.memberBadges?.premium || false;
+  return props.lead.searchResult?.premium || false;
 });
 
 const summary = computed(() => {
@@ -59,24 +55,11 @@ const industry = computed(() => {
   return primaryPosition.value?.companyUrnResolutionResult?.industry || '';
 });
 
-const skills = computed(() => {
-  return props.lead.extra?.skills?.slice(0, 3).map(s => s.name) || [];
-});
-
-const connections = computed(() => {
-  return props.lead.extra?.numOfConnections || 0;
-});
-
 const isExpanded = ref(false);
 
 const toggleExpand = () => {
   isExpanded.value = !isExpanded.value;
 };
-
-const displaySkills = computed(() => {
-  const allSkills = props.lead.extra?.skills?.map(s => s.name) || [];
-  return isExpanded.value ? allSkills : allSkills.slice(0, 3);
-});
 
 const secondDegreeBadge = computed(() => {
   return props.lead.searchResult?.spotlightBadges?.find(b => b.id === 'SECOND_DEGREE_CONNECTION');
@@ -106,7 +89,6 @@ const secondDegreeBadge = computed(() => {
         <div class="location-row">
           <IconLocation size="10" color="#666" />
           <span class="location">{{ lead.searchResult?.geoRegion || lead.main?.location }}</span>
-          <span v-if="connections" class="connections-count">&middot; {{ connections }}+ connections</span>
         </div>
 
         <div v-if="primaryPosition" class="position-info">
@@ -128,10 +110,6 @@ const secondDegreeBadge = computed(() => {
             {{ primaryPosition.description }}
           </div>
         </template>
-
-        <div v-if="displaySkills.length > 0" class="skills-row">
-          <span v-for="skill in displaySkills" :key="skill" class="skill-tag">{{ skill }}</span>
-        </div>
 
         <template v-if="summary">
           <AppDivider class="mt-1" />
@@ -271,25 +249,6 @@ const secondDegreeBadge = computed(() => {
   display: flex;
   align-items: center;
   gap: 4px;
-}
-
-.connections-count {
-  white-space: nowrap;
-}
-
-.skills-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-  margin-top: 6px;
-}
-
-.skill-tag {
-  font-size: 0.75em;
-  background-color: #f3f3f3;
-  color: #666;
-  padding: 1px 6px;
-  border-radius: 10px;
 }
 
 .summary {
