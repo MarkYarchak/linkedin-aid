@@ -72,12 +72,15 @@ function copyLeadInfo() {
         :alt="`${lead.main?.firstName || lead.searchResult?.firstName} ${lead.main?.lastName || lead.searchResult?.lastName}`"
         size="md"
       />
-      <h3>{{ lead.main?.firstName || lead.searchResult?.firstName }} {{ lead.main?.lastName || lead.searchResult?.lastName }}</h3>
+      <div class="header-info">
+        <h3>{{ lead.main?.firstName || lead.searchResult?.firstName }} {{ lead.main?.lastName || lead.searchResult?.lastName }}</h3>
+        <div class="header-position">{{ lead.main?.defaultPosition.title }}</div>
+      </div>
       <AppCopyButton primary @click="copyLeadInfo" />
     </div>
 
     <div class="info-row">
-      <strong>Headline:</strong> {{ lead.main?.headline || lead.searchResult?.headline }}
+      <strong>Headline:</strong> {{ lead.main?.headline }}
     </div>
     <div class="info-row">
       <strong>Company:</strong> {{ lead.main?.defaultPosition?.companyName || lead.searchResult?.currentPositions?.[0]?.companyName || 'N/A' }}
@@ -156,12 +159,35 @@ function copyLeadInfo() {
 
 .header button {
   margin-left: auto;
+  flex-shrink: 0;
+}
+
+.header-info {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.header-position {
+  font-size: 0.9em;
+  color: #333;
+  font-weight: 500;
+  line-height: 1.2;
+  margin-top: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .lead-info h3 {
   margin: 0;
-  font-size: 1.1em;
+  font-size: 1.15em;
   color: #0a66c2;
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .lead-info h4 {

@@ -4,6 +4,7 @@ export interface CompanyUrnResolutionResult {
   name: string;
   companyPictureDisplayImage: DisplayImage;
   entityUrn: string;
+  industry?: string;
 }
 
 export interface DateRange {
@@ -23,6 +24,10 @@ export interface Position {
   endedOn?: DateRange;
   location?: string;
   new?: boolean;
+  tenureAtPosition?: {
+    numYears?: number;
+    numMonths?: number;
+  };
 }
 
 export interface DefaultPosition {
