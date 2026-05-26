@@ -186,6 +186,7 @@ const copySelected = () => {
 
 <style scoped>
 .lead-search-page {
+  flex-grow: 1;
   display: flex;
   flex-direction: column;
   max-height: 100%;
@@ -223,8 +224,12 @@ const copySelected = () => {
   padding: 12px;
 }
 
+.no-data {
+  flex-grow: 1;
+}
+
 .pages-info {
-  padding-bottom: 4px;
+  padding: 4px;
   text-align: center;
   font-size: 0.85em;
   color: #666;
@@ -234,7 +239,7 @@ const copySelected = () => {
   display: flex;
   flex-wrap: wrap;
   gap: 5px;
-  padding: 8px;
+  padding: 8px 8px 4px;
   justify-content: center;
 }
 
