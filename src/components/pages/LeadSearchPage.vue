@@ -109,10 +109,6 @@ const copySelected = () => {
   <div class="lead-search-page">
     <template v-if="totalPages > 0 && currentSession">
       <div class="header-actions">
-        <div class="pages-info">
-          Loaded {{ loadedPagesCount }}/{{ totalPages }} pages ({{ loadedLeadsCount }}/{{ currentSession.total }} leads)
-        </div>
-
         <div class="selection-controls">
           <AppCheckbox
             :model-value="isAllSelected"
@@ -135,32 +131,41 @@ const copySelected = () => {
         </div>
       </div>
 
-      <AppDivider class="mt-3 mb-3" />
+      <AppDivider />
     </template>
 
-    <div v-if="displayedLeads.length" class="leads-list">
-      <LeadSearchPreview
-        v-for="lead in displayedLeads"
-        :key="lead.entityUrn"
-        :lead="lead"
-        :selected="selectedUrns.has(lead.entityUrn)"
-        @update:selected="toggleLeadSelection(lead.entityUrn, $event)"
-      />
+    <div v-if="displayedLeads.length" class="content-wrapper">
+      <div class="leads-list">
+        <LeadSearchPreview
+          v-for="lead in displayedLeads"
+          :key="lead.entityUrn"
+          :lead="lead"
+          :selected="selectedUrns.has(lead.entityUrn)"
+          @update:selected="toggleLeadSelection(lead.entityUrn, $event)"
+        />
+      </div>
     </div>
     <div v-else class="no-data">
       No leads collected for this page yet.
     </div>
 
-    <div v-if="totalPages > 1" class="pagination">
-      <button
-        v-for="page in totalPages"
-        :key="page"
-        :class="{ active: currentPage === page - 1 }"
-        @click="changePage(page - 1)"
-      >
-        {{ page }}
-      </button>
-    </div>
+    <template v-if="totalPages > 0 && currentSession">
+      <AppDivider />
+      <div v-if="totalPages > 1" class="pagination">
+        <button
+          v-for="page in totalPages"
+          :key="page"
+          :class="{ active: currentPage === page - 1 }"
+          @click="changePage(page - 1)"
+        >
+          {{ page }}
+        </button>
+      </div>
+
+      <div class="pages-info">
+        Loaded {{ loadedPagesCount }}/{{ totalPages }} pages ({{ loadedLeadsCount }}/{{ currentSession.total }} leads)
+      </div>
+    </template>
 
     <BulkCopyModal
       v-if="showBulkCopyModal"
@@ -173,9 +178,9 @@ const copySelected = () => {
 
 <style scoped>
 .lead-search-page {
-  padding: 10px;
   display: flex;
   flex-direction: column;
+  max-height: 100%;
 }
 
 .header-actions {
@@ -183,6 +188,7 @@ const copySelected = () => {
   flex-direction: column;
   gap: 12px;
   align-items: center;
+  padding: 12px;
 }
 
 .copy-action {
@@ -196,23 +202,31 @@ const copySelected = () => {
   justify-content: center;
 }
 
-.pages-info {
-  text-align: center;
-  font-size: 0.85em;
-  color: #666;
-}
-
 .leads-list {
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
 
+.content-wrapper {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+  padding: 12px;
+}
+
+.pages-info {
+  padding-bottom: 4px;
+  text-align: center;
+  font-size: 0.85em;
+  color: #666;
+}
+
 .pagination {
   display: flex;
   flex-wrap: wrap;
   gap: 5px;
-  margin-top: 15px;
+  padding: 8px;
   justify-content: center;
 }
 
