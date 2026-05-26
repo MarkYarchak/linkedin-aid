@@ -50,6 +50,11 @@ const loadedLeadsCount = computed(() => {
   return allSessionLeads.value.length;
 });
 
+const isPageLoaded = (page: number) => {
+  if (!currentSession.value) return false;
+  return currentSession.value?.leadUrnsByPage[page - 1]?.length > 0;
+};
+
 const changePage = (page: number) => {
   currentPage.value = page;
 };
@@ -155,7 +160,10 @@ const copySelected = () => {
         <button
           v-for="page in totalPages"
           :key="page"
-          :class="{ active: currentPage === page - 1 }"
+          :class="{
+            active: currentPage === page - 1,
+            loaded: isPageLoaded(page)
+          }"
           @click="changePage(page - 1)"
         >
           {{ page }}
@@ -243,5 +251,11 @@ const copySelected = () => {
   background: #0a66c2;
   color: white;
   border-color: #0a66c2;
+}
+
+.pagination button:not(.loaded):not(.active) {
+  background: #f5f5f5;
+  color: #999;
+  border-color: #eee;
 }
 </style>
