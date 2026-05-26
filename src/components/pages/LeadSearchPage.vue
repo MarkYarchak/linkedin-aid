@@ -5,6 +5,7 @@ import { useSearchSessions } from '@/composables/useSearchSessions';
 import LeadSearchPreview from '@/components/lead-search/LeadSearchPreview.vue';
 import AppDivider from '@/components/ui/AppDivider.vue';
 import AppCopyButton from '@/components/ui/AppCopyButton.vue';
+import AppCheckbox from '@/components/ui/AppCheckbox.vue';
 import BulkCopyModal from '@/components/modals/BulkCopyModal.vue';
 import type { Lead } from '@/types/lead/lead';
 
@@ -54,17 +55,52 @@ const changePage = (page: number) => {
 };
 
 const showBulkCopyModal = ref(false);
-const leadsToCopy = ref<Lead[]>([]);
+const selectedUrns = ref<Set<string>>(new Set());
 
-const copyCurrentPage = () => {
-  if (displayedLeads.value.length === 0) return;
-  leadsToCopy.value = displayedLeads.value;
-  showBulkCopyModal.value = true;
+const selectedLeads = computed(() => {
+  return leads.value.filter(l => selectedUrns.value.has(l.entityUrn));
+});
+
+const isPageSelected = computed(() => {
+  if (displayedLeads.value.length === 0) return false;
+  return displayedLeads.value.every(l => selectedUrns.value.has(l.entityUrn));
+});
+
+const isAllSelected = computed(() => {
+  if (allSessionLeads.value.length === 0) return false;
+  return allSessionLeads.value.every(l => selectedUrns.value.has(l.entityUrn));
+});
+
+const toggleLeadSelection = (urn: string, selected: boolean) => {
+  if (selected) {
+    selectedUrns.value.add(urn);
+  } else {
+    selectedUrns.value.delete(urn);
+  }
 };
 
-const copyAllPages = () => {
-  if (allSessionLeads.value.length === 0) return;
-  leadsToCopy.value = allSessionLeads.value;
+const togglePageSelection = (selected: boolean) => {
+  displayedLeads.value.forEach(l => {
+    if (selected) {
+      selectedUrns.value.add(l.entityUrn);
+    } else {
+      selectedUrns.value.delete(l.entityUrn);
+    }
+  });
+};
+
+const toggleAllSelection = (selected: boolean) => {
+  allSessionLeads.value.forEach(l => {
+    if (selected) {
+      selectedUrns.value.add(l.entityUrn);
+    } else {
+      selectedUrns.value.delete(l.entityUrn);
+    }
+  });
+};
+
+const copySelected = () => {
+  if (selectedLeads.value.length === 0) return;
   showBulkCopyModal.value = true;
 };
 </script>
@@ -77,17 +113,24 @@ const copyAllPages = () => {
           Loaded {{ loadedPagesCount }}/{{ totalPages }} pages ({{ loadedLeadsCount }}/{{ currentSession.total }} leads)
         </div>
 
-        <div class="copy-actions">
-          <AppCopyButton
-            label="Copy Page"
-            :disabled="displayedLeads.length === 0 || totalPages <= 1"
-            @click="copyCurrentPage"
+        <div class="selection-controls">
+          <AppCheckbox
+            :model-value="isAllSelected"
+            label="Select All"
+            @update:model-value="toggleAllSelection"
           />
+          <AppCheckbox
+            :model-value="isPageSelected"
+            label="Select Page"
+            @update:model-value="togglePageSelection"
+          />
+
           <AppCopyButton
-            label="Copy All"
+            :label="`Copy Selected (${selectedLeads.length})`"
             :primary="true"
-            :disabled="allSessionLeads.length === 0"
-            @click="copyAllPages"
+            :disabled="selectedLeads.length === 0"
+            class="copy-action"
+            @click="copySelected"
           />
         </div>
       </div>
@@ -100,6 +143,8 @@ const copyAllPages = () => {
         v-for="lead in displayedLeads"
         :key="lead.entityUrn"
         :lead="lead"
+        :selected="selectedUrns.has(lead.entityUrn)"
+        @update:selected="toggleLeadSelection(lead.entityUrn, $event)"
       />
     </div>
     <div v-else class="no-data">
@@ -120,7 +165,7 @@ const copyAllPages = () => {
     <BulkCopyModal
       v-if="showBulkCopyModal"
       :show="showBulkCopyModal"
-      :leads="leadsToCopy"
+      :leads="selectedLeads"
       @close="showBulkCopyModal = false"
     />
   </div>
@@ -140,14 +185,14 @@ const copyAllPages = () => {
   align-items: center;
 }
 
-.copy-actions {
-  display: flex;
-  gap: 8px;
-  width: 100%;
+.copy-action {
+  margin-left: auto;
 }
 
-.copy-actions > * {
-  flex: 1;
+.selection-controls {
+  display: flex;
+  gap: 16px;
+  width: 100%;
   justify-content: center;
 }
 

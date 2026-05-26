@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import { computed, ref } from 'vue';
 import AppAvatar from '@/components/ui/AppAvatar.vue';
+import AppCheckbox from '@/components/ui/AppCheckbox.vue';
 import IconLocation from '@/components/icons/IconLocation.vue';
 import IconIndustry from '@/components/icons/IconIndustry.vue';
 import AppDivider from '@/components/ui/AppDivider.vue';
@@ -10,6 +11,8 @@ interface Props {
   lead: Lead;
 }
 const props = defineProps<Props>();
+
+const selected = defineModel<boolean>('selected', { default: false });
 
 const avatarUrl = computed(() => {
   const { searchResult } = props.lead;
@@ -69,10 +72,13 @@ const secondDegreeBadge = computed(() => {
 <template>
   <div
     class="lead-search-preview"
-    :class="{ expanded: isExpanded }"
+    :class="{ expanded: isExpanded, selected: selected }"
     @click="toggleExpand"
   >
     <div class="content">
+      <div class="selection-area">
+        <AppCheckbox v-model="selected" @click.stop />
+      </div>
       <AppAvatar
         :src="avatarUrl"
         :alt="`${lead.searchResult?.fullName || lead.main?.fullName}`"
@@ -136,6 +142,15 @@ const secondDegreeBadge = computed(() => {
 
 .lead-search-preview:hover {
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.lead-search-preview.selected {
+  border-color: #0a66c2;
+  background-color: #f0f7ff;
+}
+
+.selection-area {
+  padding-top: 4px;
 }
 
 .content {
