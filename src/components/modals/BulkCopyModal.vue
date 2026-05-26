@@ -25,7 +25,7 @@ const viewOptions = [
 ];
 
 const jsonPreview = computed(() => {
-  return JSON.stringify(props.leads, null, 2);
+  return JSON.stringify(generateJsonData(), null, 2);
 });
 
 const {
@@ -36,6 +36,7 @@ const {
   nextStep,
   prevStep,
   generateCopyText,
+  generateJsonData,
   copyToClipboard,
 } = useBulkCopyLeads(props.leads);
 

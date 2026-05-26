@@ -140,7 +140,7 @@ export function useCopyLead(lead: Lead) {
         if (leadFields.value.position.title) posInfo += `Title: ${pos.title}\n`;
         if (leadFields.value.position.companyName) posInfo += `Company: ${pos.companyName}\n`;
         if (leadFields.value.position.industry) {
-          const industry = pos.companyUrnResolutionResult?.industry || 
+          const industry = pos.companyUrnResolutionResult?.industry ||
                           (selectedCompany.value?.main?.entityUrn === pos.companyUrn ? selectedCompany.value?.main?.industry : null);
           if (industry) {
             posInfo += `Industry: ${industry}\n`;
@@ -218,6 +218,96 @@ export function useCopyLead(lead: Lead) {
     return sections.join('\n\n');
   };
 
+  const generateJsonData = () => {
+    const data: any = {};
+    const main = lead.main;
+
+    if (main) {
+      data.leadInfo = {};
+      if (leadFields.value.fullName) data.leadInfo.fullName = main.fullName;
+      if (leadFields.value.headline) data.leadInfo.headline = main.headline;
+      if (leadFields.value.location) data.leadInfo.location = main.location;
+      if (leadFields.value.summary && main.summary) {
+        data.leadInfo.summary = sanitizeText(main.summary, true);
+      }
+    }
+
+    if (selectedPositionUrn.value) {
+      const pos = main?.positions.find(p => p.companyUrn === selectedPositionUrn.value);
+      if (pos) {
+        data.currentPosition = {};
+        if (leadFields.value.position.title) data.currentPosition.title = pos.title;
+        if (leadFields.value.position.companyName) data.currentPosition.companyName = pos.companyName;
+        if (leadFields.value.position.industry) {
+          const industry = pos.companyUrnResolutionResult?.industry ||
+                          (selectedCompany.value?.main?.entityUrn === pos.companyUrn ? selectedCompany.value?.main?.industry : null);
+          if (industry) {
+            data.currentPosition.industry = industry;
+          }
+        }
+        if (leadFields.value.position.location && pos.location) data.currentPosition.location = pos.location;
+        if (leadFields.value.position.startedOn && pos.startedOn) {
+          const date = new Date(pos.startedOn.year, (pos.startedOn.month || 1) - 1);
+          data.currentPosition.started = getRelativeTime(date.getTime());
+        }
+        if (leadFields.value.position.description && pos.description) {
+          data.currentPosition.description = sanitizeText(pos.description, true);
+        }
+      }
+    }
+
+    if (selectedSkills.value.length > 0) {
+      data.skills = selectedSkills.value;
+    }
+
+    if (selectedInsights.value.length > 0) {
+      data.recentActivity = [];
+      selectedInsights.value.forEach((insightId) => {
+        const insight = lead.insights?.elements.find(e => e.insightId === insightId);
+        if (!insight) return;
+
+        let activityData: any = {};
+        const date = insight.createdAt ? getRelativeTime(insight.createdAt) : '';
+
+        if (insight.activityUnion?.postActivity) {
+          const post = insight.activityUnion.postActivity;
+          activityData.type = post.rootActivity ? 'RESHARED POST' : 'POST';
+          activityData.text = sanitizeText(post.message?.text || post.rootActivity?.message?.text || '', true);
+        } else if (insight.activityUnion?.commentActivity) {
+          activityData.type = 'COMMENT';
+          activityData.text = sanitizeText(insight.activityUnion.commentActivity.commentary?.text || '', true);
+        }
+
+        if (activityData.text) {
+          if (date) activityData.date = date;
+          data.recentActivity.push(activityData);
+        }
+      });
+    }
+
+    if (selectedCompany.value) {
+      const cMain = selectedCompany.value.main;
+      const cExtra = selectedCompany.value.extra;
+      data.companyInfo = {};
+      data.companyInfo.name = cMain?.name;
+      if (companyFields.value.industry && cMain?.industry) data.companyInfo.industry = cMain.industry;
+      if (companyFields.value.location && cMain?.location) data.companyInfo.location = cMain.location;
+      if (companyFields.value.yearFounded && cMain?.yearFounded) data.companyInfo.yearFounded = cMain.yearFounded;
+      if (companyFields.value.type && cMain?.type) data.companyInfo.type = cMain.type;
+      if (companyFields.value.specialties && cMain?.specialties?.length) data.companyInfo.specialties = cMain.specialties;
+      if (companyFields.value.employeeCount && cExtra?.employeeDisplayCount) data.companyInfo.headcount = cExtra.employeeDisplayCount;
+      if (companyFields.value.revenueRange && cMain?.revenueRange) {
+        const { estimatedMinRevenue, estimatedMaxRevenue } = cMain.revenueRange;
+        data.companyInfo.revenue = `${estimatedMinRevenue.currencyCode} ${estimatedMinRevenue.amount}${estimatedMinRevenue.unit} - ${estimatedMaxRevenue.amount}${estimatedMaxRevenue.unit}`;
+      }
+      if (companyFields.value.description && cMain?.description) {
+        data.companyInfo.description = sanitizeText(cMain.description, true);
+      }
+    }
+
+    return data;
+  };
+
   const generateTitle = () => {
     const main = lead.main;
     const pos = main?.positions.find(p => p.companyUrn === selectedPositionUrn.value);
@@ -283,6 +373,7 @@ export function useCopyLead(lead: Lead) {
     nextStep,
     prevStep,
     generateCopyText,
+    generateJsonData,
     generateTitle,
     copyToClipboard,
     toggleInsight,

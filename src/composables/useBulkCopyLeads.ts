@@ -84,6 +84,45 @@ export function useBulkCopyLeads(leads: Lead[]) {
     return sections.join('\n');
   };
 
+  const formatLeadJson = (lead: Lead) => {
+    const data: any = {};
+    const searchResult = lead.searchResult;
+
+    if (searchResult) {
+      if (leadFields.value.fullName) data.fullName = searchResult.fullName;
+      if (leadFields.value.location) data.location = searchResult.geoRegion;
+      if (leadFields.value.summary && searchResult.summary) {
+        data.summary = sanitizeText(searchResult.summary, true);
+      }
+
+      const pos = searchResult.currentPositions?.[0];
+      if (pos) {
+        data.currentPosition = {};
+        if (leadFields.value.position.title) data.currentPosition.title = pos.title;
+        if (leadFields.value.position.companyName) data.currentPosition.companyName = pos.companyName;
+        if (leadFields.value.position.industry && pos.companyUrnResolutionResult?.industry) {
+          data.currentPosition.industry = pos.companyUrnResolutionResult.industry;
+        }
+        if (leadFields.value.position.location && pos.companyUrnResolutionResult?.location) {
+            data.currentPosition.location = pos.companyUrnResolutionResult.location;
+        }
+        if (leadFields.value.position.startedOn && pos.startedOn) {
+          const date = new Date(pos.startedOn.year, (pos.startedOn.month || 1) - 1);
+          data.currentPosition.started = getRelativeTime(date.getTime());
+        }
+        if (leadFields.value.position.description && pos.description) {
+          data.currentPosition.description = sanitizeText(pos.description, true);
+        }
+      }
+    }
+
+    return data;
+  };
+
+  const generateJsonData = () => {
+    return leads.map(lead => formatLeadJson(lead));
+  };
+
   const generateCopyText = () => {
     return leads.map(lead => {
         const header = `--- ${lead.searchResult?.fullName || 'Lead'} ---`;
@@ -119,6 +158,7 @@ export function useBulkCopyLeads(leads: Lead[]) {
     nextStep,
     prevStep,
     generateCopyText,
+    generateJsonData,
     copyToClipboard,
   };
 }

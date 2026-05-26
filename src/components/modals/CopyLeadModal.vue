@@ -31,7 +31,7 @@ const viewOptions = [
 ];
 
 const jsonPreview = computed(() => {
-  return JSON.stringify(props.lead, null, 2);
+  return JSON.stringify(generateJsonData(), null, 2);
 });
 
 const getInsightData = (insight: any) => {
@@ -76,6 +76,7 @@ const {
   nextStep,
   prevStep,
   generateCopyText,
+  generateJsonData,
   generateTitle,
   copyToClipboard,
   toggleInsight,
