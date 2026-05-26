@@ -1,10 +1,11 @@
 <script lang="ts" setup>
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import { useBulkCopyLeads } from '@/composables/useBulkCopyLeads';
 import AppStepper from '@/components/ui/AppStepper.vue';
 import AppModal from '@/components/ui/AppModal.vue';
 import AppCheckbox from '@/components/ui/AppCheckbox.vue';
 import AppPreviewBox from '@/components/ui/AppPreviewBox.vue';
+import AppSegmentedControl from '@/components/ui/AppSegmentedControl.vue';
 import type { Lead } from '@/types/lead/lead';
 
 interface Props {
@@ -16,6 +17,16 @@ const props = defineProps<Props>();
 const emit = defineEmits(['close']);
 
 const wrapText = ref(false);
+const viewMode = ref('text');
+
+const viewOptions = [
+  { label: 'Text', value: 'text' },
+  { label: 'JSON', value: 'json' },
+];
+
+const jsonPreview = computed(() => {
+  return JSON.stringify(props.leads, null, 2);
+});
 
 const {
   currentStep,
@@ -62,9 +73,18 @@ const {
       <div v-if="currentStep === 2">
         <div class="step-header-with-action">
           <h4>Preview ({{ leads.length }} leads)</h4>
-          <AppCheckbox v-model="wrapText" label="Wrap text" />
+          <div class="header-actions">
+            <AppSegmentedControl
+              v-model="viewMode"
+              :options="viewOptions"
+            />
+            <AppCheckbox v-model="wrapText" label="Wrap text" />
+          </div>
         </div>
-        <AppPreviewBox :wrap-text="wrapText">{{ generateCopyText() }}</AppPreviewBox>
+        <AppPreviewBox :wrap-text="wrapText">
+          <template v-if="viewMode === 'json'">{{ jsonPreview }}</template>
+          <template v-else>{{ generateCopyText() }}</template>
+        </AppPreviewBox>
       </div>
     </div>
 
@@ -115,6 +135,12 @@ const {
 
 .step-header-with-action h4 {
   margin: 0;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
 .copied-feedback {

@@ -10,6 +10,7 @@ import AppRadio from '@/components/ui/AppRadio.vue';
 import AppTag from '@/components/ui/AppTag.vue';
 import AppSelectableItem from '@/components/ui/AppSelectableItem.vue';
 import AppPreviewBox from '@/components/ui/AppPreviewBox.vue';
+import AppSegmentedControl from '@/components/ui/AppSegmentedControl.vue';
 import IconCopy from '@/components/icons/IconCopy.vue';
 import type { Lead } from '@/types/lead/lead';
 
@@ -22,6 +23,16 @@ const props = defineProps<Props>();
 const emit = defineEmits(['close']);
 
 const wrapText = ref(false);
+const viewMode = ref('text');
+
+const viewOptions = [
+  { label: 'Text', value: 'text' },
+  { label: 'JSON', value: 'json' },
+];
+
+const jsonPreview = computed(() => {
+  return JSON.stringify(props.lead, null, 2);
+});
 
 const getInsightData = (insight: any) => {
   const activity = insight.activityUnion;
@@ -254,9 +265,18 @@ const selectedCompanyUrl = computed(() => {
       <div v-if="currentStep === 5">
         <div class="step-header-with-action">
           <h4>Preview</h4>
-          <AppCheckbox v-model="wrapText" label="Wrap text" />
+          <div class="header-actions">
+            <AppSegmentedControl
+              v-model="viewMode"
+              :options="viewOptions"
+            />
+            <AppCheckbox v-model="wrapText" label="Wrap text" />
+          </div>
         </div>
-        <AppPreviewBox :wrap-text="wrapText">{{ generateCopyText() }}</AppPreviewBox>
+        <AppPreviewBox :wrap-text="wrapText">
+          <template v-if="viewMode === 'json'">{{ jsonPreview }}</template>
+          <template v-else>{{ generateCopyText() }}</template>
+        </AppPreviewBox>
       </div>
     </div>
 
@@ -296,15 +316,10 @@ const selectedCompanyUrl = computed(() => {
   margin: 0;
 }
 
-.preview-header {
+.header-actions {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  margin-bottom: 8px;
-}
-
-.preview-header h4 {
-  margin: 0;
+  gap: 12px;
 }
 
 .btn-small {
