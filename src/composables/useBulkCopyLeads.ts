@@ -7,6 +7,7 @@ import type { Lead } from '@/types/lead/lead';
 export function useBulkCopyLeads(leads: Lead[]) {
   const currentStep = ref(1);
   const totalSteps = 2; // Reduced steps for bulk copy: Fields selection and Preview
+  const viewMode = ref('text');
 
   // Lead Fields
   const leadFields = ref({
@@ -132,8 +133,11 @@ export function useBulkCopyLeads(leads: Lead[]) {
   };
 
   const copyToClipboard = async () => {
-    const text = generateCopyText();
-    await navigator.clipboard.writeText(text);
+    const content = viewMode.value === 'json'
+      ? JSON.stringify(generateJsonData(), null, 2)
+      : generateCopyText();
+
+    await navigator.clipboard.writeText(content);
 
     // Save settings (only lead fields for now)
     const settings = {
@@ -160,5 +164,6 @@ export function useBulkCopyLeads(leads: Lead[]) {
     generateCopyText,
     generateJsonData,
     copyToClipboard,
+    viewMode,
   };
 }

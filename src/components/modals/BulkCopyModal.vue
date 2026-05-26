@@ -17,7 +17,6 @@ const props = defineProps<Props>();
 const emit = defineEmits(['close']);
 
 const wrapText = ref(false);
-const viewMode = ref('text');
 
 const viewOptions = [
   { label: 'Text', value: 'text' },
@@ -38,6 +37,7 @@ const {
   generateCopyText,
   generateJsonData,
   copyToClipboard,
+  viewMode,
 } = useBulkCopyLeads(props.leads);
 
 </script>

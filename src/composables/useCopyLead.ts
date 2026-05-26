@@ -12,6 +12,7 @@ import type { CopyLeadSettings } from '@/types/copy-lead-settings';
 export function useCopyLead(lead: Lead) {
   const currentStep = ref(1);
   const totalSteps = 5;
+  const viewMode = ref('text');
 
   // Lead Fields
   const leadFields = ref({
@@ -322,8 +323,11 @@ export function useCopyLead(lead: Lead) {
   };
 
   const copyToClipboard = async () => {
-    const text = generateCopyText();
-    await navigator.clipboard.writeText(text);
+    const content = viewMode.value === 'json'
+      ? JSON.stringify(generateJsonData(), null, 2)
+      : generateCopyText();
+
+    await navigator.clipboard.writeText(content);
 
     // Save settings
     const settings: CopyLeadSettings = {
@@ -378,5 +382,6 @@ export function useCopyLead(lead: Lead) {
     copyToClipboard,
     toggleInsight,
     toggleSkill,
+    viewMode,
   };
 }

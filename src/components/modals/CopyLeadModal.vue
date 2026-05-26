@@ -23,7 +23,6 @@ const props = defineProps<Props>();
 const emit = defineEmits(['close']);
 
 const wrapText = ref(false);
-const viewMode = ref('text');
 
 const viewOptions = [
   { label: 'Text', value: 'text' },
@@ -81,6 +80,7 @@ const {
   copyToClipboard,
   toggleInsight,
   toggleSkill,
+  viewMode,
 } = useCopyLead(props.lead);
 
 const copyTitle = async () => {
