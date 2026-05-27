@@ -18,11 +18,19 @@ withDefaults(defineProps<Props>(), {
     <div v-if="$slots.prepend" class="preview-prepend">
       <slot name="prepend" />
     </div>
-    <div
-      class="preview-content"
-      :style="{ whiteSpace: wrapText ? 'pre-wrap' : 'pre' }"
-    >
-      <slot />
+    <div class="content-container">
+      <div v-if="$slots.header" class="content-header">
+        <slot name="header"></slot>
+      </div>
+      <div
+        class="preview-content"
+        :style="{ whiteSpace: wrapText ? 'pre-wrap' : 'pre' }"
+      >
+        <slot />
+      </div>
+      <div v-if="$slots.footer" class="content-footer">
+        <slot name="footer"></slot>
+      </div>
     </div>
     <div v-if="$slots.append" class="preview-append">
       <slot name="append" />
@@ -43,8 +51,35 @@ withDefaults(defineProps<Props>(), {
   gap: 8px;
 }
 
+.preview-box:has(.content-header) {
+  padding-top: 4px;
+}
+
+.preview-box:has(.content-footer) {
+  padding-bottom: 4px;
+}
+
+.content-container {
+  max-height: 320px;
+  overflow: hidden;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.content-header {
+  border-bottom: 1px solid #999;
+  width: 100%;
+  padding-bottom: 4px;
+}
+
+.content-footer {
+  border-top: 1px solid #999;
+  width: 100%;
+  padding-top: 4px;
+}
+
 .preview-content {
-  max-height: 310px;
   overflow: auto;
   flex: 1;
 }
