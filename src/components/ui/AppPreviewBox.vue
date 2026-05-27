@@ -1,12 +1,17 @@
 <script lang="ts" setup>
+import VueJsonPretty from 'vue-json-pretty';
+import 'vue-json-pretty/lib/styles.css';
+
 interface Props {
   wrapText?: boolean;
   mini?: boolean;
+  json?: any;
 }
 
 withDefaults(defineProps<Props>(), {
   wrapText: false,
   mini: false,
+  json: null,
 });
 </script>
 
@@ -26,7 +31,20 @@ withDefaults(defineProps<Props>(), {
         class="preview-content"
         :style="{ whiteSpace: wrapText ? 'pre-wrap' : 'pre' }"
       >
-        <slot />
+        <template v-if="json">
+          <VueJsonPretty
+            :data="json"
+            :deep="3"
+            show-length
+            show-line
+            show-icon
+            :show-double-quotes="false"
+            class="json-pretty-small"
+          />
+        </template>
+        <template v-else>
+          <slot />
+        </template>
       </div>
       <div v-if="$slots.footer" class="content-footer">
         <slot name="footer"></slot>
@@ -82,6 +100,11 @@ withDefaults(defineProps<Props>(), {
 .preview-content {
   overflow: auto;
   flex: 1;
+}
+
+.preview-content .json-pretty-small * {
+  font-size: 0.75rem;
+  line-height: 1.4;
 }
 
 .preview-box.mini {
