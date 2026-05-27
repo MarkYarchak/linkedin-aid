@@ -18,10 +18,6 @@ const emit = defineEmits(['close']);
 
 const wrapText = ref(false);
 
-const jsonPreview = computed(() => {
-  return JSON.stringify(generateJsonData(), null, 2);
-});
-
 const {
   currentStep,
   totalSteps,
@@ -36,6 +32,7 @@ const {
   viewOptions,
 } = useBulkCopyLeads(props.leads);
 
+const isJsonView = computed(() => viewMode.value === 'json');
 </script>
 
 <template>
@@ -75,16 +72,23 @@ const {
         <div class="step-header-with-action">
           <h4>Preview ({{ leads.length }} leads)</h4>
           <div class="header-actions">
+            <AppCheckbox
+              v-if="!isJsonView"
+              v-model="wrapText"
+              label="Wrap text"
+              size="sm"
+            />
             <AppSegmentedControl
               v-model="viewMode"
               :options="viewOptions"
             />
-            <AppCheckbox v-model="wrapText" label="Wrap text" />
           </div>
         </div>
-        <AppPreviewBox :wrap-text="wrapText">
-          <template v-if="viewMode === 'json'">{{ jsonPreview }}</template>
-          <template v-else>{{ generateCopyText() }}</template>
+        <AppPreviewBox
+          :json="isJsonView ? generateJsonData() : null"
+          :wrap-text="!isJsonView && wrapText"
+        >
+          <template v-if="!isJsonView">{{ generateCopyText() }}</template>
         </AppPreviewBox>
       </div>
     </div>
