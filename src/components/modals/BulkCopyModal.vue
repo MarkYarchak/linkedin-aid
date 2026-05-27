@@ -44,7 +44,11 @@ const {
     title="Bulk Copy Leads"
     @close="emit('close')"
   >
-    <AppStepper :current-step="currentStep" :total-steps="totalSteps" />
+    <AppStepper
+      :current-step="currentStep"
+      :total-steps="totalSteps"
+      class="mb-4"
+    />
 
     <div class="step-content">
       <!-- Step 1: Lead Info -->
