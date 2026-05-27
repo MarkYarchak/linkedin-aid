@@ -297,7 +297,6 @@ const selectedCompanyUrl = computed(() => {
   flex: 1;
   overflow-y: auto;
   min-height: 200px;
-  padding-right: 4px;
 }
 
 .step-content h4 {
