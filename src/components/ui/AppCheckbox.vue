@@ -2,9 +2,12 @@
 interface Props {
   modelValue: boolean;
   label?: string;
+  size?: 'sm' | 'md' | 'lg';
 }
 
-const props = defineProps<Props>();
+const props = withDefaults(defineProps<Props>(), {
+  size: 'md',
+});
 const emit = defineEmits(['update:modelValue']);
 
 const toggle = () => {
@@ -13,7 +16,7 @@ const toggle = () => {
 </script>
 
 <template>
-  <label class="app-checkbox" @click.prevent="toggle">
+  <label :class="['app-checkbox', `size-${size}`]" @click.prevent="toggle">
     <div :class="['checkbox-box', { checked: modelValue }]">
       <svg v-if="modelValue" viewBox="0 0 24 24" class="check-icon">
         <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" fill="currentColor" />
@@ -30,13 +33,25 @@ const toggle = () => {
   gap: 10px;
   cursor: pointer;
   user-select: none;
-  font-size: 0.9rem;
   padding: 4px 0;
 }
 
+.app-checkbox.size-sm {
+  font-size: 0.8rem;
+  gap: 8px;
+}
+
+.app-checkbox.size-md {
+  font-size: 0.9rem;
+  gap: 10px;
+}
+
+.app-checkbox.size-lg {
+  font-size: 1rem;
+  gap: 12px;
+}
+
 .checkbox-box {
-  width: 18px;
-  height: 18px;
   border: 2px solid #cbd5e1;
   border-radius: 4px;
   display: flex;
@@ -47,15 +62,45 @@ const toggle = () => {
   flex-shrink: 0;
 }
 
+.size-sm .checkbox-box {
+  width: 14px;
+  height: 14px;
+  border-width: 1.5px;
+  border-radius: 3px;
+}
+
+.size-md .checkbox-box {
+  width: 18px;
+  height: 18px;
+}
+
+.size-lg .checkbox-box {
+  width: 22px;
+  height: 22px;
+}
+
 .checkbox-box.checked {
   background: #0a66c2;
   border-color: #0a66c2;
 }
 
 .check-icon {
+  color: white;
+}
+
+.size-sm .check-icon {
+  width: 10px;
+  height: 10px;
+}
+
+.size-md .check-icon {
   width: 14px;
   height: 14px;
-  color: white;
+}
+
+.size-lg .check-icon {
+  width: 18px;
+  height: 18px;
 }
 
 .checkbox-label {
