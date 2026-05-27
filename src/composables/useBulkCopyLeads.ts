@@ -8,6 +8,10 @@ export function useBulkCopyLeads(leads: Lead[]) {
   const currentStep = ref(1);
   const totalSteps = 2; // Reduced steps for bulk copy: Fields selection and Preview
   const viewMode = ref('text');
+  const viewOptions = [
+    { label: 'Text', value: 'text' },
+    { label: 'JSON', value: 'json' },
+  ];
 
   // Lead Fields
   const leadFields = ref({
@@ -165,5 +169,6 @@ export function useBulkCopyLeads(leads: Lead[]) {
     generateJsonData,
     copyToClipboard,
     viewMode,
+    viewOptions,
   };
 }

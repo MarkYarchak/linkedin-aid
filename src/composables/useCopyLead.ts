@@ -13,6 +13,10 @@ export function useCopyLead(lead: Lead) {
   const currentStep = ref(1);
   const totalSteps = 5;
   const viewMode = ref('text');
+  const viewOptions = [
+    { label: 'Text', value: 'text' },
+    { label: 'JSON', value: 'json' },
+  ];
 
   // Lead Fields
   const leadFields = ref({
@@ -383,5 +387,6 @@ export function useCopyLead(lead: Lead) {
     toggleInsight,
     toggleSkill,
     viewMode,
+    viewOptions,
   };
 }

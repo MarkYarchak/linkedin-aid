@@ -18,11 +18,6 @@ const emit = defineEmits(['close']);
 
 const wrapText = ref(false);
 
-const viewOptions = [
-  { label: 'Text', value: 'text' },
-  { label: 'JSON', value: 'json' },
-];
-
 const jsonPreview = computed(() => {
   return JSON.stringify(generateJsonData(), null, 2);
 });
@@ -38,6 +33,7 @@ const {
   generateJsonData,
   copyToClipboard,
   viewMode,
+  viewOptions,
 } = useBulkCopyLeads(props.leads);
 
 </script>
