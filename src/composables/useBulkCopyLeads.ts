@@ -281,6 +281,7 @@ export function useBulkCopyLeads(leads: Lead[], heroCard?: HeroCard) {
       }
     }
 
+    output += `=== LEADS ===\n`;
     output += leads.map(lead => {
         const header = `--- ${lead.searchResult?.fullName || 'Lead'} ---`;
         const content = formatLead(lead);
