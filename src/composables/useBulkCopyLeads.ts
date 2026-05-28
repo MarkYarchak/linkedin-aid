@@ -18,6 +18,8 @@ export function useBulkCopyLeads(leads: Lead[]) {
     fullName: true,
     location: true,
     summary: true,
+    recentActivity: true,
+    mutualConnections: true,
     position: {
       title: true,
       companyName: true,
@@ -65,6 +67,12 @@ export function useBulkCopyLeads(leads: Lead[]) {
       if (leadFields.value.summary && searchResult.summary) {
         leadInfo += `Summary:\n${sanitizeText(searchResult.summary, true)}\n`;
       }
+      if (leadFields.value.mutualConnections) {
+        const mutualBadge = searchResult.spotlightBadges?.find(b => b.id === 'SECOND_DEGREE_CONNECTION');
+        if (mutualBadge) {
+          leadInfo += `Mutual Connections: ${mutualBadge.displayValue}\n`;
+        }
+      }
       if (leadInfo) sections.push(leadInfo.trim());
 
       const pos = searchResult.currentPositions?.[0];
@@ -90,6 +98,13 @@ export function useBulkCopyLeads(leads: Lead[]) {
           sections.push(posInfo.trim());
         }
       }
+
+      if (leadFields.value.recentActivity) {
+        const activityBadge = searchResult.spotlightBadges?.find(b => b.id === 'POSTED_ON_LINKEDIN');
+        if (activityBadge) {
+          sections.push(`Recent Activity: ${activityBadge.displayValue}`);
+        }
+      }
     }
 
     return sections.join('\n');
@@ -104,6 +119,18 @@ export function useBulkCopyLeads(leads: Lead[]) {
       if (leadFields.value.location) data.location = searchResult.geoRegion;
       if (leadFields.value.summary && searchResult.summary) {
         data.summary = sanitizeText(searchResult.summary, true);
+      }
+      if (leadFields.value.mutualConnections) {
+        const mutualBadge = searchResult.spotlightBadges?.find(b => b.id === 'SECOND_DEGREE_CONNECTION');
+        if (mutualBadge) {
+          data.mutualConnections = mutualBadge.displayValue;
+        }
+      }
+      if (leadFields.value.recentActivity) {
+        const activityBadge = searchResult.spotlightBadges?.find(b => b.id === 'POSTED_ON_LINKEDIN');
+        if (activityBadge) {
+          data.recentActivitySummary = activityBadge.displayValue;
+        }
       }
 
       const pos = searchResult.currentPositions?.[0];
