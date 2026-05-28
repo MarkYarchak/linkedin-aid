@@ -3,8 +3,9 @@ import { sanitizeText } from '@/helpers/text-helper';
 import { getRelativeTime } from '@/helpers/date-helper';
 import { browser } from 'wxt/browser';
 import type { Lead } from '@/types/lead/lead';
+import type { HeroCard } from '@/types/search/salesApiLeadSearch';
 
-export function useBulkCopyLeads(leads: Lead[]) {
+export function useBulkCopyLeads(leads: Lead[], heroCard?: HeroCard) {
   const currentStep = ref(1);
   const totalSteps = 2; // Reduced steps for bulk copy: Fields selection and Preview
   const viewMode = ref('text');
@@ -20,6 +21,7 @@ export function useBulkCopyLeads(leads: Lead[]) {
     summary: true,
     recentActivity: true,
     mutualConnections: true,
+    heroCard: true,
     position: {
       title: true,
       companyName: true,
@@ -158,79 +160,130 @@ export function useBulkCopyLeads(leads: Lead[]) {
   };
 
   const generateJsonData = () => {
+    let result: any;
+    const leadData = leads.map(lead => formatLeadJson(lead));
+
     if (!groupByCompany.value) {
-      return leads.map(lead => formatLeadJson(lead));
-    }
+      result = leadData;
+    } else {
+      const grouped: Record<string, any> = {};
+      const noCompanyLeads: any[] = [];
 
-    const grouped: Record<string, any> = {};
-    const noCompanyLeads: any[] = [];
+      leads.forEach((lead, index) => {
+        const data = leadData[index];
+        const companyUrn = lead.searchResult?.currentPositions?.[0]?.companyUrn;
+        const companyName = lead.searchResult?.currentPositions?.[0]?.companyName;
 
-    leads.forEach(lead => {
-      const data = formatLeadJson(lead);
-      const companyUrn = lead.searchResult?.currentPositions?.[0]?.companyUrn;
-      const companyName = lead.searchResult?.currentPositions?.[0]?.companyName;
+        if (companyUrn) {
+          if (!grouped[companyUrn]) {
+            grouped[companyUrn] = {
+              companyName,
+              leads: []
+            };
 
-      if (companyUrn) {
-        if (!grouped[companyUrn]) {
-          grouped[companyUrn] = {
-            companyName,
-            leads: []
-          };
-
-          // Optionally include company industry/location if available from the first lead
-          const pos = lead.searchResult?.currentPositions?.[0];
-          if (pos?.companyUrnResolutionResult) {
-            if (pos.companyUrnResolutionResult.industry) {
-              grouped[companyUrn].industry = pos.companyUrnResolutionResult.industry;
+            // Optionally include company industry/location if available from the first lead
+            const pos = lead.searchResult?.currentPositions?.[0];
+            if (pos?.companyUrnResolutionResult) {
+              if (pos.companyUrnResolutionResult.industry) {
+                grouped[companyUrn].industry = pos.companyUrnResolutionResult.industry;
+              }
+              if (pos.companyUrnResolutionResult.location) {
+                grouped[companyUrn].location = pos.companyUrnResolutionResult.location;
+              }
             }
-            if (pos.companyUrnResolutionResult.location) {
-              grouped[companyUrn].location = pos.companyUrnResolutionResult.location;
+          }
+
+          // Remove redundant company info from lead object if it's already in the group header
+          if (data.currentPosition) {
+            delete data.currentPosition.companyName;
+            if (grouped[companyUrn].industry && data.currentPosition.industry === grouped[companyUrn].industry) {
+              delete data.currentPosition.industry;
+            }
+            if (grouped[companyUrn].location && data.currentPosition.location === grouped[companyUrn].location) {
+              delete data.currentPosition.location;
+            }
+            // If currentPosition is now empty, remove it
+            if (Object.keys(data.currentPosition).length === 0) {
+              delete data.currentPosition;
             }
           }
-        }
 
-        // Remove redundant company info from lead object if it's already in the group header
-        if (data.currentPosition) {
-          delete data.currentPosition.companyName;
-          if (grouped[companyUrn].industry && data.currentPosition.industry === grouped[companyUrn].industry) {
-            delete data.currentPosition.industry;
-          }
-          if (grouped[companyUrn].location && data.currentPosition.location === grouped[companyUrn].location) {
-            delete data.currentPosition.location;
-          }
-          // If currentPosition is now empty, remove it
-          if (Object.keys(data.currentPosition).length === 0) {
-            delete data.currentPosition;
-          }
+          grouped[companyUrn].leads.push(data);
+        } else {
+          noCompanyLeads.push(data);
         }
+      });
 
-        grouped[companyUrn].leads.push(data);
-      } else {
-        noCompanyLeads.push(data);
+      const groupedResult = Object.values(grouped);
+      if (noCompanyLeads.length > 0) {
+        groupedResult.push({
+          companyName: 'No Company',
+          leads: noCompanyLeads
+        } as any);
       }
-    });
 
-    const result = Object.values(grouped);
-    if (noCompanyLeads.length > 0) {
-      result.push({
-        companyName: 'No Company',
-        leads: noCompanyLeads
-      } as any);
+      if (groupedResult.length === 1) {
+        if (groupedResult[0].companyName === 'No Company') {
+          result = groupedResult[0].leads;
+        } else {
+          result = groupedResult[0];
+        }
+      } else {
+        result = groupedResult;
+      }
     }
 
-    if (result.length === 1) {
-      if (result[0].companyName === 'No Company') return result[0].leads;
-      return result[0];
+    if (leadFields.value.heroCard && heroCard) {
+      const company = heroCard.entity?.['com.linkedin.sales.company.Company'];
+      if (company) {
+        const companyHighlight = {
+          name: company.name,
+          industry: company.industry,
+          location: company.location,
+          employeeCount: company.employeeCount,
+          description: sanitizeText(company.description, true),
+        };
+
+        if (Array.isArray(result)) {
+          return {
+            companyHighlight,
+            leads: result
+          };
+        } else {
+          return {
+            companyHighlight,
+            ...result
+          };
+        }
+      }
     }
+
     return result;
   };
 
   const generateCopyText = () => {
-    return leads.map(lead => {
+    let output = '';
+
+    if (leadFields.value.heroCard && heroCard) {
+      const company = heroCard.entity?.['com.linkedin.sales.company.Company'];
+      if (company) {
+        let heroInfo = `=== COMPANY HIGHLIGHT ===\n`;
+        heroInfo += `Company name: ${company.name}\n`;
+        if (company.industry) heroInfo += `Industry: ${company.industry}\n`;
+        if (company.location) heroInfo += `Location: ${company.location}\n`;
+        if (company.employeeDisplayCount) heroInfo += `Size: ${company.employeeDisplayCount}\n`;
+        if (company.description) heroInfo += `About: ${sanitizeText(company.description, true)}\n`;
+        output += heroInfo.trim() + '\n\n';
+      }
+    }
+
+    output += leads.map(lead => {
         const header = `--- ${lead.searchResult?.fullName || 'Lead'} ---`;
         const content = formatLead(lead);
         return `${header}\n${content}`;
     }).join('\n\n');
+
+    return output;
   };
 
   const copyToClipboard = async () => {

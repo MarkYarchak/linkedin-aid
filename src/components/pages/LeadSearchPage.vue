@@ -179,6 +179,7 @@ const copySelected = () => {
       v-if="showBulkCopyModal"
       :show="showBulkCopyModal"
       :leads="selectedLeads"
+      :hero-card="currentSession?.heroCard"
       @close="showBulkCopyModal = false"
     />
   </div>

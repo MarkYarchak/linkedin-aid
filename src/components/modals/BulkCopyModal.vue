@@ -10,6 +10,7 @@ import type { Lead } from '@/types/lead/lead';
 
 interface Props {
   leads: Lead[];
+  heroCard?: any;
   show: boolean;
 }
 
@@ -31,7 +32,7 @@ const {
   viewMode,
   viewOptions,
   groupByCompany,
-} = useBulkCopyLeads(props.leads);
+} = useBulkCopyLeads(props.leads, props.heroCard);
 
 const isJsonView = computed(() => viewMode.value === 'json');
 </script>
@@ -58,6 +59,7 @@ const isJsonView = computed(() => viewMode.value === 'json');
           <AppCheckbox v-model="leadFields.summary" label="Summary" />
           <AppCheckbox v-model="leadFields.recentActivity" label="Recent Activity" />
           <AppCheckbox v-model="leadFields.mutualConnections" label="Mutual Connections" />
+          <AppCheckbox v-if="heroCard" v-model="leadFields.heroCard" label="Company Highlight" />
         </div>
         <h4>Current Position Fields</h4>
         <div class="field-group grid _three-cols">

@@ -105,6 +105,7 @@ export class LeadService {
         session.total = data.paging.total;
         session.pageSize = data.paging.count;
         session.searchTitle = data.metadata.searchTitle;
+        session.heroCard = data.metadata.heroCard;
 
         sessions[sessionId] = session;
         await browser.storage.session.set({ searchSessions: sessions });

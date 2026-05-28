@@ -5,4 +5,5 @@ export interface SearchSession {
   leadUrnsByPage: Record<number, string[]>;
   updatedAt: number;
   searchTitle?: string;
+  heroCard?: any;
 }
