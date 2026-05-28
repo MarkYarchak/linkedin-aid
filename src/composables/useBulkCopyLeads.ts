@@ -35,13 +35,17 @@ export function useBulkCopyLeads(leads: Lead[], heroCard?: HeroCard) {
   const isCopied = ref(false);
   const copyTimeout = ref<ReturnType<typeof setTimeout> | null>(null);
   const groupByCompany = ref(false);
+  const prefix = ref('');
 
   onMounted(async () => {
     // Load default settings if any
     const settings = await browser.storage.local.get('bulkCopyLeadSettings');
-    const bulkCopySettings = settings.bulkCopyLeadSettings as { leadFields?: any } | undefined;
+    const bulkCopySettings = settings.bulkCopyLeadSettings as { leadFields?: any; prefix?: string } | undefined;
     if (bulkCopySettings?.leadFields) {
       leadFields.value = { ...leadFields.value, ...bulkCopySettings.leadFields };
+    }
+    if (bulkCopySettings?.prefix) {
+      prefix.value = bulkCopySettings.prefix;
     }
 
     // Set to true only if all leads are within the same company
@@ -287,15 +291,20 @@ export function useBulkCopyLeads(leads: Lead[], heroCard?: HeroCard) {
   };
 
   const copyToClipboard = async () => {
-    const content = viewMode.value === 'json'
+    let content = viewMode.value === 'json'
       ? JSON.stringify(generateJsonData(), null, 2)
       : generateCopyText();
 
+    if (prefix.value) {
+      content = `${prefix.value}\n\n${content}`;
+    }
+
     await navigator.clipboard.writeText(content);
 
-    // Save settings (only lead fields for now)
+    // Save settings
     const settings = {
       leadFields: leadFields.value,
+      prefix: prefix.value,
     };
     await browser.storage.local.set({
         bulkCopyLeadSettings: settings
@@ -321,5 +330,6 @@ export function useBulkCopyLeads(leads: Lead[], heroCard?: HeroCard) {
     viewMode,
     viewOptions,
     groupByCompany,
+    prefix,
   };
 }

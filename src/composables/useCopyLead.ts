@@ -67,6 +67,7 @@ export function useCopyLead(lead: Lead) {
 
   const selectedTarget = ref(titleTargets[0].value);
   const selectedState = ref(titleStates[0].value);
+  const prefix = ref('');
 
   const loadCapturedCompanyUrns = async () => {
     const companies = await companyService.findCompanies();
@@ -83,6 +84,7 @@ export function useCopyLead(lead: Lead) {
       if (s.companyFields) companyFields.value = { ...companyFields.value, ...s.companyFields };
       if (s.selectedTarget) selectedTarget.value = s.selectedTarget;
       if (s.selectedState) selectedState.value = s.selectedState;
+      if (s.prefix) prefix.value = s.prefix;
     }
 
     // Set default position
@@ -327,9 +329,13 @@ export function useCopyLead(lead: Lead) {
   };
 
   const copyToClipboard = async () => {
-    const content = viewMode.value === 'json'
+    let content = viewMode.value === 'json'
       ? JSON.stringify(generateJsonData(), null, 2)
       : generateCopyText();
+
+    if (prefix.value) {
+      content = `${prefix.value}\n\n${content}`;
+    }
 
     await navigator.clipboard.writeText(content);
 
@@ -339,6 +345,7 @@ export function useCopyLead(lead: Lead) {
       companyFields: companyFields.value,
       selectedTarget: selectedTarget.value,
       selectedState: selectedState.value,
+      prefix: prefix.value,
     };
     await browser.storage.local.set({ copyLeadSettings: settings });
 
@@ -378,6 +385,7 @@ export function useCopyLead(lead: Lead) {
     states: titleStates,
     selectedTarget,
     selectedState,
+    prefix,
     nextStep,
     prevStep,
     generateCopyText,

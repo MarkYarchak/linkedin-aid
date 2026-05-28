@@ -26,4 +26,5 @@ export interface CopyLeadSettings {
   };
   selectedTarget?: string;
   selectedState?: string;
+  prefix?: string;
 }

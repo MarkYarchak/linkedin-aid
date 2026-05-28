@@ -32,6 +32,7 @@ const {
   viewMode,
   viewOptions,
   groupByCompany,
+  prefix,
 } = useBulkCopyLeads(props.leads, props.heroCard);
 
 const isJsonView = computed(() => viewMode.value === 'json');
@@ -90,6 +91,8 @@ const isJsonView = computed(() => viewMode.value === 'json');
           </div>
         </div>
         <AppPreviewBox
+          v-model:prefix="prefix"
+          editable-prefix
           :json="isJsonView ? generateJsonData() : null"
           :wrap-text="!isJsonView && wrapText"
         >

@@ -77,6 +77,7 @@ const {
   toggleSkill,
   viewMode,
   viewOptions,
+  prefix,
 } = useCopyLead(props.lead);
 
 const copyTitle = async () => {
@@ -274,7 +275,11 @@ const selectedCompanyUrl = computed(() => {
             <AppCheckbox v-model="wrapText" label="Wrap text" />
           </div>
         </div>
-        <AppPreviewBox :wrap-text="wrapText">
+        <AppPreviewBox
+          v-model:prefix="prefix"
+          editable-prefix
+          :wrap-text="wrapText"
+        >
           <template v-if="viewMode === 'json'">{{ jsonPreview }}</template>
           <template v-else>{{ generateCopyText() }}</template>
         </AppPreviewBox>
