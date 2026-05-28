@@ -265,11 +265,16 @@ const isJsonView = computed(() => viewMode.value === 'json');
         <div class="step-header-with-action">
           <h4>Preview</h4>
           <div class="header-actions">
+            <AppCheckbox
+              v-if="!isJsonView"
+              v-model="wrapText"
+              label="Wrap text"
+              size="sm"
+            />
             <AppSegmentedControl
               v-model="viewMode"
               :options="viewOptions"
             />
-            <AppCheckbox v-model="wrapText" label="Wrap text" />
           </div>
         </div>
         <AppPreviewBox
