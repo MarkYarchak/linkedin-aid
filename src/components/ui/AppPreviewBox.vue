@@ -6,13 +6,17 @@ interface Props {
   wrapText?: boolean;
   mini?: boolean;
   json?: any;
+  editablePrefix?: boolean;
 }
 
 withDefaults(defineProps<Props>(), {
   wrapText: false,
   mini: false,
   json: null,
+  editablePrefix: false,
 });
+
+const prefix = defineModel('prefix', { default: ''});
 </script>
 
 <template>
@@ -24,8 +28,15 @@ withDefaults(defineProps<Props>(), {
       <slot name="prepend" />
     </div>
     <div class="content-container">
-      <div v-if="$slots.header" class="content-header">
+      <div v-if="$slots.header || editablePrefix" class="content-header">
         <slot name="header"></slot>
+
+        <input
+          v-model="prefix"
+          type="text"
+          placeholder="Add a prefix (e.g., #lead)"
+          class="prefix-input"
+        />
       </div>
       <div
         class="preview-content"
@@ -85,15 +96,21 @@ withDefaults(defineProps<Props>(), {
   flex-direction: column;
 }
 
+.content-header,
+.content-footer {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .content-header {
   border-bottom: 1px solid #999;
-  width: 100%;
   padding-bottom: 4px;
 }
 
 .content-footer {
   border-top: 1px solid #999;
-  width: 100%;
   padding-top: 4px;
 }
 
@@ -117,5 +134,19 @@ withDefaults(defineProps<Props>(), {
   display: flex;
   align-items: center;
   flex-shrink: 0;
+}
+
+.prefix-input {
+  flex-grow: 1;
+  padding: 8px 12px;
+  border-radius: 4px;
+  border: 1px solid #cbd5e1;
+  font-size: 0.9rem;
+}
+
+.prefix-input:focus {
+  outline: none;
+  border-color: #0a66c2;
+  box-shadow: 0 0 0 2px rgba(10, 102, 194, 0.1);
 }
 </style>
