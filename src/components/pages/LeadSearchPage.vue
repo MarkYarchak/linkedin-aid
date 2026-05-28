@@ -41,6 +41,32 @@ const totalPages = computed(() => {
   return Math.ceil(currentSession.value.total / currentSession.value.pageSize);
 });
 
+const getQueryPage = () => {
+  if (!props.tabUrl) {
+    return undefined;
+  }
+
+  try {
+    const url = new URL(props.tabUrl);
+    const page = url.searchParams.get('page');
+    if (page) {
+      const pageNum = parseInt(page, 10);
+      if (!isNaN(pageNum) && pageNum > 0) {
+        return pageNum;
+      }
+    }
+  } catch (e) {
+    console.error('Failed to parse tabUrl', e);
+  }
+};
+
+watch(totalPages, (newTotal) => {
+  const queryPage = getQueryPage();
+  if (queryPage && newTotal && queryPage <= newTotal && queryPage > 0) {
+    currentPage.value = queryPage - 1;
+  }
+}, { immediate: true });
+
 const loadedPagesCount = computed(() => {
   if (!currentSession.value) return 0;
   return Object.keys(currentSession.value.leadUrnsByPage).length;
