@@ -13,7 +13,7 @@ export function useSearchSessions(tabUrl?: string) {
     if (!tabUrl) return null;
     try {
       const url = new URL(tabUrl);
-      return url.searchParams.get('sessionId');
+      return url.searchParams.get('query');
     } catch (e) {
       return null;
     }
