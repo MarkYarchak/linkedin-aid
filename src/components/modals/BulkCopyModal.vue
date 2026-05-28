@@ -78,15 +78,14 @@ const isJsonView = computed(() => viewMode.value === 'json');
         <div class="step-header-with-action">
           <h4>Preview ({{ leads.length }} leads)</h4>
           <div class="header-actions">
-            <AppCheckbox
-              v-if="!isJsonView"
-              v-model="wrapText"
-              label="Wrap text"
-              size="sm"
-            />
             <AppSegmentedControl
               v-model="viewMode"
               :options="viewOptions"
+            />
+            <AppCheckbox
+              v-model="wrapText"
+              label="Wrap text"
+              size="sm"
             />
           </div>
         </div>
@@ -94,7 +93,7 @@ const isJsonView = computed(() => viewMode.value === 'json');
           v-model:prefix="prefix"
           editable-prefix
           :json="isJsonView ? generateJsonData() : null"
-          :wrap-text="!isJsonView && wrapText"
+          :wrap-text="wrapText"
         >
           <template v-if="isJsonView" #header>
             <AppCheckbox

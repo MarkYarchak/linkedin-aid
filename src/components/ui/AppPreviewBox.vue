@@ -40,7 +40,7 @@ const prefix = defineModel('prefix', { default: ''});
       </div>
       <div
         class="preview-content"
-        :style="{ whiteSpace: wrapText ? 'pre-wrap' : 'pre' }"
+        :style="{ whiteSpace: wrapText && !json ? 'pre-wrap' : 'pre' }"
       >
         <template v-if="json">
           <VueJsonPretty
@@ -49,6 +49,7 @@ const prefix = defineModel('prefix', { default: ''});
             show-length
             show-line
             show-icon
+            :dynamic-height="wrapText"
             :show-double-quotes="false"
             class="json-pretty-small"
           />
