@@ -24,10 +24,6 @@ const emit = defineEmits(['close']);
 
 const wrapText = ref(false);
 
-const jsonPreview = computed(() => {
-  return JSON.stringify(generateJsonData(), null, 2);
-});
-
 const getInsightData = (insight: any) => {
   const activity = insight.activityUnion;
   const date = insight.createdAt ? getRelativeTime(insight.createdAt) : '';
@@ -94,6 +90,7 @@ const selectedCompanyUrl = computed(() => {
   return getSalesNavigatorCompanyUrl(selectedPositionUrn.value);
 });
 
+const isJsonView = computed(() => viewMode.value === 'json');
 </script>
 
 <template>
@@ -278,10 +275,10 @@ const selectedCompanyUrl = computed(() => {
         <AppPreviewBox
           v-model:prefix="prefix"
           editable-prefix
-          :wrap-text="wrapText"
+          :json="isJsonView ? generateJsonData() : null"
+          :wrap-text="!isJsonView && wrapText"
         >
-          <template v-if="viewMode === 'json'">{{ jsonPreview }}</template>
-          <template v-else>{{ generateCopyText() }}</template>
+          <template v-if="!isJsonView">{{ generateCopyText() }}</template>
         </AppPreviewBox>
       </div>
     </div>
