@@ -30,6 +30,7 @@ const {
   copyToClipboard,
   viewMode,
   viewOptions,
+  groupByCompany,
 } = useBulkCopyLeads(props.leads);
 
 const isJsonView = computed(() => viewMode.value === 'json');
@@ -88,6 +89,13 @@ const isJsonView = computed(() => viewMode.value === 'json');
           :json="isJsonView ? generateJsonData() : null"
           :wrap-text="!isJsonView && wrapText"
         >
+          <template v-if="isJsonView" #header>
+            <AppCheckbox
+              v-model="groupByCompany"
+              label="Group by company"
+              size="sm"
+            />
+          </template>
           <template v-if="!isJsonView">{{ generateCopyText() }}</template>
         </AppPreviewBox>
       </div>

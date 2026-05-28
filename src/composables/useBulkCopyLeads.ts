@@ -30,6 +30,7 @@ export function useBulkCopyLeads(leads: Lead[]) {
 
   const isCopied = ref(false);
   const copyTimeout = ref<ReturnType<typeof setTimeout> | null>(null);
+  const groupByCompany = ref(false);
 
   onMounted(async () => {
     // Load default settings if any
@@ -38,6 +39,11 @@ export function useBulkCopyLeads(leads: Lead[]) {
     if (bulkCopySettings?.leadFields) {
       leadFields.value = { ...leadFields.value, ...bulkCopySettings.leadFields };
     }
+
+    // Set to true only if all leads are within the same company
+    const companyUrns = leads.map(l => l.searchResult?.currentPositions?.[0]?.companyUrn);
+    const uniqueCompanies = new Set(companyUrns);
+    groupByCompany.value = uniqueCompanies.size === 1;
   });
 
   const nextStep = () => {
@@ -125,7 +131,71 @@ export function useBulkCopyLeads(leads: Lead[]) {
   };
 
   const generateJsonData = () => {
-    return leads.map(lead => formatLeadJson(lead));
+    if (!groupByCompany.value) {
+      return leads.map(lead => formatLeadJson(lead));
+    }
+
+    const grouped: Record<string, any> = {};
+    const noCompanyLeads: any[] = [];
+
+    leads.forEach(lead => {
+      const data = formatLeadJson(lead);
+      const companyUrn = lead.searchResult?.currentPositions?.[0]?.companyUrn;
+      const companyName = lead.searchResult?.currentPositions?.[0]?.companyName;
+
+      if (companyUrn) {
+        if (!grouped[companyUrn]) {
+          grouped[companyUrn] = {
+            companyName,
+            leads: []
+          };
+
+          // Optionally include company industry/location if available from the first lead
+          const pos = lead.searchResult?.currentPositions?.[0];
+          if (pos?.companyUrnResolutionResult) {
+            if (pos.companyUrnResolutionResult.industry) {
+              grouped[companyUrn].industry = pos.companyUrnResolutionResult.industry;
+            }
+            if (pos.companyUrnResolutionResult.location) {
+              grouped[companyUrn].location = pos.companyUrnResolutionResult.location;
+            }
+          }
+        }
+
+        // Remove redundant company info from lead object if it's already in the group header
+        if (data.currentPosition) {
+          delete data.currentPosition.companyName;
+          if (grouped[companyUrn].industry && data.currentPosition.industry === grouped[companyUrn].industry) {
+            delete data.currentPosition.industry;
+          }
+          if (grouped[companyUrn].location && data.currentPosition.location === grouped[companyUrn].location) {
+            delete data.currentPosition.location;
+          }
+          // If currentPosition is now empty, remove it
+          if (Object.keys(data.currentPosition).length === 0) {
+            delete data.currentPosition;
+          }
+        }
+
+        grouped[companyUrn].leads.push(data);
+      } else {
+        noCompanyLeads.push(data);
+      }
+    });
+
+    const result = Object.values(grouped);
+    if (noCompanyLeads.length > 0) {
+      result.push({
+        companyName: 'No Company',
+        leads: noCompanyLeads
+      } as any);
+    }
+
+    if (result.length === 1) {
+      if (result[0].companyName === 'No Company') return result[0].leads;
+      return result[0];
+    }
+    return result;
   };
 
   const generateCopyText = () => {
@@ -170,5 +240,6 @@ export function useBulkCopyLeads(leads: Lead[]) {
     copyToClipboard,
     viewMode,
     viewOptions,
+    groupByCompany,
   };
 }
