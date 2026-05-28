@@ -68,6 +68,7 @@ export function useCopyLead(lead: Lead) {
   const selectedTarget = ref(titleTargets[0].value);
   const selectedState = ref(titleStates[0].value);
   const prefix = ref('');
+  const wrapText = ref(false);
 
   const loadCapturedCompanyUrns = async () => {
     const companies = await companyService.findCompanies();
@@ -85,6 +86,8 @@ export function useCopyLead(lead: Lead) {
       if (s.selectedTarget) selectedTarget.value = s.selectedTarget;
       if (s.selectedState) selectedState.value = s.selectedState;
       if (s.prefix) prefix.value = s.prefix;
+      if (s.viewMode) viewMode.value = s.viewMode;
+      if (s.wrapText !== undefined) wrapText.value = s.wrapText;
     }
 
     // Set default position
@@ -346,6 +349,8 @@ export function useCopyLead(lead: Lead) {
       selectedTarget: selectedTarget.value,
       selectedState: selectedState.value,
       prefix: prefix.value,
+      viewMode: viewMode.value,
+      wrapText: wrapText.value,
     };
     await browser.storage.local.set({ copyLeadSettings: settings });
 
@@ -396,5 +401,6 @@ export function useCopyLead(lead: Lead) {
     toggleSkill,
     viewMode,
     viewOptions,
+    wrapText,
   };
 }

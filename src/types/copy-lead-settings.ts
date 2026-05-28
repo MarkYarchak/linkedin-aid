@@ -27,4 +27,6 @@ export interface CopyLeadSettings {
   selectedTarget?: string;
   selectedState?: string;
   prefix?: string;
+  viewMode?: string;
+  wrapText?: boolean;
 }

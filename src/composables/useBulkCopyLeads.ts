@@ -36,16 +36,28 @@ export function useBulkCopyLeads(leads: Lead[], heroCard?: HeroCard) {
   const copyTimeout = ref<ReturnType<typeof setTimeout> | null>(null);
   const groupByCompany = ref(false);
   const prefix = ref('');
+  const wrapText = ref(false);
 
   onMounted(async () => {
     // Load default settings if any
     const settings = await browser.storage.local.get('bulkCopyLeadSettings');
-    const bulkCopySettings = settings.bulkCopyLeadSettings as { leadFields?: any; prefix?: string } | undefined;
+    const bulkCopySettings = settings.bulkCopyLeadSettings as {
+      leadFields?: any;
+      prefix?: string;
+      viewMode?: string;
+      wrapText?: boolean;
+    } | undefined;
     if (bulkCopySettings?.leadFields) {
       leadFields.value = { ...leadFields.value, ...bulkCopySettings.leadFields };
     }
     if (bulkCopySettings?.prefix) {
       prefix.value = bulkCopySettings.prefix;
+    }
+    if (bulkCopySettings?.viewMode) {
+      viewMode.value = bulkCopySettings.viewMode;
+    }
+    if (bulkCopySettings?.wrapText !== undefined) {
+      wrapText.value = bulkCopySettings.wrapText;
     }
 
     // Set to true only if all leads are within the same company
@@ -306,6 +318,8 @@ export function useBulkCopyLeads(leads: Lead[], heroCard?: HeroCard) {
     const settings = {
       leadFields: leadFields.value,
       prefix: prefix.value,
+      viewMode: viewMode.value,
+      wrapText: wrapText.value,
     };
     await browser.storage.local.set({
         bulkCopyLeadSettings: settings
@@ -332,5 +346,6 @@ export function useBulkCopyLeads(leads: Lead[], heroCard?: HeroCard) {
     viewOptions,
     groupByCompany,
     prefix,
+    wrapText,
   };
 }

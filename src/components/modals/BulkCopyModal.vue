@@ -17,8 +17,6 @@ interface Props {
 const props = defineProps<Props>();
 const emit = defineEmits(['close']);
 
-const wrapText = ref(false);
-
 const {
   currentStep,
   totalSteps,
@@ -33,6 +31,7 @@ const {
   viewOptions,
   groupByCompany,
   prefix,
+  wrapText,
 } = useBulkCopyLeads(props.leads, props.heroCard);
 
 const isJsonView = computed(() => viewMode.value === 'json');

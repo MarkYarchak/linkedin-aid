@@ -22,30 +22,6 @@ interface Props {
 const props = defineProps<Props>();
 const emit = defineEmits(['close']);
 
-const wrapText = ref(false);
-
-const getInsightData = (insight: any) => {
-  const activity = insight.activityUnion;
-  const date = insight.createdAt ? getRelativeTime(insight.createdAt) : '';
-
-  if (activity.postActivity) {
-    const post = activity.postActivity;
-    const type = post.rootActivity ? 'RESHARED POST' : 'POST';
-    return {
-      type,
-      date,
-      text: post.message?.text || post.rootActivity?.message?.text || 'Post content'
-    };
-  } else if (activity.commentActivity) {
-    return {
-      type: 'COMMENT',
-      date,
-      text: activity.commentActivity.commentary?.text || 'Comment content'
-    };
-  }
-  return { type: 'Activity', date, text: 'Unknown activity' };
-};
-
 const {
   currentStep,
   totalSteps,
@@ -74,7 +50,30 @@ const {
   viewMode,
   viewOptions,
   prefix,
+  wrapText,
 } = useCopyLead(props.lead);
+
+const getInsightData = (insight: any) => {
+  const activity = insight.activityUnion;
+  const date = insight.createdAt ? getRelativeTime(insight.createdAt) : '';
+
+  if (activity.postActivity) {
+    const post = activity.postActivity;
+    const type = post.rootActivity ? 'RESHARED POST' : 'POST';
+    return {
+      type,
+      date,
+      text: post.message?.text || post.rootActivity?.message?.text || 'Post content'
+    };
+  } else if (activity.commentActivity) {
+    return {
+      type: 'COMMENT',
+      date,
+      text: activity.commentActivity.commentary?.text || 'Comment content'
+    };
+  }
+  return { type: 'Activity', date, text: 'Unknown activity' };
+};
 
 const copyTitle = async () => {
   await navigator.clipboard.writeText(generateTitle());
