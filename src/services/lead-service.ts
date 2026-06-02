@@ -15,22 +15,22 @@ export class LeadService {
     this.lastTabUrls[tabId] = url;
   }
 
-  async updateLeadInStorage(urn: string, update: Partial<Lead>) {
+  async updateLeadInStorage(urn: string, update: Partial<Lead>, deepMerge = false) {
     const storage = await browser.storage.local.get('capturedLeads');
     const leads: Record<string, Lead> = (storage.capturedLeads || {}) as Record<string, Lead>;
 
     const existingLead = leads[urn] || { entityUrn: urn, updatedAt: Date.now() };
 
-    const { searchResult, ...restUpdate } = update;
-
-    leads[urn] = {
-      ...existingLead,
-      ...restUpdate,
-      searchResult: searchResult && existingLead.searchResult
-        ? merge(existingLead.searchResult, searchResult)
-        : existingLead.searchResult,
-      updatedAt: Date.now(),
-    };
+    if (deepMerge) {
+      leads[urn] = merge(existingLead, update);
+      leads[urn].updatedAt = Date.now();
+    } else {
+      leads[urn] = {
+        ...existingLead,
+        ...update,
+        updatedAt: Date.now(),
+      };
+    }
 
     await browser.storage.local.set({ capturedLeads: leads });
   }
@@ -132,7 +132,7 @@ export class LeadService {
             await this.updateLeadInStorage(urn, {
               searchResult: element,
               profileUrl: getProfileUrl(urn),
-            });
+            }, true);
           }
         }
       }

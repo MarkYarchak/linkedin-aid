@@ -1,4 +1,5 @@
 import { browser } from 'wxt/browser';
+import merge from 'deepmerge';
 import { parseLinkedInUrn } from '@/helpers/urn';
 import { MessageType } from '@/constants/message-types';
 import { getSalesNavigatorCompanyUrl, isSalesNavigatorCompanyUrl } from '@/helpers/url-helpers';
@@ -23,15 +24,21 @@ export class CompanyService {
       .find((company) => parseLinkedInUrn(company.entityUrn).id === id);
   }
 
-  async updateCompanyInStorage(urn: string, update: Partial<Company>) {
+  async updateCompanyInStorage(urn: string, update: Partial<Company>, deepMerge = false) {
     const companies = await this.findCompanies();
 
     const existingCompany = companies[urn] || { entityUrn: urn, updatedAt: Date.now() };
-    companies[urn] = {
-      ...existingCompany,
-      ...update,
-      updatedAt: Date.now(),
-    };
+
+    if (deepMerge) {
+      companies[urn] = merge(existingCompany, update);
+      companies[urn].updatedAt = Date.now();
+    } else {
+      companies[urn] = {
+        ...existingCompany,
+        ...update,
+        updatedAt: Date.now(),
+      };
+    }
 
     await browser.storage.local.set({ capturedCompanies: companies });
   }
