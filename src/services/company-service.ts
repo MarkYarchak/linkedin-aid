@@ -1,6 +1,7 @@
 import { browser } from 'wxt/browser';
 import { parseLinkedInUrn } from '@/helpers/urn';
 import { MessageType } from '@/constants/message-types';
+import { getSalesNavigatorCompanyUrl, isSalesNavigatorCompanyUrl } from '@/helpers/url-helpers';
 import type { Company } from '@/types/company/company';
 
 export class CompanyService {
@@ -38,17 +39,24 @@ export class CompanyService {
   async handleMessage(msg: any, sender: any) {
     const tabUrl = sender.tab?.id ? this.lastTabUrls[sender.tab.id] : undefined;
 
+    const getProfileUrl = (urn: string) => {
+      if (tabUrl && isSalesNavigatorCompanyUrl(tabUrl)) {
+        return tabUrl;
+      }
+      return getSalesNavigatorCompanyUrl(urn) || undefined;
+    };
+
     if (msg.type === MessageType.COMPANY_CAPTURED) {
       const urn = msg.data.entityUrn;
       if (urn) {
-        this.updateCompanyInStorage(urn, { main: msg.data, profileUrl: tabUrl });
+        this.updateCompanyInStorage(urn, { main: msg.data, profileUrl: getProfileUrl(urn) });
       }
     }
 
     if (msg.type === MessageType.COMPANY_EXTRA_CAPTURED) {
       const urn = msg.data.entityUrn;
       if (urn) {
-        this.updateCompanyInStorage(urn, { extra: msg.data, profileUrl: tabUrl });
+        this.updateCompanyInStorage(urn, { extra: msg.data, profileUrl: getProfileUrl(urn) });
       }
     }
   }

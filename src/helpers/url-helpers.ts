@@ -25,3 +25,12 @@ export function getSalesNavigatorCompanyUrl(urn: string): string | null {
     return null;
   }
 }
+
+export function getSalesNavigatorLeadUrl(urn: string): string | null {
+  try {
+    const { id } = parseLinkedInUrn(urn);
+    return `${BASE_URL}/sales/lead/${id}`;
+  } catch (e) {
+    return null;
+  }
+}

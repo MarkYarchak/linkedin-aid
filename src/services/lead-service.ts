@@ -2,6 +2,7 @@ import { browser } from 'wxt/browser';
 import merge from 'deepmerge';
 import { MessageType } from '@/constants/message-types';
 import { BASE_URL } from '@/constants/urls';
+import { getSalesNavigatorLeadUrl, isSalesNavigatorLeadUrl } from '@/helpers/url-helpers';
 import type { Lead } from '@/types/lead/lead';
 import type { SalesApiInsightsV2 } from '@/types/lead/salesApiInsightsV2';
 import type { SalesApiLeadSearchResponse } from '@/types/search/salesApiLeadSearch';
@@ -64,17 +65,24 @@ export class LeadService {
   async handleMessage(msg: any, sender: any) {
     const tabUrl = sender.tab?.id ? this.lastTabUrls[sender.tab.id] : undefined;
 
+    const getProfileUrl = (urn: string) => {
+      if (tabUrl && isSalesNavigatorLeadUrl(tabUrl)) {
+        return tabUrl;
+      }
+      return getSalesNavigatorLeadUrl(urn) || undefined;
+    };
+
     if (msg.type === MessageType.LEAD_CAPTURED) {
       const urn = msg.data.entityUrn;
       if (urn) {
-        this.updateLeadInStorage(urn, { main: msg.data, profileUrl: tabUrl });
+        this.updateLeadInStorage(urn, { main: msg.data, profileUrl: getProfileUrl(urn) });
       }
     }
 
     if (msg.type === MessageType.LEAD_EXTRA_CAPTURED) {
       const urn = msg.data.entityUrn;
       if (urn) {
-        this.updateLeadInStorage(urn, { extra: msg.data, profileUrl: tabUrl });
+        this.updateLeadInStorage(urn, { extra: msg.data, profileUrl: getProfileUrl(urn) });
       }
     }
 
@@ -123,7 +131,7 @@ export class LeadService {
           if (urn) {
             await this.updateLeadInStorage(urn, {
               searchResult: element,
-              profileUrl: tabUrl,
+              profileUrl: getProfileUrl(urn),
             });
           }
         }
