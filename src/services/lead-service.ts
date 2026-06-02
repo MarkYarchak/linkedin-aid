@@ -115,23 +115,16 @@ export class LeadService {
 
         sessions[query] = session;
         await browser.storage.session.set({ searchSessions: sessions });
+      }
 
-        if (data.elements) {
-          for (const element of data.elements) {
-            const urn = element.entityUrn;
-            if (urn) {
-              await this.updateLeadInStorage(urn, {
-                searchResult: element,
-                profileUrl: tabUrl,
-              });
-            }
-          }
-        }
-      } else if (data.elements) {
+      if (data.elements) {
         for (const element of data.elements) {
           const urn = element.entityUrn;
           if (urn) {
-            await this.updateLeadInStorage(urn, { searchResult: element, profileUrl: tabUrl });
+            await this.updateLeadInStorage(urn, {
+              searchResult: element,
+              profileUrl: tabUrl,
+            });
           }
         }
       }
