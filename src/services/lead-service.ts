@@ -1,4 +1,5 @@
 import { browser } from 'wxt/browser';
+import merge from 'deepmerge';
 import { MessageType } from '@/constants/message-types';
 import { BASE_URL } from '@/constants/urls';
 import type { Lead } from '@/types/lead/lead';
@@ -19,11 +20,10 @@ export class LeadService {
 
     const existingLead = leads[urn] || { entityUrn: urn, updatedAt: Date.now() };
 
-    leads[urn] = {
-      ...existingLead,
+    leads[urn] = merge(existingLead, {
       ...update,
       updatedAt: Date.now(),
-    };
+    });
 
     await browser.storage.local.set({ capturedLeads: leads });
   }
