@@ -20,10 +20,16 @@ export class LeadService {
 
     const existingLead = leads[urn] || { entityUrn: urn, updatedAt: Date.now() };
 
-    leads[urn] = merge(existingLead, {
-      ...update,
+    const { searchResult, ...restUpdate } = update;
+
+    leads[urn] = {
+      ...existingLead,
+      ...restUpdate,
+      searchResult: searchResult && existingLead.searchResult
+        ? merge(existingLead.searchResult, searchResult)
+        : existingLead.searchResult,
       updatedAt: Date.now(),
-    });
+    };
 
     await browser.storage.local.set({ capturedLeads: leads });
   }
