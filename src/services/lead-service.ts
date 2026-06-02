@@ -2,7 +2,8 @@ import { browser } from 'wxt/browser';
 import merge from 'deepmerge';
 import { MessageType } from '@/constants/message-types';
 import { BASE_URL } from '@/constants/urls';
-import { getSalesNavigatorLeadUrl, isSalesNavigatorLeadUrl } from '@/helpers/url-helpers';
+import { companyService } from '@/services/company-service';
+import { getSalesNavigatorLeadUrl, isSalesNavigatorLeadUrl, getSalesNavigatorCompanyUrl } from '@/helpers/url-helpers';
 import type { Lead } from '@/types/lead/lead';
 import type { SalesApiInsightsV2 } from '@/types/lead/salesApiInsightsV2';
 import type { SalesApiLeadSearchResponse } from '@/types/search/salesApiLeadSearch';
@@ -120,6 +121,16 @@ export class LeadService {
         session.pageSize = data.paging.count;
         session.searchTitle = data.metadata.searchTitle;
         session.heroCard = data.metadata.heroCard;
+
+        if (data.metadata.heroCard?.entityType === 'COMPANY') {
+          const companyData = data.metadata.heroCard.entity['com.linkedin.sales.company.Company'];
+          if (companyData?.entityUrn) {
+            await companyService.updateCompanyInStorage(companyData.entityUrn, {
+              main: companyData as any,
+              profileUrl: getSalesNavigatorCompanyUrl(companyData.entityUrn) || undefined,
+            }, true);
+          }
+        }
 
         sessions[query] = session;
         await browser.storage.session.set({ searchSessions: sessions });
