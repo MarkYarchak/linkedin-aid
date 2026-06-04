@@ -110,7 +110,7 @@ const secondDegreeBadge = computed(() => {
           </div>
         </div>
 
-        <template v-if="primaryPosition.description">
+        <template v-if="primaryPosition?.description">
           <pre v-if="isExpanded" class="position-description">{{ primaryPosition.description }}</pre>
           <div v-else class="position-description">
             {{ primaryPosition.description }}
