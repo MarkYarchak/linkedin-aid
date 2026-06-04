@@ -9,8 +9,6 @@ import {
 } from '@/helpers/url-helpers';
 import type { Lead } from '@/types/lead/lead';
 import type { SalesApiInsightsV2 } from '@/types/lead/salesApiInsightsV2';
-import type { PersonasStorage } from '@/types/search/search';
-import type { SalesApiPersonasResponse } from '@/types/search/salesApiPersonas';
 
 export class LeadService {
   private lastTabUrls: Record<number, string> = {};
@@ -96,24 +94,6 @@ export class LeadService {
         const data = msg.data as SalesApiInsightsV2;
         this.updateLeadInsightsInStorage(urn, data);
       }
-    }
-
-    if (msg.type === MessageType.PERSONAS_CAPTURED) {
-      const data = msg.data as SalesApiPersonasResponse;
-      const url = new URL(msg.url, BASE_URL);
-      const targetCompanyId = url.searchParams.get('targetCompanyId');
-
-      const storage = await browser.storage.session.get('personas');
-      const personasStorage: PersonasStorage = (storage.personas || { general: [], byCompany: {} }) as PersonasStorage;
-
-      if (targetCompanyId) {
-        const companyUrn = `urn:li:fs_salesCompany:${targetCompanyId}`;
-        personasStorage.byCompany[companyUrn] = data.elements;
-      } else {
-        personasStorage.general = data.elements;
-      }
-
-      await browser.storage.session.set({ personas: personasStorage });
     }
   }
 }
