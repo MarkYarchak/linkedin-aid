@@ -98,9 +98,26 @@ export class LeadService {
 
     if (msg.type === MessageType.LEAD_SEARCH_CAPTURED) {
       const data = msg.data as SalesApiLeadSearchResponse;
-      const query = tabUrl ? new URL(tabUrl).searchParams.get('query') : null;
+      const url = tabUrl ? new URL(msg.url, BASE_URL) : null;
+      const query = url ? url.searchParams.get('query') : null;
+
+      let companyUrn: string | undefined;
+      let personaId: string | undefined;
 
       if (query) {
+        // Parse company ID from query filters if present: (type:CURRENT_COMPANY,values:List((id:5090986,selectionType:INCLUDED)))
+        const companyMatch = query.match(/type:CURRENT_COMPANY,values:List\(\(id:(\d+)/);
+        const organizationId = url?.searchParams.get('organizationId');
+        if (companyMatch || organizationId) {
+          companyUrn = `urn:li:fs_salesCompany:${companyMatch ? companyMatch[1] : organizationId}`;
+        }
+
+        // Parse persona ID: (type:PERSONA,values:List((id:1980756226,selectionType:INCLUDED)))
+        const personaMatch = query.match(/type:PERSONA,values:List\(\(id:(\d+)/);
+        if (personaMatch) {
+          personaId = personaMatch[1];
+        }
+
         const storage = await browser.storage.session.get('searchSessions');
         const sessions: Record<string, SearchSession> = (storage.searchSessions || {}) as Record<string, SearchSession>;
 
@@ -111,6 +128,8 @@ export class LeadService {
           leadUrnsByPage: {},
           updatedAt: Date.now(),
           searchTitle: data.metadata.searchTitle,
+          companyUrn,
+          personaId,
         };
 
         const page = Math.floor(data.paging.start / data.paging.count);
@@ -122,6 +141,8 @@ export class LeadService {
         session.pageSize = data.paging.count;
         session.searchTitle = data.metadata.searchTitle;
         session.heroCard = data.metadata.heroCard;
+        session.companyUrn = companyUrn || session.companyUrn;
+        session.personaId = personaId || session.personaId;
 
         if (data.metadata.heroCard?.entityType === 'COMPANY') {
           const companyData = data.metadata.heroCard.entity['com.linkedin.sales.company.Company'];

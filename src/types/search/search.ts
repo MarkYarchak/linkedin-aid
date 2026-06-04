@@ -8,6 +8,8 @@ export interface SearchSession {
   updatedAt: number;
   searchTitle?: string;
   heroCard?: any;
+  companyUrn?: string;
+  personaId?: string;
 }
 
 export interface PersonasStorage {
