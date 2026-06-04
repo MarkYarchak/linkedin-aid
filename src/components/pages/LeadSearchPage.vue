@@ -138,7 +138,7 @@ const copySelected = () => {
 
 <template>
   <div class="lead-search-page">
-    <template v-if="totalPages > 0 && currentSession">
+    <template v-if="displayedLeads.length">
       <div class="header-actions">
         <div class="selection-controls">
           <AppCheckbox
