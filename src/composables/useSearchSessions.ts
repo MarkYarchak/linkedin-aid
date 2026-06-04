@@ -1,5 +1,6 @@
 import { ref, onMounted, onUnmounted, computed } from 'vue';
 import { browser } from 'wxt/browser';
+import { findSearchSessionForTabUrl } from '@/helpers/search-url-helpers';
 import type { SearchSession } from '@/types/search/search';
 
 export function useSearchSessions(tabUrl?: string) {
@@ -9,20 +10,14 @@ export function useSearchSessions(tabUrl?: string) {
     return Object.values(sessionsMap.value).sort((a, b) => b.updatedAt - a.updatedAt);
   });
 
-  const currentSessionId = computed(() => {
+  const currentSession = computed(() => {
     if (!tabUrl) return null;
-    try {
-      const url = new URL(tabUrl);
-      return url.searchParams.get('query');
-    } catch (e) {
-      return null;
-    }
+    return findSearchSessionForTabUrl(sessions.value, tabUrl);
   });
 
-  const currentSession = computed(() => {
-    if (currentSessionId.value === null) return null;
-    return sessionsMap.value[currentSessionId.value] || null;
-  });
+  const getSessionsByCompany = (companyUrn: string) => {
+    return sessions.value.filter(s => s.companyUrn === companyUrn);
+  };
 
   const loadSessions = async () => {
     const storage = await browser.storage.session.get('searchSessions');
@@ -49,6 +44,7 @@ export function useSearchSessions(tabUrl?: string) {
   return {
     sessions,
     currentSession,
+    getSessionsByCompany,
     loadSessions,
   };
 }

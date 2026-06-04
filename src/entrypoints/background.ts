@@ -5,12 +5,14 @@ import {
   isSalesNavigatorPeopleSearchUrl,
 } from '@/helpers/url-helpers';
 import { leadService } from '@/services/lead-service';
+import { leadSearchService } from '@/services/lead-search-service';
 import { companyService } from '@/services/company-service';
 
 export default defineBackground(() => {
   browser.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
     if (tab.url) {
       leadService.setTabUrl(tabId, tab.url);
+      leadSearchService.setTabUrl(tabId, tab.url);
       companyService.setTabUrl(tabId, tab.url);
     }
 
@@ -47,6 +49,7 @@ export default defineBackground(() => {
 
   browser.runtime.onMessage.addListener((msg, sender) => {
     leadService.handleMessage(msg, sender);
+    leadSearchService.handleMessage(msg, sender);
     companyService.handleMessage(msg, sender);
   });
 });

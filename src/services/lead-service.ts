@@ -2,17 +2,14 @@ import { browser } from 'wxt/browser';
 import merge from 'deepmerge';
 import { MessageType } from '@/constants/message-types';
 import { BASE_URL } from '@/constants/urls';
-import { companyService } from '@/services/company-service';
 import {
   getSalesNavigatorLeadUrl,
   isSalesNavigatorLeadUrl,
-  getSalesNavigatorCompanyUrl,
   normalizeSalesNavigatorLeadUrl,
 } from '@/helpers/url-helpers';
 import type { Lead } from '@/types/lead/lead';
 import type { SalesApiInsightsV2 } from '@/types/lead/salesApiInsightsV2';
-import type { SalesApiLeadSearchResponse } from '@/types/search/salesApiLeadSearch';
-import type { SearchSession, PersonasStorage } from '@/types/search/search';
+import type { PersonasStorage } from '@/types/search/search';
 import type { SalesApiPersonasResponse } from '@/types/search/salesApiPersonas';
 
 export class LeadService {
@@ -52,7 +49,6 @@ export class LeadService {
 
       if (existingLead?.insights) {
         const mergedElements = [...(existingLead.insights.elements || []), ...(data.elements || [])];
-        // Remove duplicates by insightId if necessary, though LinkedIn usually doesn't send them
         const uniqueElements = Array.from(new Map(mergedElements.map((item) => [item.insightId, item])).values());
 
         await this.updateLeadInStorage(urn, {
@@ -99,81 +95,6 @@ export class LeadService {
       if (urn) {
         const data = msg.data as SalesApiInsightsV2;
         this.updateLeadInsightsInStorage(urn, data);
-      }
-    }
-
-    if (msg.type === MessageType.LEAD_SEARCH_CAPTURED) {
-      const data = msg.data as SalesApiLeadSearchResponse;
-      const url = tabUrl ? new URL(msg.url, BASE_URL) : null;
-      const query = url ? url.searchParams.get('query') : null;
-
-      let companyUrn: string | undefined;
-      let personaId: string | undefined;
-
-      if (query) {
-        // Parse company ID from query filters if present: (type:CURRENT_COMPANY,values:List((id:5090986,selectionType:INCLUDED)))
-        const companyMatch = query.match(/type:CURRENT_COMPANY,values:List\(\(id:(\d+)/);
-        const organizationId = url?.searchParams.get('organizationId');
-        if (companyMatch || organizationId) {
-          companyUrn = `urn:li:fs_salesCompany:${companyMatch ? companyMatch[1] : organizationId}`;
-        }
-
-        // Parse persona ID: (type:PERSONA,values:List((id:1980756226,selectionType:INCLUDED)))
-        const personaMatch = query.match(/type:PERSONA,values:List\(\(id:(\d+)/);
-        if (personaMatch) {
-          personaId = personaMatch[1];
-        }
-
-        const storage = await browser.storage.session.get('searchSessions');
-        const sessions: Record<string, SearchSession> = (storage.searchSessions || {}) as Record<string, SearchSession>;
-
-        const session = sessions[query] || {
-          query,
-          total: data.paging.total,
-          pageSize: data.paging.count,
-          leadUrnsByPage: {},
-          updatedAt: Date.now(),
-          searchTitle: data.metadata.searchTitle,
-          companyUrn,
-          personaId,
-        };
-
-        const page = Math.floor(data.paging.start / data.paging.count);
-        const leadUrns = data.elements.map(e => e.entityUrn).filter((urn): urn is string => !!urn);
-
-        session.leadUrnsByPage[page] = leadUrns;
-        session.updatedAt = Date.now();
-        session.total = data.paging.total;
-        session.pageSize = data.paging.count;
-        session.searchTitle = data.metadata.searchTitle;
-        session.heroCard = data.metadata.heroCard;
-        session.companyUrn = companyUrn || session.companyUrn;
-        session.personaId = personaId || session.personaId;
-
-        if (data.metadata.heroCard?.entityType === 'COMPANY') {
-          const companyData = data.metadata.heroCard.entity['com.linkedin.sales.company.Company'];
-          if (companyData?.entityUrn) {
-            await companyService.updateCompanyInStorage(companyData.entityUrn, {
-              main: companyData as any,
-              profileUrl: getSalesNavigatorCompanyUrl(companyData.entityUrn) || undefined,
-            }, true);
-          }
-        }
-
-        sessions[query] = session;
-        await browser.storage.session.set({ searchSessions: sessions });
-      }
-
-      if (data.elements) {
-        for (const element of data.elements) {
-          const urn = element.entityUrn;
-          if (urn) {
-            await this.updateLeadInStorage(urn, {
-              searchResult: element,
-              profileUrl: getProfileUrl(urn),
-            }, true);
-          }
-        }
       }
     }
 
