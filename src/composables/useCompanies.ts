@@ -1,5 +1,6 @@
 import { ref, onMounted, computed, onUnmounted } from 'vue';
 import { browser } from 'wxt/browser';
+import { getSalesNavigatorCompanyUrl, normalizeUrl } from '@/helpers/url-helpers';
 import type { Company } from '@/types/company/company';
 
 export function useCompanies(tabUrl?: string) {
@@ -11,7 +12,11 @@ export function useCompanies(tabUrl?: string) {
 
   const currentUrlCompany = computed(() => {
     if (!tabUrl) return null;
-    return companies.value.find(company => company.profileUrl === tabUrl) || null;
+    const profileUrl = normalizeUrl(tabUrl);
+    return companies.value.find(company => {
+      const storedUrl = company.profileUrl || getSalesNavigatorCompanyUrl(company.entityUrn);
+      return storedUrl ? normalizeUrl(storedUrl) === profileUrl : false;
+    }) || null;
   });
 
   const loadCompanies = async () => {

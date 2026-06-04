@@ -2,7 +2,11 @@ import { browser } from 'wxt/browser';
 import merge from 'deepmerge';
 import { parseLinkedInUrn } from '@/helpers/urn';
 import { MessageType } from '@/constants/message-types';
-import { getSalesNavigatorCompanyUrl, isSalesNavigatorCompanyUrl } from '@/helpers/url-helpers';
+import {
+  getSalesNavigatorCompanyUrl,
+  isSalesNavigatorCompanyUrl,
+  normalizeUrl,
+} from '@/helpers/url-helpers';
 import type { Company } from '@/types/company/company';
 
 export class CompanyService {
@@ -48,9 +52,10 @@ export class CompanyService {
 
     const getProfileUrl = (urn: string) => {
       if (tabUrl && isSalesNavigatorCompanyUrl(tabUrl)) {
-        return tabUrl;
+        return normalizeUrl(tabUrl);
       }
-      return getSalesNavigatorCompanyUrl(urn) || undefined;
+      const url = getSalesNavigatorCompanyUrl(urn);
+      return url ? normalizeUrl(url) : undefined;
     };
 
     if (msg.type === MessageType.COMPANY_CAPTURED) {

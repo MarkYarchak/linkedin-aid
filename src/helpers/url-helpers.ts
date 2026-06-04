@@ -34,3 +34,23 @@ export function getSalesNavigatorLeadUrl(urn: string): string | null {
     return null;
   }
 }
+
+export function normalizeSalesNavigatorLeadUrl(url: string): string {
+  const normalized = normalizeUrl(url);
+  // Matches .../sales/lead/ID where ID can be (ID) or just ID
+  const match = normalized.match(/(.*\/sales\/lead\/)\(?([^/?#)]+)\)?/);
+  if (match) {
+    const [, prefix, id] = match;
+    return `${prefix}${id}`;
+  }
+  return normalized;
+}
+
+export function normalizeUrl(url: string): string {
+  try {
+    const parsed = new URL(url);
+    return parsed.origin + parsed.pathname;
+  } catch (e) {
+    return url.split(/[?#]/)[0];
+  }
+}

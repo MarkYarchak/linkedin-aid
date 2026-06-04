@@ -3,7 +3,12 @@ import merge from 'deepmerge';
 import { MessageType } from '@/constants/message-types';
 import { BASE_URL } from '@/constants/urls';
 import { companyService } from '@/services/company-service';
-import { getSalesNavigatorLeadUrl, isSalesNavigatorLeadUrl, getSalesNavigatorCompanyUrl } from '@/helpers/url-helpers';
+import {
+  getSalesNavigatorLeadUrl,
+  isSalesNavigatorLeadUrl,
+  getSalesNavigatorCompanyUrl,
+  normalizeSalesNavigatorLeadUrl,
+} from '@/helpers/url-helpers';
 import type { Lead } from '@/types/lead/lead';
 import type { SalesApiInsightsV2 } from '@/types/lead/salesApiInsightsV2';
 import type { SalesApiLeadSearchResponse } from '@/types/search/salesApiLeadSearch';
@@ -69,9 +74,10 @@ export class LeadService {
 
     const getProfileUrl = (urn: string) => {
       if (tabUrl && isSalesNavigatorLeadUrl(tabUrl)) {
-        return tabUrl;
+        return normalizeSalesNavigatorLeadUrl(tabUrl);
       }
-      return getSalesNavigatorLeadUrl(urn) || undefined;
+      const url = getSalesNavigatorLeadUrl(urn);
+      return url ? normalizeSalesNavigatorLeadUrl(url) : undefined;
     };
 
     if (msg.type === MessageType.LEAD_CAPTURED) {

@@ -1,5 +1,6 @@
 import { ref, onMounted, onUnmounted, computed } from 'vue';
 import { browser } from 'wxt/browser';
+import { normalizeSalesNavigatorLeadUrl } from '@/helpers/url-helpers';
 import type { Lead } from '@/types/lead/lead';
 
 export function useLeads(tabUrl?: string) {
@@ -11,7 +12,11 @@ export function useLeads(tabUrl?: string) {
 
   const currentUrlLead = computed(() => {
     if (!tabUrl) return null;
-    return leads.value.find(lead => lead.profileUrl === tabUrl) || null;
+    const profileUrl = normalizeSalesNavigatorLeadUrl(tabUrl);
+    return leads.value.find(lead => {
+      if (!lead.profileUrl) return false;
+      return normalizeSalesNavigatorLeadUrl(lead.profileUrl) === profileUrl;
+    }) || null;
   });
 
   const loadLeads = async () => {
