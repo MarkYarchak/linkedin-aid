@@ -3,6 +3,7 @@ import { ref, computed } from 'vue';
 import { useCompanies } from '@/composables/useCompanies';
 import { useLeads } from '@/composables/useLeads';
 import { usePersonas } from '@/composables/usePersonas';
+import { useSearchSessions } from '@/composables/useSearchSessions';
 import { getPersonaSearchIdFromUrn } from '@/helpers/urn';
 import CompanyPreview from '@/components/companies/CompanyPreview.vue';
 import LeadPreviewList from '@/components/leads/LeadPreviewList.vue';
@@ -16,6 +17,7 @@ const props = defineProps<Props>();
 const { currentUrlCompany } = useCompanies(props.tabUrl);
 const { getLeadsByCompany, getLeadsByPersona, getSavedLeadsByCompany } = useLeads(props.tabUrl);
 const { getPersonasByCompany } = usePersonas();
+const { getSessionsByCompany } = useSearchSessions();
 
 const activeTab = ref('all');
 const tabs = [
@@ -43,7 +45,15 @@ const personaOptions = computed(() => {
   });
 
   if (options.length > 0 && !selectedPersonaId.value) {
-    selectedPersonaId.value = options[0].value;
+    const companyUrn = currentUrlCompany.value?.entityUrn;
+    const companySessions = companyUrn ? getSessionsByCompany(companyUrn) : [];
+    const latestPersonaSession = companySessions.length > 0 ? companySessions.find(s => s.personaId) : null; // Already sorted by updatedAt in useSearchSessions
+
+    if (latestPersonaSession && latestPersonaSession.personaId) {
+      selectedPersonaId.value = latestPersonaSession.personaId;
+    } else {
+      selectedPersonaId.value = options[0].value;
+    }
   }
 
   return options;
