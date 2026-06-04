@@ -2,24 +2,16 @@ import { ref, onMounted, onUnmounted, computed } from 'vue';
 import { browser } from 'wxt/browser';
 import { normalizeSalesNavigatorLeadUrl } from '@/helpers/url-helpers';
 import { normalizePersonaSearchId } from '@/helpers/urn';
+import { useSearchSessions } from '@/composables/useSearchSessions';
 import type { Lead } from '@/types/lead/lead';
-import type { SearchSession } from '@/types/search/search';
 
 export function useLeads(tabUrl?: string) {
+  const { sessions, getSessionsByCompany } = useSearchSessions();
   const leadsMap = ref<Record<string, Lead>>({});
-  const sessionsMap = ref<Record<string, SearchSession>>({});
 
   const leads = computed(() => {
     return Object.values(leadsMap.value).sort((a, b) => b.updatedAt - a.updatedAt);
   });
-
-  const sessions = computed(() => {
-    return Object.values(sessionsMap.value);
-  });
-
-  const getSessionsByCompany = (companyUrn: string) => {
-    return sessions.value.filter(s => s.companyUrn === companyUrn);
-  };
 
   const companyUrns = computed(() => {
     const map: Record<string, string[]> = {};
@@ -72,16 +64,12 @@ export function useLeads(tabUrl?: string) {
   });
 
   const loadData = async () => {
-    const [leadsStorage, sessionsStorage] = await Promise.all([
+    const [leadsStorage] = await Promise.all([
       browser.storage.local.get(['capturedLeads']),
-      browser.storage.session.get(['searchSessions'])
     ]);
 
     if (leadsStorage.capturedLeads) {
       leadsMap.value = leadsStorage.capturedLeads as Record<string, Lead>;
-    }
-    if (sessionsStorage.searchSessions) {
-      sessionsMap.value = sessionsStorage.searchSessions as Record<string, SearchSession>;
     }
   };
 
@@ -89,9 +77,6 @@ export function useLeads(tabUrl?: string) {
   const changesListener = (changes: any, areaName: string) => {
     if (areaName === 'local' && changes.capturedLeads) {
       leadsMap.value = changes.capturedLeads.newValue as Record<string, Lead>;
-    }
-    if (areaName === 'session' && changes.searchSessions) {
-      sessionsMap.value = changes.searchSessions.newValue as Record<string, SearchSession>;
     }
   };
 
