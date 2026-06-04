@@ -13,7 +13,7 @@ export function usePersonas() {
     return companyPersonasMap.value[companyUrn] || [];
   };
 
-  const loadData = async () => {
+  const loadPersonas = async () => {
     const storage = await browser.storage.session.get(['personas']);
     if (storage.personas) {
       personasStorage.value = storage.personas as PersonasStorage;
@@ -27,7 +27,7 @@ export function usePersonas() {
   };
 
   onMounted(() => {
-    loadData();
+    loadPersonas();
     browser.storage.onChanged.addListener(changesListener);
   });
 
@@ -39,6 +39,6 @@ export function usePersonas() {
     generalPersonas,
     companyPersonasMap,
     getPersonasByCompany,
-    loadPersonas: loadData,
+    loadPersonas,
   };
 }
