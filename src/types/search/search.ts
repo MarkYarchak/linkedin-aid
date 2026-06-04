@@ -2,6 +2,7 @@ import { Persona } from '@/types/search/salesApiPersonas';
 
 export interface SearchSession {
   query: string;
+  tabUrl?: string;
   total: number;
   pageSize: number;
   leadUrnsByPage: Record<number, string[]>;

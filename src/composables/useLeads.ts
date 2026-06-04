@@ -17,6 +17,10 @@ export function useLeads(tabUrl?: string) {
     return Object.values(sessionsMap.value);
   });
 
+  const getSessionsByCompany = (companyUrn: string) => {
+    return sessions.value.filter(s => s.companyUrn === companyUrn);
+  };
+
   const companyUrns = computed(() => {
     const map: Record<string, string[]> = {};
     sessions.value.forEach(s => {
@@ -39,9 +43,7 @@ export function useLeads(tabUrl?: string) {
 
   const getLeadsByPersona = (companyUrn: string, personaId?: string) => {
     const normalizedPersonaId = personaId ? normalizePersonaSearchId(personaId) : undefined;
-    const personaSessions = sessions.value.filter(s => {
-      const match = s.companyUrn === companyUrn;
-      if (!match) return false;
+    const personaSessions = getSessionsByCompany(companyUrn).filter(s => {
       if (normalizedPersonaId) {
         return s.personaId && normalizePersonaSearchId(s.personaId) === normalizedPersonaId;
       }
