@@ -65,11 +65,7 @@ const revenueRangeString = computed(() => {
 
 <style scoped>
 .company-info {
-  padding: 12px;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  background-color: #ffffff;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  padding: 4px 4px 12px;
 }
 
 .header {

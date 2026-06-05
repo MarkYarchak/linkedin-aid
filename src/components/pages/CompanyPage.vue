@@ -143,7 +143,6 @@ watch([activeTab, selectedPersonaId, () => props.tabUrl], () => {
           <AppCheckbox
             :model-value="isAllSelected"
             label="Select All"
-            size="sm"
             @update:model-value="toggleAllSelection"
           />
           <AppCopyButton
