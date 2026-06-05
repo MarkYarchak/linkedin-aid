@@ -1,11 +1,17 @@
 <script lang="ts" setup>
 import AppAvatar from '@/components/ui/AppAvatar.vue';
+import AppCheckbox from '@/components/ui/AppCheckbox.vue';
 import type { Lead } from '@/types/lead/lead';
 
 interface Props {
   leads: Lead[];
+  selectedUrns?: Set<string>;
 }
 const props = defineProps<Props>();
+
+const emit = defineEmits<{
+  (e: 'update:selected', urn: string, selected: boolean): void;
+}>();
 
 const getAvatarUrl = (lead: Lead) => {
   if (lead.extra?.profilePictureDisplayImage) {
@@ -23,6 +29,13 @@ const getAvatarUrl = (lead: Lead) => {
 <template>
   <div class="lead-preview-list">
     <div v-for="lead in leads" :key="lead.entityUrn" class="lead-item">
+      <div v-if="selectedUrns" class="lead-selection">
+        <AppCheckbox
+          :model-value="selectedUrns.has(lead.entityUrn)"
+          size="sm"
+          @update:model-value="emit('update:selected', lead.entityUrn, $event)"
+        />
+      </div>
       <AppAvatar
         :src="getAvatarUrl(lead)"
         :alt="`${lead.main?.firstName || lead.searchResult?.firstName} ${lead.main?.lastName || lead.searchResult?.lastName}`"
@@ -55,6 +68,12 @@ const getAvatarUrl = (lead: Lead) => {
   border: 1px solid #eee;
   border-radius: 4px;
   background-color: #fafafa;
+}
+
+.lead-selection {
+  display: flex;
+  align-items: center;
+  padding-right: 4px;
 }
 
 .lead-info {

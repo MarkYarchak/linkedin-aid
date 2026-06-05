@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { useCompanies } from '@/composables/useCompanies';
 import { useLeads } from '@/composables/useLeads';
 import { usePersonas } from '@/composables/usePersonas';
@@ -8,6 +8,9 @@ import { getPersonaSearchIdFromUrn } from '@/helpers/urn';
 import CompanyPreview from '@/components/companies/CompanyPreview.vue';
 import LeadPreviewList from '@/components/leads/LeadPreviewList.vue';
 import AppSegmentedControl from '@/components/ui/AppSegmentedControl.vue';
+import AppCheckbox from '@/components/ui/AppCheckbox.vue';
+import AppCopyButton from '@/components/ui/AppCopyButton.vue';
+import BulkCopyModal from '@/components/modals/BulkCopyModal.vue';
 
 interface Props {
   tabUrl: string;
@@ -71,6 +74,46 @@ const companyLeads = computed(() => {
   }
   return getLeadsByCompany(urn);
 });
+
+const selectedUrns = ref<Set<string>>(new Set());
+
+const selectedLeads = computed(() => {
+  return companyLeads.value.filter(l => selectedUrns.value.has(l.entityUrn));
+});
+
+const isAllSelected = computed(() => {
+  if (companyLeads.value.length === 0) return false;
+  return companyLeads.value.every(l => selectedUrns.value.has(l.entityUrn));
+});
+
+const toggleLeadSelection = (urn: string, selected: boolean) => {
+  if (selected) {
+    selectedUrns.value.add(urn);
+  } else {
+    selectedUrns.value.delete(urn);
+  }
+};
+
+const toggleAllSelection = (selected: boolean) => {
+  companyLeads.value.forEach(l => {
+    if (selected) {
+      selectedUrns.value.add(l.entityUrn);
+    } else {
+      selectedUrns.value.delete(l.entityUrn);
+    }
+  });
+};
+
+const showBulkCopyModal = ref(false);
+
+const copySelected = () => {
+  if (selectedLeads.value.length === 0) return;
+  showBulkCopyModal.value = true;
+};
+
+watch([activeTab, selectedPersonaId, () => props.tabUrl], () => {
+  selectedUrns.value.clear();
+});
 </script>
 
 <template>
@@ -96,7 +139,28 @@ const companyLeads = computed(() => {
           </select>
         </div>
 
-        <LeadPreviewList v-if="companyLeads.length > 0" :leads="companyLeads" />
+        <div v-if="companyLeads.length > 0" class="selection-actions">
+          <AppCheckbox
+            :model-value="isAllSelected"
+            label="Select All"
+            size="sm"
+            @update:model-value="toggleAllSelection"
+          />
+          <AppCopyButton
+            :label="`Copy Selected (${selectedLeads.length})`"
+            :primary="true"
+            :disabled="selectedLeads.length === 0"
+            size="sm"
+            @click="copySelected"
+          />
+        </div>
+
+        <LeadPreviewList
+          v-if="companyLeads.length > 0"
+          :leads="companyLeads"
+          :selected-urns="selectedUrns"
+          @update:selected="toggleLeadSelection"
+        />
         <div v-else class="no-leads">
           No leads found for this category.
         </div>
@@ -105,6 +169,13 @@ const companyLeads = computed(() => {
     <div v-else class="no-data">
       No company collected yet. Navigate to a Sales Navigator company profile to collect data.
     </div>
+
+    <BulkCopyModal
+      v-if="showBulkCopyModal"
+      :show="showBulkCopyModal"
+      :leads="selectedLeads"
+      @close="showBulkCopyModal = false"
+    />
   </div>
 </template>
 
@@ -132,6 +203,14 @@ const companyLeads = computed(() => {
   margin: 0;
   font-size: 0.95em;
   color: #333;
+}
+
+.selection-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  padding: 0 4px;
 }
 
 .persona-selector {
