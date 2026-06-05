@@ -36,6 +36,18 @@ const companyPersonas = computed(() => {
   return getPersonasByCompany(currentUrlCompany.value.entityUrn);
 });
 
+const companySessions = computed(() => {
+  const companyUrn = currentUrlCompany.value?.entityUrn;
+  if (!companyUrn) return [];
+  return companyUrn ? getSessionsByCompany(companyUrn) : [];
+});
+
+const currentSessionHeroCard = computed(() => {
+  const sessionByPersona = activeTab.value === 'persona' && companySessions.value.find(s => s.personaId);
+  const session = sessionByPersona || companySessions.value.find(s => s.heroCard);
+  return session?.heroCard;
+});
+
 const personaOptions = computed(() => {
   const options: { label: string; value: string }[] = [];
   companyPersonas.value.forEach(p => {
@@ -48,10 +60,7 @@ const personaOptions = computed(() => {
   });
 
   if (options.length > 0 && !selectedPersonaId.value) {
-    const companyUrn = currentUrlCompany.value?.entityUrn;
-    const companySessions = companyUrn ? getSessionsByCompany(companyUrn) : [];
-    const latestPersonaSession = companySessions.length > 0 ? companySessions.find(s => s.personaId) : null; // Already sorted by updatedAt in useSearchSessions
-
+    const latestPersonaSession = companySessions.value.find(s => s.personaId); // Already sorted by updatedAt in useSearchSessions
     if (latestPersonaSession && latestPersonaSession.personaId) {
       selectedPersonaId.value = latestPersonaSession.personaId;
     } else {
@@ -173,6 +182,7 @@ watch([activeTab, selectedPersonaId, () => props.tabUrl], () => {
       v-if="showBulkCopyModal"
       :show="showBulkCopyModal"
       :leads="selectedLeads"
+      :hero-card="currentSessionHeroCard"
       @close="showBulkCopyModal = false"
     />
   </div>
