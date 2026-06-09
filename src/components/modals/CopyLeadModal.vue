@@ -26,7 +26,7 @@ const {
   currentStep,
   totalSteps,
   leadFields,
-  selectedPositionUrn,
+  selectedPositionId,
   currentPositions,
   selectedInsights,
   selectedSkills,
@@ -85,8 +85,10 @@ const copyTitle = async () => {
 };
 
 const selectedCompanyUrl = computed(() => {
-  if (!selectedPositionUrn.value) return null;
-  return getSalesNavigatorCompanyUrl(selectedPositionUrn.value);
+  if (selectedPositionId.value === null) return null;
+  const pos = props.lead.main?.positions.find(p => p.posId === selectedPositionId.value);
+  if (!pos?.companyUrn) return null;
+  return getSalesNavigatorCompanyUrl(pos.companyUrn);
 });
 
 const isJsonView = computed(() => viewMode.value === 'json');
@@ -133,8 +135,8 @@ const isJsonView = computed(() => viewMode.value === 'json');
           <AppRadio
             v-for="pos in currentPositions"
             :key="pos.posId"
-            v-model="selectedPositionUrn"
-            :value="pos.companyUrn"
+            v-model="selectedPositionId"
+            :value="pos.posId"
           >
             <strong>{{ pos.title }}</strong> at
             <span

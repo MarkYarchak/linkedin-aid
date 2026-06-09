@@ -35,10 +35,16 @@ export function useCopyLead(lead: Lead) {
   });
 
   // Positions
-  const selectedPositionUrn = ref<string>('');
+  const selectedPositionId = ref<number | null>(null);
 
   const currentPositions = computed(() => {
     return lead.main?.positions?.filter(p => p.current) || [];
+  });
+
+  const selectedPositionUrn = computed(() => {
+    if (selectedPositionId.value === null) return '';
+    const pos = lead.main?.positions.find(p => p.posId === selectedPositionId.value);
+    return pos?.companyUrn || '';
   });
 
   // Insights & Skills
@@ -95,10 +101,10 @@ export function useCopyLead(lead: Lead) {
       const defPos = lead.main.defaultPosition;
       const found = lead.main.positions.find(p => p.posId === defPos.posId);
       if (found) {
-        selectedPositionUrn.value = found.companyUrn || '';
+        selectedPositionId.value = found.posId;
       }
     } else if (currentPositions.value.length > 0) {
-      selectedPositionUrn.value = currentPositions.value[0].companyUrn || '';
+      selectedPositionId.value = currentPositions.value[0].posId;
     }
   });
 
@@ -143,8 +149,8 @@ export function useCopyLead(lead: Lead) {
       sections.push(leadInfo.trim());
     }
 
-    if (selectedPositionUrn.value) {
-      const pos = main?.positions.find(p => p.companyUrn === selectedPositionUrn.value);
+    if (selectedPositionId.value !== null) {
+      const pos = main?.positions.find(p => p.posId === selectedPositionId.value);
       if (pos) {
         let posInfo = '### CURRENT POSITION\n';
         if (leadFields.value.position.title) posInfo += `Title: ${pos.title}\n`;
@@ -242,8 +248,8 @@ export function useCopyLead(lead: Lead) {
       }
     }
 
-    if (selectedPositionUrn.value) {
-      const pos = main?.positions.find(p => p.companyUrn === selectedPositionUrn.value);
+    if (selectedPositionId.value !== null) {
+      const pos = main?.positions.find(p => p.posId === selectedPositionId.value);
       if (pos) {
         data.currentPosition = {};
         if (leadFields.value.position.title) data.currentPosition.title = pos.title;
@@ -320,7 +326,7 @@ export function useCopyLead(lead: Lead) {
 
   const generateTitle = () => {
     const main = lead.main;
-    const pos = main?.positions.find(p => p.companyUrn === selectedPositionUrn.value);
+    const pos = main?.positions.find(p => p.posId === selectedPositionId.value);
 
     return generateLeadTitle({
       fullName: main?.fullName,
@@ -377,7 +383,7 @@ export function useCopyLead(lead: Lead) {
     currentStep,
     totalSteps,
     leadFields,
-    selectedPositionUrn,
+    selectedPositionId,
     currentPositions,
     selectedInsights,
     selectedSkills,
