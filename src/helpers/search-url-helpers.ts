@@ -27,10 +27,68 @@ export function getLeadSearchTabSignature(url: string): LeadSearchTabSignature |
 }
 
 export function leadSearchTabSignaturesEqual(a: LeadSearchTabSignature, b: LeadSearchTabSignature): boolean {
-  return a.origin === b.origin
-    && a.pathname === b.pathname
-    && a.query === b.query
-    && a.sessionId === b.sessionId;
+  if (a.origin !== b.origin || a.pathname !== b.pathname) {
+    return false;
+  }
+
+  const sessionKeyA = getLeadSearchTabSessionKeyFromSignature(a);
+  const sessionKeyB = getLeadSearchTabSessionKeyFromSignature(b);
+
+  return sessionKeyA === sessionKeyB;
+}
+
+function getLeadSearchTabSessionKeyFromSignature(sig: LeadSearchTabSignature): string {
+  const query = sig.query ?? '';
+  const filters = extractFiltersFromQuery(query);
+  const normalizedFilters = normalizeFilters(filters);
+
+  if (sig.sessionId) {
+    return `sessionId:${sig.sessionId};filters:${normalizedFilters}`;
+  }
+  return `${sig.origin}${sig.pathname}?filters=${normalizedFilters}`;
+}
+
+function extractFiltersFromQuery(query: string): string {
+  const match = query.match(/filters:List\((.*)\)/);
+  if (!match) {
+    return query;
+  }
+  const content = match[1];
+  let balance = 1;
+  for (let i = 0; i < content.length; i++) {
+    if (content[i] === '(') balance++;
+    else if (content[i] === ')') balance--;
+    if (balance === 0) {
+      return content.substring(0, i);
+    }
+  }
+  return content;
+}
+
+function normalizeFilters(filters: string): string {
+  let normalized = decodeURIComponent(filters);
+
+  // Normalize URNs to IDs (e.g., urn:li:organization:5307199 -> 5307199)
+  normalized = normalized.replace(/urn:li:[^:]+:(\d+)/g, '$1');
+
+  // Remove ephemeral or descriptive fields that might differ between pages
+  normalized = normalized.replace(/,text:[^,)]+/g, '');
+  normalized = normalized.replace(/,selectionType:[^,)]+/g, '');
+  normalized = normalized.replace(/,parent:\(id:0\)/g, '');
+
+  // Remove whitespace
+  normalized = normalized.replace(/\s+/g, '');
+
+  return normalized;
+}
+
+/** Stable session storage key from a Sales Navigator people-search tab URL. */
+export function getLeadSearchTabSessionKey(tabUrl: string): string | null {
+  const sig = getLeadSearchTabSignature(tabUrl);
+  if (!sig) {
+    return null;
+  }
+  return getLeadSearchTabSessionKeyFromSignature(sig);
 }
 
 export function leadSearchTabUrlsMatch(a: string, b: string): boolean {
@@ -40,17 +98,6 @@ export function leadSearchTabUrlsMatch(a: string, b: string): boolean {
     return false;
   }
   return leadSearchTabSignaturesEqual(sigA, sigB);
-}
-
-/** Stable session storage key from a Sales Navigator people-search tab URL. */
-export function getLeadSearchTabSessionKey(tabUrl: string): string | null {
-  const sig = getLeadSearchTabSignature(tabUrl);
-  if (!sig) {
-    return null;
-  }
-  const query = sig.query ?? '';
-  const sessionId = sig.sessionId ?? '';
-  return `${sig.origin}${sig.pathname}?query=${query}&sessionId=${sessionId}`;
 }
 
 export function findSearchSessionForTabUrl(
