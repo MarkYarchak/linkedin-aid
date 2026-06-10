@@ -18,8 +18,10 @@ export const titleTargets: TitleTarget[] = [
 ];
 
 export const titleStates: TitleState[] = [
+  { label: 'Pending', emoji: '⚪', value: 'pending' },
   { label: 'Request sent', emoji: '🟡', value: 'sent' },
   { label: 'Accepted', emoji: '🟢', value: 'accepted' },
+  { label: 'Hot', emoji: '🔥', value: 'hot' },
   { label: 'Couldn\'t interact', emoji: '⚫', value: 'failed' },
   { label: 'Declined', emoji: '🔴', value: 'declined' },
 ];
