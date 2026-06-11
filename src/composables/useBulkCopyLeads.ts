@@ -60,10 +60,14 @@ export function useBulkCopyLeads(leads: Lead[], heroCard?: HeroCard) {
       wrapText.value = bulkCopySettings.wrapText;
     }
 
-    // Set to true only if all leads are within the same company (referencing same URN)
-    const companyUrns = leads.map(l => l.searchResult?.currentPositions?.[0]?.companyUrn).filter(Boolean);
-    const uniqueCompanies = new Set(companyUrns);
-    groupByCompany.value = !heroCard && uniqueCompanies.size === 1 && companyUrns.length === leads.length;
+    if (heroCard) {
+      groupByCompany.value = false;
+    } else {
+      // Set to true only if all leads are within the same company (referencing same URN)
+      const companyUrns = leads.map(l => l.searchResult?.currentPositions?.[0]?.companyUrn).filter(Boolean);
+      const uniqueCompanies = new Set(companyUrns);
+      groupByCompany.value = uniqueCompanies.size === 1 && companyUrns.length === leads.length;
+    }
   });
 
   const nextStep = () => {
