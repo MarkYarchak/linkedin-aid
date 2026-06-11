@@ -89,7 +89,7 @@ const showBulkCopyModal = ref(false);
 const selectedUrns = ref<Set<string>>(new Set());
 
 const selectedLeads = computed(() => {
-  return leads.value.filter(l => selectedUrns.value.has(l.entityUrn));
+  return allSessionLeads.value.filter(l => selectedUrns.value.has(l.entityUrn));
 });
 
 const isPageSelected = computed(() => {
