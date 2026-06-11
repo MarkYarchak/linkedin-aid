@@ -60,10 +60,10 @@ export function useBulkCopyLeads(leads: Lead[], heroCard?: HeroCard) {
       wrapText.value = bulkCopySettings.wrapText;
     }
 
-    // Set to true only if all leads are within the same company
-    const companyUrns = leads.map(l => l.searchResult?.currentPositions?.[0]?.companyUrn);
+    // Set to true only if all leads are within the same company (referencing same URN)
+    const companyUrns = leads.map(l => l.searchResult?.currentPositions?.[0]?.companyUrn).filter(Boolean);
     const uniqueCompanies = new Set(companyUrns);
-    groupByCompany.value = uniqueCompanies.size === 1;
+    groupByCompany.value = !heroCard && uniqueCompanies.size === 1 && companyUrns.length === leads.length;
   });
 
   const nextStep = () => {
@@ -185,7 +185,7 @@ export function useBulkCopyLeads(leads: Lead[], heroCard?: HeroCard) {
 
   const generateJsonData = () => {
     let result: any;
-    const skipCompanyFields = groupByCompany.value;
+    const skipCompanyFields = groupByCompany.value || (leadFields.value.heroCard && !!heroCard);
     const leadData = leads.map(lead => formatLeadJson(lead, { skipCompanyFields }));
 
     if (groupByCompany.value) {
@@ -347,10 +347,11 @@ export function useBulkCopyLeads(leads: Lead[], heroCard?: HeroCard) {
 
       output += sections.join('\n\n');
     } else {
+      const skipCompanyFields = leadFields.value.heroCard && !!heroCard;
       output += `=== LEADS ===\n`;
       output += leads.map(lead => {
         const header = `--- ${lead.searchResult?.fullName || 'Lead'} ---`;
-        const content = formatLead(lead);
+        const content = formatLead(lead, { skipCompanyFields });
         return `${header}\n${content}`;
       }).join('\n\n');
     }

@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ref, computed } from 'vue';
+import { computed } from 'vue';
 import { useBulkCopyLeads } from '@/composables/useBulkCopyLeads';
 import AppStepper from '@/components/ui/AppStepper.vue';
 import AppModal from '@/components/ui/AppModal.vue';
@@ -94,7 +94,7 @@ const isJsonView = computed(() => viewMode.value === 'json');
           :json="isJsonView ? generateJsonData() : null"
           :wrap-text="wrapText"
         >
-          <template v-if="isJsonView" #header>
+          <template v-if="!heroCard" #header>
             <AppCheckbox
               v-model="groupByCompany"
               label="Group by company"
