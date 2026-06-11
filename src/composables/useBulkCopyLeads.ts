@@ -1,7 +1,7 @@
 import { ref, onMounted } from 'vue';
+import { browser } from 'wxt/browser';
 import { sanitizeText } from '@/helpers/text-helper';
 import { getRelativeTime } from '@/helpers/date-helper';
-import { browser } from 'wxt/browser';
 import type { Lead } from '@/types/lead/lead';
 import type { HeroCard } from '@/types/search/salesApiLeadSearch';
 
@@ -74,7 +74,7 @@ export function useBulkCopyLeads(leads: Lead[], heroCard?: HeroCard) {
     if (currentStep.value > 1) currentStep.value--;
   };
 
-  const formatLead = (lead: Lead) => {
+  const formatLead = (lead: Lead, options?: { skipCompanyFields?: boolean }) => {
     let sections: string[] = [];
     const searchResult = lead.searchResult;
 
@@ -97,13 +97,17 @@ export function useBulkCopyLeads(leads: Lead[], heroCard?: HeroCard) {
       if (pos) {
         let posInfo = '';
         if (leadFields.value.position.title) posInfo += `Title: ${pos.title}\n`;
-        if (leadFields.value.position.companyName) posInfo += `Company: ${pos.companyName}\n`;
-        if (leadFields.value.position.industry && pos.companyUrnResolutionResult?.industry) {
-          posInfo += `Industry: ${pos.companyUrnResolutionResult.industry}\n`;
+
+        if (!options?.skipCompanyFields) {
+          if (leadFields.value.position.companyName) posInfo += `Company: ${pos.companyName}\n`;
+          if (leadFields.value.position.industry && pos.companyUrnResolutionResult?.industry) {
+            posInfo += `Industry: ${pos.companyUrnResolutionResult.industry}\n`;
+          }
+          if (leadFields.value.position.location && pos.companyUrnResolutionResult?.location) {
+              posInfo += `Location: ${pos.companyUrnResolutionResult.location}\n`;
+          }
         }
-        if (leadFields.value.position.location && pos.companyUrnResolutionResult?.location) {
-            posInfo += `Location: ${pos.companyUrnResolutionResult.location}\n`;
-        }
+
         if (leadFields.value.position.startedOn && pos.startedOn) {
           const date = new Date(pos.startedOn.year, (pos.startedOn.month || 1) - 1);
           posInfo += `Started: ${getRelativeTime(date.getTime())}\n`;
@@ -128,7 +132,7 @@ export function useBulkCopyLeads(leads: Lead[], heroCard?: HeroCard) {
     return sections.join('\n');
   };
 
-  const formatLeadJson = (lead: Lead) => {
+  const formatLeadJson = (lead: Lead, options?: { skipCompanyFields?: boolean }) => {
     const data: any = {};
     const searchResult = lead.searchResult;
 
@@ -155,13 +159,17 @@ export function useBulkCopyLeads(leads: Lead[], heroCard?: HeroCard) {
       if (pos) {
         data.currentPosition = {};
         if (leadFields.value.position.title) data.currentPosition.title = pos.title;
-        if (leadFields.value.position.companyName) data.currentPosition.companyName = pos.companyName;
-        if (leadFields.value.position.industry && pos.companyUrnResolutionResult?.industry) {
-          data.currentPosition.industry = pos.companyUrnResolutionResult.industry;
+
+        if (!options?.skipCompanyFields) {
+          if (leadFields.value.position.companyName) data.currentPosition.companyName = pos.companyName;
+          if (leadFields.value.position.industry && pos.companyUrnResolutionResult?.industry) {
+            data.currentPosition.industry = pos.companyUrnResolutionResult.industry;
+          }
+          if (leadFields.value.position.location && pos.companyUrnResolutionResult?.location) {
+              data.currentPosition.location = pos.companyUrnResolutionResult.location;
+          }
         }
-        if (leadFields.value.position.location && pos.companyUrnResolutionResult?.location) {
-            data.currentPosition.location = pos.companyUrnResolutionResult.location;
-        }
+
         if (leadFields.value.position.startedOn && pos.startedOn) {
           const date = new Date(pos.startedOn.year, (pos.startedOn.month || 1) - 1);
           data.currentPosition.started = getRelativeTime(date.getTime());
@@ -177,11 +185,10 @@ export function useBulkCopyLeads(leads: Lead[], heroCard?: HeroCard) {
 
   const generateJsonData = () => {
     let result: any;
-    const leadData = leads.map(lead => formatLeadJson(lead));
+    const skipCompanyFields = groupByCompany.value;
+    const leadData = leads.map(lead => formatLeadJson(lead, { skipCompanyFields }));
 
-    if (!groupByCompany.value) {
-      result = leadData;
-    } else {
+    if (groupByCompany.value) {
       const grouped: Record<string, any> = {};
       const noCompanyLeads: any[] = [];
 
@@ -209,19 +216,9 @@ export function useBulkCopyLeads(leads: Lead[], heroCard?: HeroCard) {
             }
           }
 
-          // Remove redundant company info from lead object if it's already in the group header
-          if (data.currentPosition) {
-            delete data.currentPosition.companyName;
-            if (grouped[companyUrn].industry && data.currentPosition.industry === grouped[companyUrn].industry) {
-              delete data.currentPosition.industry;
-            }
-            if (grouped[companyUrn].location && data.currentPosition.location === grouped[companyUrn].location) {
-              delete data.currentPosition.location;
-            }
-            // If currentPosition is now empty, remove it
-            if (Object.keys(data.currentPosition).length === 0) {
-              delete data.currentPosition;
-            }
+          // If currentPosition exists but is empty, remove it
+          if (data.currentPosition && Object.keys(data.currentPosition).length === 0) {
+            delete data.currentPosition;
           }
 
           grouped[companyUrn].leads.push(data);
@@ -247,6 +244,8 @@ export function useBulkCopyLeads(leads: Lead[], heroCard?: HeroCard) {
       } else {
         result = groupedResult;
       }
+    } else {
+      result = leadData;
     }
 
     if (leadFields.value.heroCard && heroCard) {
@@ -293,12 +292,68 @@ export function useBulkCopyLeads(leads: Lead[], heroCard?: HeroCard) {
       }
     }
 
-    output += `=== LEADS ===\n`;
-    output += leads.map(lead => {
+    if (groupByCompany.value) {
+      const grouped: Record<string, Lead[]> = {};
+      const noCompanyLeads: Lead[] = [];
+
+      leads.forEach(lead => {
+        const companyUrn = lead.searchResult?.currentPositions?.[0]?.companyUrn;
+        if (companyUrn) {
+          if (!grouped[companyUrn]) grouped[companyUrn] = [];
+          grouped[companyUrn].push(lead);
+        } else {
+          noCompanyLeads.push(lead);
+        }
+      });
+
+      const sections: string[] = [];
+
+      Object.entries(grouped).forEach(([urn, companyLeads]) => {
+        const firstLead = companyLeads[0];
+        const pos = firstLead.searchResult?.currentPositions?.[0];
+        const companyName = pos?.companyName || 'Company';
+        let companyHeader = `=== ${companyName.toUpperCase()} ===\n`;
+
+        if (pos?.companyUrnResolutionResult) {
+          const res = pos.companyUrnResolutionResult;
+          if (leadFields.value.position.industry && res.industry) {
+            companyHeader += `Industry: ${res.industry}\n`;
+          }
+          if (leadFields.value.position.location && res.location) {
+            companyHeader += `Location: ${res.location}\n`;
+          }
+          companyHeader += '\n';
+        }
+
+        const leadsText = companyLeads.map(lead => {
+          const header = `--- ${lead.searchResult?.fullName || 'Lead'} ---`;
+
+          const content = formatLead(lead, { skipCompanyFields: true });
+
+          return `${header}\n${content}`;
+        }).join('\n\n');
+
+        sections.push(companyHeader + leadsText);
+      });
+
+      if (noCompanyLeads.length > 0) {
+        let noCompanyHeader = `=== NO COMPANY ===\n\n`;
+        const noCompanyLeadsText = noCompanyLeads.map(lead => {
+          const header = `--- ${lead.searchResult?.fullName || 'Lead'} ---`;
+          return `${header}\n${formatLead(lead)}`;
+        }).join('\n\n');
+        sections.push(noCompanyHeader + noCompanyLeadsText);
+      }
+
+      output += sections.join('\n\n');
+    } else {
+      output += `=== LEADS ===\n`;
+      output += leads.map(lead => {
         const header = `--- ${lead.searchResult?.fullName || 'Lead'} ---`;
         const content = formatLead(lead);
         return `${header}\n${content}`;
-    }).join('\n\n');
+      }).join('\n\n');
+    }
 
     return output;
   };
