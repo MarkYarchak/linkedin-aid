@@ -93,6 +93,7 @@ const isJsonView = computed(() => viewMode.value === 'json');
           editable-prefix
           :json="isJsonView ? generateJsonData() : null"
           :wrap-text="wrapText"
+          :deep="4"
         >
           <template v-if="!heroCard" #header>
             <AppCheckbox

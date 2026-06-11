@@ -7,6 +7,7 @@ interface Props {
   mini?: boolean;
   json?: any;
   editablePrefix?: boolean;
+  deep?: number;
 }
 
 withDefaults(defineProps<Props>(), {
@@ -14,6 +15,7 @@ withDefaults(defineProps<Props>(), {
   mini: false,
   json: null,
   editablePrefix: false,
+  deep: 3,
 });
 
 const prefix = defineModel('prefix', { default: ''});
@@ -45,7 +47,7 @@ const prefix = defineModel('prefix', { default: ''});
         <template v-if="json">
           <VueJsonPretty
             :data="json"
-            :deep="3"
+            :deep="deep"
             show-length
             show-line
             show-icon
