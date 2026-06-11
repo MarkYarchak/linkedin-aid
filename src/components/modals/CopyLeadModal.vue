@@ -115,6 +115,16 @@ const isJsonView = computed(() => viewMode.value === 'json');
           <AppCheckbox v-model="leadFields.headline" label="Headline" />
           <AppCheckbox v-model="leadFields.location" label="Location" />
           <AppCheckbox v-model="leadFields.summary" label="Summary" />
+          <AppCheckbox
+            v-if="lead.searchResult"
+            v-model="leadFields.recentActivity"
+            label="Recent Activity"
+          />
+          <AppCheckbox
+            v-if="lead.searchResult"
+            v-model="leadFields.mutualConnections"
+            label="Mutual Connections"
+          />
         </div>
         <h4>Current Position Fields</h4>
         <div class="field-group grid _three-cols">

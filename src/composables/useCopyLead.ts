@@ -24,6 +24,8 @@ export function useCopyLead(lead: Lead) {
     headline: true,
     location: true,
     summary: true,
+    recentActivity: true,
+    mutualConnections: true,
     position: {
       title: true,
       companyName: true,
@@ -146,6 +148,18 @@ export function useCopyLead(lead: Lead) {
       if (leadFields.value.summary && main.summary) {
         leadInfo += `Summary:\n${sanitizeText(main.summary, true)}\n`;
       }
+      if (leadFields.value.mutualConnections && lead.searchResult) {
+        const mutualBadge = lead.searchResult.spotlightBadges?.find(b => b.id === 'SECOND_DEGREE_CONNECTION');
+        if (mutualBadge) {
+          leadInfo += `Mutual Connections: ${mutualBadge.displayValue}\n`;
+        }
+      }
+      if (leadFields.value.recentActivity && lead.searchResult) {
+        const activityBadge = lead.searchResult.spotlightBadges?.find(b => b.id === 'POSTED_ON_LINKEDIN');
+        if (activityBadge) {
+          leadInfo += `Recent Activity: ${activityBadge.displayValue}\n`;
+        }
+      }
       sections.push(leadInfo.trim());
     }
 
@@ -245,6 +259,18 @@ export function useCopyLead(lead: Lead) {
       if (leadFields.value.location) data.leadInfo.location = main.location;
       if (leadFields.value.summary && main.summary) {
         data.leadInfo.summary = sanitizeText(main.summary, true);
+      }
+      if (leadFields.value.mutualConnections && lead.searchResult) {
+        const mutualBadge = lead.searchResult.spotlightBadges?.find(b => b.id === 'SECOND_DEGREE_CONNECTION');
+        if (mutualBadge) {
+          data.leadInfo.mutualConnections = mutualBadge.displayValue;
+        }
+      }
+      if (leadFields.value.recentActivity && lead.searchResult) {
+        const activityBadge = lead.searchResult.spotlightBadges?.find(b => b.id === 'POSTED_ON_LINKEDIN');
+        if (activityBadge) {
+          data.leadInfo.recentActivitySummary = activityBadge.displayValue;
+        }
       }
     }
 
