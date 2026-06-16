@@ -1,4 +1,5 @@
 <script lang="ts" setup>
+import { watch, onUnmounted } from 'vue';
 import IconCross from '@/components/icons/IconCross.vue';
 
 interface Props {
@@ -7,8 +8,22 @@ interface Props {
   maxWidth?: string;
 }
 
-defineProps<Props>();
+const props = defineProps<Props>();
 const emit = defineEmits(['close']);
+
+watch(() => props.show, (value) => {
+  const appElement = document.getElementById('app');
+  if (value) {
+    appElement?.classList.add('modal-open');
+  } else {
+    appElement?.classList.remove('modal-open');
+  }
+}, { immediate: true });
+
+onUnmounted(() => {
+  const appElement = document.getElementById('app');
+  appElement?.classList.remove('modal-open');
+});
 </script>
 
 <template>

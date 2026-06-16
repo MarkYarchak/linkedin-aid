@@ -20,6 +20,10 @@ body {
   margin: 0;
 }
 
+#app.modal-open {
+  overflow: hidden;
+}
+
 #app {
   min-width: var(--app-width);
   height: var(--app-height);
