@@ -170,11 +170,12 @@ export function useCopyLead(lead: Lead) {
     }
 
     if (selectedPositionIds.value.length > 0) {
-      selectedPositionIds.value.forEach(posId => {
+      selectedPositionIds.value.forEach((posId, index) => {
         const pos = main?.positions.find(p => p.posId === posId);
         if (pos) {
           const isPrimary = posId === primaryPositionId.value;
-          let posInfo = isPrimary ? '### CURRENT POSITION (PRIMARY)\n' : '### CURRENT POSITION\n';
+          const num = selectedPositionIds.value.length > 1 ? `${index + 1}. ` : '';
+          let posInfo = isPrimary ? `### ${num}CURRENT POSITION (PRIMARY)\n` : `### ${num}CURRENT POSITION\n`;
           if (leadFields.value.position.title) posInfo += `Title: ${pos.title}\n`;
           if (leadFields.value.position.companyName) posInfo += `Company: ${pos.companyName}\n`;
           if (leadFields.value.position.industry) {
@@ -193,7 +194,7 @@ export function useCopyLead(lead: Lead) {
             posInfo += `Description:\n${sanitizeText(pos.description, true)}\n`;
           }
 
-          if (posInfo.trim() !== '### CURRENT POSITION' && posInfo.trim() !== '### CURRENT POSITION (PRIMARY)') {
+          if (posInfo.trim() !== `### ${num}CURRENT POSITION` && posInfo.trim() !== `### ${num}CURRENT POSITION (PRIMARY)`) {
             sections.push(posInfo.trim());
           }
         }
@@ -234,13 +235,15 @@ export function useCopyLead(lead: Lead) {
       sections.push(insightsText.trim());
     }
 
-    Object.values(selectedCompanies.value).forEach(company => {
+    const selectedCompaniesList = Object.values(selectedCompanies.value);
+    selectedCompaniesList.forEach((company, index) => {
       const cMain = company.main;
       const cExtra = company.extra;
       const isPrimary = cMain?.entityUrn && primaryPositionId.value !== null &&
                         main?.positions.find(p => p.posId === primaryPositionId.value)?.companyUrn === cMain.entityUrn;
 
-      let companyInfo = isPrimary ? '### COMPANY INFO (PRIMARY)\n' : '### COMPANY INFO\n';
+      const num = selectedCompaniesList.length > 1 ? `${index + 1}. ` : '';
+      let companyInfo = isPrimary ? `### ${num}COMPANY INFO (PRIMARY)\n` : `### ${num}COMPANY INFO\n`;
       companyInfo += `Name: ${cMain?.name}\n`;
       if (companyFields.value.industry && cMain?.industry) companyInfo += `Industry: ${cMain.industry}\n`;
       if (companyFields.value.location && cMain?.location) companyInfo += `Location: ${cMain.location}\n`;
