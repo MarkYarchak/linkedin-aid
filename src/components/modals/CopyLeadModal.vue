@@ -47,6 +47,8 @@ const {
   copyToClipboard,
   toggleInsight,
   toggleSkill,
+  togglePosition,
+  togglePrimary,
   viewMode,
   viewOptions,
   prefix,
@@ -153,18 +155,7 @@ const isJsonView = computed(() => viewMode.value === 'json');
             <AppCheckbox
               :model-value="selectedPositionIds.includes(pos.posId)"
               class="flex-1"
-              @update:model-value="(val) => {
-                if (val) {
-                  selectedPositionIds.push(pos.posId);
-                  if (primaryPositionId === null) primaryPositionId = pos.posId;
-                } else {
-                  const idx = selectedPositionIds.indexOf(pos.posId);
-                  if (idx !== -1) selectedPositionIds.splice(idx, 1);
-                  if (primaryPositionId === pos.posId) {
-                    primaryPositionId = selectedPositionIds.length > 0 ? selectedPositionIds[0] : null;
-                  }
-                }
-              }"
+              @update:model-value="togglePosition(pos.posId)"
             >
               <div class="position-info-label">
                 <strong>{{ pos.title }}</strong> at
@@ -182,8 +173,8 @@ const isJsonView = computed(() => viewMode.value === 'json');
             <button
               v-if="selectedPositionIds.includes(pos.posId)"
               :class="['btn-primary-toggle', { 'is-primary': primaryPositionId === pos.posId }]"
-              title="Set as primary"
-              @click="primaryPositionId = pos.posId"
+              title="Toggle primary status"
+              @click="togglePrimary(pos.posId)"
             >
               {{ primaryPositionId === pos.posId ? '★ Primary' : '☆ Primary' }}
             </button>

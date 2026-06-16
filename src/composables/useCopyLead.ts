@@ -105,11 +105,9 @@ export function useCopyLead(lead: Lead) {
       const found = lead.main.positions.find(p => p.posId === defPos.posId);
       if (found) {
         selectedPositionIds.value = [found.posId];
-        primaryPositionId.value = found.posId;
       }
     } else if (currentPositions.value.length > 0) {
       selectedPositionIds.value = [currentPositions.value[0].posId];
-      primaryPositionId.value = currentPositions.value[0].posId;
     }
   });
 
@@ -431,6 +429,22 @@ export function useCopyLead(lead: Lead) {
     else selectedSkills.value.splice(index, 1);
   };
 
+  const togglePosition = (posId: number) => {
+    const idx = selectedPositionIds.value.indexOf(posId);
+    if (idx !== -1) {
+      selectedPositionIds.value.splice(idx, 1);
+      if (primaryPositionId.value === posId) {
+        primaryPositionId.value = null;
+      }
+    } else {
+      selectedPositionIds.value.push(posId);
+    }
+  };
+
+  const togglePrimary = (posId: number) => {
+    primaryPositionId.value = primaryPositionId.value === posId ? null : posId;
+  };
+
   return {
     currentStep,
     totalSteps,
@@ -458,6 +472,8 @@ export function useCopyLead(lead: Lead) {
     copyToClipboard,
     toggleInsight,
     toggleSkill,
+    togglePosition,
+    togglePrimary,
     viewMode,
     viewOptions,
     wrapText,
