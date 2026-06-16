@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ref, computed } from 'vue';
+import { ref, computed, watch, nextTick } from 'vue';
 import { useCopyLead } from '@/composables/useCopyLead';
 import { getRelativeTime } from '@/helpers/date-helper';
 import { getSalesNavigatorCompanyUrl } from '@/helpers/url-helpers';
@@ -20,6 +20,8 @@ interface Props {
 
 const props = defineProps<Props>();
 const emit = defineEmits(['close']);
+
+const modalRef = ref<InstanceType<typeof AppModal> | null>(null);
 
 const {
   currentStep,
@@ -105,10 +107,17 @@ const missingCompanies = computed(() => {
 });
 
 const isJsonView = computed(() => viewMode.value === 'json');
+
+watch(currentStep, () => {
+  nextTick(() => {
+    modalRef.value?.scrollToTop();
+  });
+});
 </script>
 
 <template>
   <AppModal
+    ref="modalRef"
     :show="show"
     title="Copy Lead Information"
     @close="emit('close')"

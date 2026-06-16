@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { computed } from 'vue';
+import { ref, computed, watch, nextTick } from 'vue';
 import { useBulkCopyLeads } from '@/composables/useBulkCopyLeads';
 import AppStepper from '@/components/ui/AppStepper.vue';
 import AppModal from '@/components/ui/AppModal.vue';
@@ -16,6 +16,8 @@ interface Props {
 
 const props = defineProps<Props>();
 const emit = defineEmits(['close']);
+
+const modalRef = ref<InstanceType<typeof AppModal> | null>(null);
 
 const {
   currentStep,
@@ -35,10 +37,17 @@ const {
 } = useBulkCopyLeads(props.leads, props.heroCard);
 
 const isJsonView = computed(() => viewMode.value === 'json');
+
+watch(currentStep, () => {
+  nextTick(() => {
+    modalRef.value?.scrollToTop();
+  });
+});
 </script>
 
 <template>
   <AppModal
+    ref="modalRef"
     :show="show"
     title="Bulk Copy Leads"
     @close="emit('close')"
