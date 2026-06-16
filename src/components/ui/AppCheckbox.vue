@@ -22,7 +22,9 @@ const toggle = () => {
         <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" fill="currentColor" />
       </svg>
     </div>
-    <span v-if="label" class="checkbox-label">{{ label }}</span>
+    <span v-if="label || $slots.default" class="checkbox-label">
+      <slot>{{ label }}</slot>
+    </span>
   </label>
 </template>
 
