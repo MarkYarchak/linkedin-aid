@@ -160,11 +160,13 @@ const isJsonView = computed(() => viewMode.value === 'json');
             :key="pos.posId"
             :class="{ 'is-selected': selectedPositionIds.includes(pos.posId) }"
             class="position-item-row"
+            @click="togglePosition(pos.posId)"
           >
             <AppCheckbox
               :model-value="selectedPositionIds.includes(pos.posId)"
               class="flex-1"
               @update:model-value="togglePosition(pos.posId)"
+              @click.stop
             >
               <div class="position-info-label">
                 <strong>{{ pos.title }}</strong> at
@@ -183,7 +185,7 @@ const isJsonView = computed(() => viewMode.value === 'json');
               v-if="selectedPositionIds.includes(pos.posId)"
               :class="['btn-primary-toggle', { 'is-primary': primaryPositionId === pos.posId }]"
               title="Toggle primary status"
-              @click="togglePrimary(pos.posId)"
+              @click.stop="togglePrimary(pos.posId)"
             >
               {{ primaryPositionId === pos.posId ? '★ Primary' : '☆ Primary' }}
             </button>
@@ -614,11 +616,13 @@ button:hover {
 .position-item-row {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 12px;
   padding: 8px;
   border: 1px solid #e2e8f0;
   border-radius: 6px;
   margin-bottom: 8px;
+  cursor: pointer;
 }
 
 .position-item-row.is-selected {
@@ -638,6 +642,10 @@ button:hover {
   background: white;
   color: #64748b;
   white-space: nowrap;
+}
+
+.btn-primary-toggle:focus {
+  outline: none;
 }
 
 .btn-primary-toggle.is-primary {
