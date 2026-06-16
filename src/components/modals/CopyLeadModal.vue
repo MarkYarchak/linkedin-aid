@@ -88,13 +88,13 @@ const copyTitle = async () => {
 
 const selectedCompanyUrls = computed(() => {
   return props.lead.main?.positions
-    .filter(p => selectedPositionIds.value.includes(p.posId) && p.companyUrn)
+    .filter(p => selectedPositionIds.value.includes(p.posId))
     .map(p => {
-      const isLoaded = !!selectedCompanies.value[p.companyUrn!];
+      const isLoaded = p.companyUrn ? !!selectedCompanies.value[p.companyUrn] : false;
       return {
         name: p.companyName,
-        urn: p.companyUrn!,
-        url: getSalesNavigatorCompanyUrl(p.companyUrn!),
+        urn: p.companyUrn,
+        url: p.companyUrn ? getSalesNavigatorCompanyUrl(p.companyUrn) : null,
         isLoaded
       };
     }) || [];
@@ -265,11 +265,14 @@ const isJsonView = computed(() => viewMode.value === 'json');
               <p v-else>Some selected companies are missing data:</p>
 
               <div class="company-links-list">
-                <div v-for="item in missingCompanies" :key="item.urn" class="missing-company-item">
+                <div v-for="item in missingCompanies" :key="item.name" class="missing-company-item">
                   <span class="missing-company-name">{{ item.name }}</span>
-                  <a :href="item.url!" target="_blank" class="company-link">
+                  <a v-if="item.url" :href="item.url" target="_blank" class="company-link">
                     Open Company Page
                   </a>
+                  <span v-else class="company-link-disabled" title="No LinkedIn company page available for this position">
+                    No URL available
+                  </span>
                 </div>
               </div>
               <p class="collect-hint">Opening the page will automatically collect the missing data.</p>
@@ -557,6 +560,13 @@ const isJsonView = computed(() => viewMode.value === 'json');
 .company-link:hover {
   background-color: #004182;
   color: white;
+}
+
+.company-link-disabled {
+  color: #94a3b8;
+  font-size: 0.85rem;
+  font-style: italic;
+  cursor: help;
 }
 
 .collect-hint {
