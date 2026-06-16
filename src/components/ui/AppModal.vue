@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { watch, onUnmounted } from 'vue';
+import { ref, watch, onUnmounted } from 'vue';
 import IconCross from '@/components/icons/IconCross.vue';
 
 interface Props {
@@ -10,6 +10,18 @@ interface Props {
 
 const props = defineProps<Props>();
 const emit = defineEmits(['close']);
+
+const modalBodyRef = ref<HTMLElement | null>(null);
+
+const scrollToTop = () => {
+  if (modalBodyRef.value) {
+    modalBodyRef.value.scrollTop = 0;
+  }
+};
+
+defineExpose({
+  scrollToTop
+});
 
 watch(() => props.show, (value) => {
   const appElement = document.getElementById('app');
@@ -38,7 +50,7 @@ onUnmounted(() => {
         </button>
       </div>
 
-      <div class="modal-body">
+      <div ref="modalBodyRef" class="modal-body">
         <slot></slot>
       </div>
 
