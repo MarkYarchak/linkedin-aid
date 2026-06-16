@@ -37,16 +37,17 @@ export function useCopyLead(lead: Lead) {
   });
 
   // Positions
-  const selectedPositionId = ref<number | null>(null);
+  const selectedPositionIds = ref<number[]>([]);
+  const primaryPositionId = ref<number | null>(null);
 
   const currentPositions = computed(() => {
     return lead.main?.positions?.filter(p => p.current) || [];
   });
 
-  const selectedPositionUrn = computed(() => {
-    if (selectedPositionId.value === null) return '';
-    const pos = lead.main?.positions.find(p => p.posId === selectedPositionId.value);
-    return pos?.companyUrn || '';
+  const selectedPositionUrns = computed(() => {
+    return selectedPositionIds.value
+      .map(id => lead.main?.positions.find(p => p.posId === id)?.companyUrn)
+      .filter((urn): urn is string => !!urn);
   });
 
   // Insights & Skills
@@ -66,7 +67,7 @@ export function useCopyLead(lead: Lead) {
     employeeCount: true,
   });
 
-  const selectedCompany = ref<Company | null>(null);
+  const selectedCompanies = ref<Record<string, Company>>({});
   const isLoadingCompany = ref(false);
   const capturedCompanyUrns = ref<string[]>([]);
 
@@ -103,30 +104,37 @@ export function useCopyLead(lead: Lead) {
       const defPos = lead.main.defaultPosition;
       const found = lead.main.positions.find(p => p.posId === defPos.posId);
       if (found) {
-        selectedPositionId.value = found.posId;
+        selectedPositionIds.value = [found.posId];
+        primaryPositionId.value = found.posId;
       }
     } else if (currentPositions.value.length > 0) {
-      selectedPositionId.value = currentPositions.value[0].posId;
+      selectedPositionIds.value = [currentPositions.value[0].posId];
+      primaryPositionId.value = currentPositions.value[0].posId;
     }
   });
 
-  watch(selectedPositionUrn, async (newUrn) => {
-    if (newUrn) {
+  watch(selectedPositionUrns, async (newUrns) => {
+    if (newUrns.length > 0) {
       isLoadingCompany.value = true;
       try {
-        const id = parseLinkedInUrn(newUrn).id;
-        const company = await companyService.findCompanyById(id);
-        selectedCompany.value = company || null;
+        const results: Record<string, Company> = {};
+        for (const urn of newUrns) {
+          const id = parseLinkedInUrn(urn).id;
+          const company = await companyService.findCompanyById(id);
+          if (company) {
+            results[urn] = company;
+          }
+        }
+        selectedCompanies.value = results;
       } catch (e) {
-        console.error('Failed to fetch company', e);
-        selectedCompany.value = null;
+        console.error('Failed to fetch companies', e);
       } finally {
         isLoadingCompany.value = false;
       }
     } else {
-      selectedCompany.value = null;
+      selectedCompanies.value = {};
     }
-  }, { immediate: true });
+  }, { immediate: true, deep: true });
 
   const nextStep = () => {
     if (currentStep.value < totalSteps) currentStep.value++;
@@ -163,32 +171,35 @@ export function useCopyLead(lead: Lead) {
       sections.push(leadInfo.trim());
     }
 
-    if (selectedPositionId.value !== null) {
-      const pos = main?.positions.find(p => p.posId === selectedPositionId.value);
-      if (pos) {
-        let posInfo = '### CURRENT POSITION\n';
-        if (leadFields.value.position.title) posInfo += `Title: ${pos.title}\n`;
-        if (leadFields.value.position.companyName) posInfo += `Company: ${pos.companyName}\n`;
-        if (leadFields.value.position.industry) {
-          const industry = pos.companyUrnResolutionResult?.industry ||
-                          (selectedCompany.value?.main?.entityUrn === pos.companyUrn ? selectedCompany.value?.main?.industry : null);
-          if (industry) {
-            posInfo += `Industry: ${industry}\n`;
+    if (selectedPositionIds.value.length > 0) {
+      selectedPositionIds.value.forEach(posId => {
+        const pos = main?.positions.find(p => p.posId === posId);
+        if (pos) {
+          const isPrimary = posId === primaryPositionId.value;
+          let posInfo = isPrimary ? '### CURRENT POSITION (PRIMARY)\n' : '### CURRENT POSITION\n';
+          if (leadFields.value.position.title) posInfo += `Title: ${pos.title}\n`;
+          if (leadFields.value.position.companyName) posInfo += `Company: ${pos.companyName}\n`;
+          if (leadFields.value.position.industry) {
+            const company = pos.companyUrn ? selectedCompanies.value[pos.companyUrn] : null;
+            const industry = pos.companyUrnResolutionResult?.industry || company?.main?.industry;
+            if (industry) {
+              posInfo += `Industry: ${industry}\n`;
+            }
+          }
+          if (leadFields.value.position.location && pos.location) posInfo += `Location: ${pos.location}\n`;
+          if (leadFields.value.position.startedOn && pos.startedOn) {
+            const date = new Date(pos.startedOn.year, (pos.startedOn.month || 1) - 1);
+            posInfo += `Started: ${getRelativeTime(date.getTime())}\n`;
+          }
+          if (leadFields.value.position.description && pos.description) {
+            posInfo += `Description:\n${sanitizeText(pos.description, true)}\n`;
+          }
+
+          if (posInfo.trim() !== '### CURRENT POSITION' && posInfo.trim() !== '### CURRENT POSITION (PRIMARY)') {
+            sections.push(posInfo.trim());
           }
         }
-        if (leadFields.value.position.location && pos.location) posInfo += `Location: ${pos.location}\n`;
-        if (leadFields.value.position.startedOn && pos.startedOn) {
-          const date = new Date(pos.startedOn.year, (pos.startedOn.month || 1) - 1);
-          posInfo += `Started: ${getRelativeTime(date.getTime())}\n`;
-        }
-        if (leadFields.value.position.description && pos.description) {
-          posInfo += `Description:\n${sanitizeText(pos.description, true)}\n`;
-        }
-
-        if (posInfo.trim() !== '### CURRENT POSITION') {
-          sections.push(posInfo.trim());
-        }
-      }
+      });
     }
 
     if (selectedSkills.value.length > 0) {
@@ -225,10 +236,13 @@ export function useCopyLead(lead: Lead) {
       sections.push(insightsText.trim());
     }
 
-    if (selectedCompany.value) {
-      const cMain = selectedCompany.value.main;
-      const cExtra = selectedCompany.value.extra;
-      let companyInfo = `### COMPANY INFO\n`;
+    Object.values(selectedCompanies.value).forEach(company => {
+      const cMain = company.main;
+      const cExtra = company.extra;
+      const isPrimary = cMain?.entityUrn && primaryPositionId.value !== null &&
+                        main?.positions.find(p => p.posId === primaryPositionId.value)?.companyUrn === cMain.entityUrn;
+
+      let companyInfo = isPrimary ? '### COMPANY INFO (PRIMARY)\n' : '### COMPANY INFO\n';
       companyInfo += `Name: ${cMain?.name}\n`;
       if (companyFields.value.industry && cMain?.industry) companyInfo += `Industry: ${cMain.industry}\n`;
       if (companyFields.value.location && cMain?.location) companyInfo += `Location: ${cMain.location}\n`;
@@ -243,7 +257,7 @@ export function useCopyLead(lead: Lead) {
       }
       if (companyFields.value.description && cMain?.description) companyInfo += `Description:\n${sanitizeText(cMain.description, true)}\n`;
       sections.push(companyInfo.trim());
-    }
+    });
 
     return sections.join('\n\n');
   };
@@ -274,28 +288,33 @@ export function useCopyLead(lead: Lead) {
       }
     }
 
-    if (selectedPositionId.value !== null) {
-      const pos = main?.positions.find(p => p.posId === selectedPositionId.value);
-      if (pos) {
-        data.currentPosition = {};
-        if (leadFields.value.position.title) data.currentPosition.title = pos.title;
-        if (leadFields.value.position.companyName) data.currentPosition.companyName = pos.companyName;
-        if (leadFields.value.position.industry) {
-          const industry = pos.companyUrnResolutionResult?.industry ||
-                          (selectedCompany.value?.main?.entityUrn === pos.companyUrn ? selectedCompany.value?.main?.industry : null);
-          if (industry) {
-            data.currentPosition.industry = industry;
+    if (selectedPositionIds.value.length > 0) {
+      data.positions = selectedPositionIds.value.map(posId => {
+        const pos = main?.positions.find(p => p.posId === posId);
+        const posData: any = {};
+        if (pos) {
+          const isPrimary = posId === primaryPositionId.value;
+          if (isPrimary) posData.primary = true;
+          if (leadFields.value.position.title) posData.title = pos.title;
+          if (leadFields.value.position.companyName) posData.companyName = pos.companyName;
+          if (leadFields.value.position.industry) {
+            const company = pos.companyUrn ? selectedCompanies.value[pos.companyUrn] : null;
+            const industry = pos.companyUrnResolutionResult?.industry || company?.main?.industry;
+            if (industry) {
+              posData.industry = industry;
+            }
+          }
+          if (leadFields.value.position.location && pos.location) posData.location = pos.location;
+          if (leadFields.value.position.startedOn && pos.startedOn) {
+            const date = new Date(pos.startedOn.year, (pos.startedOn.month || 1) - 1);
+            posData.started = getRelativeTime(date.getTime());
+          }
+          if (leadFields.value.position.description && pos.description) {
+            posData.description = sanitizeText(pos.description, true);
           }
         }
-        if (leadFields.value.position.location && pos.location) data.currentPosition.location = pos.location;
-        if (leadFields.value.position.startedOn && pos.startedOn) {
-          const date = new Date(pos.startedOn.year, (pos.startedOn.month || 1) - 1);
-          data.currentPosition.started = getRelativeTime(date.getTime());
-        }
-        if (leadFields.value.position.description && pos.description) {
-          data.currentPosition.description = sanitizeText(pos.description, true);
-        }
-      }
+        return posData;
+      });
     }
 
     if (selectedSkills.value.length > 0) {
@@ -327,24 +346,31 @@ export function useCopyLead(lead: Lead) {
       });
     }
 
-    if (selectedCompany.value) {
-      const cMain = selectedCompany.value.main;
-      const cExtra = selectedCompany.value.extra;
-      data.companyInfo = {};
-      data.companyInfo.name = cMain?.name;
-      if (companyFields.value.industry && cMain?.industry) data.companyInfo.industry = cMain.industry;
-      if (companyFields.value.location && cMain?.location) data.companyInfo.location = cMain.location;
-      if (companyFields.value.yearFounded && cMain?.yearFounded) data.companyInfo.yearFounded = cMain.yearFounded;
-      if (companyFields.value.type && cMain?.type) data.companyInfo.type = cMain.type;
-      if (companyFields.value.specialties && cMain?.specialties?.length) data.companyInfo.specialties = cMain.specialties;
-      if (companyFields.value.employeeCount && cExtra?.employeeDisplayCount) data.companyInfo.headcount = cExtra.employeeDisplayCount;
-      if (companyFields.value.revenueRange && cMain?.revenueRange) {
-        const { estimatedMinRevenue, estimatedMaxRevenue } = cMain.revenueRange;
-        data.companyInfo.revenue = `${estimatedMinRevenue.currencyCode} ${estimatedMinRevenue.amount}${estimatedMinRevenue.unit} - ${estimatedMaxRevenue.amount}${estimatedMaxRevenue.unit}`;
-      }
-      if (companyFields.value.description && cMain?.description) {
-        data.companyInfo.description = sanitizeText(cMain.description, true);
-      }
+    if (Object.keys(selectedCompanies.value).length > 0) {
+      data.companiesInfo = Object.values(selectedCompanies.value).map(company => {
+        const cMain = company.main;
+        const cExtra = company.extra;
+        const companyData: any = {};
+        const isPrimary = cMain?.entityUrn && primaryPositionId.value !== null &&
+                          main?.positions.find(p => p.posId === primaryPositionId.value)?.companyUrn === cMain.entityUrn;
+
+        if (isPrimary) companyData.primary = true;
+        companyData.name = cMain?.name;
+        if (companyFields.value.industry && cMain?.industry) companyData.industry = cMain.industry;
+        if (companyFields.value.location && cMain?.location) companyData.location = cMain.location;
+        if (companyFields.value.yearFounded && cMain?.yearFounded) companyData.yearFounded = cMain.yearFounded;
+        if (companyFields.value.type && cMain?.type) companyData.type = cMain.type;
+        if (companyFields.value.specialties && cMain?.specialties?.length) companyData.specialties = cMain.specialties;
+        if (companyFields.value.employeeCount && cExtra?.employeeDisplayCount) companyData.headcount = cExtra.employeeDisplayCount;
+        if (companyFields.value.revenueRange && cMain?.revenueRange) {
+          const { estimatedMinRevenue, estimatedMaxRevenue } = cMain.revenueRange;
+          companyData.revenue = `${estimatedMinRevenue.currencyCode} ${estimatedMinRevenue.amount}${estimatedMinRevenue.unit} - ${estimatedMaxRevenue.amount}${estimatedMaxRevenue.unit}`;
+        }
+        if (companyFields.value.description && cMain?.description) {
+          companyData.description = sanitizeText(cMain.description, true);
+        }
+        return companyData;
+      });
     }
 
     return data;
@@ -352,7 +378,7 @@ export function useCopyLead(lead: Lead) {
 
   const generateTitle = () => {
     const main = lead.main;
-    const pos = main?.positions.find(p => p.posId === selectedPositionId.value);
+    const pos = main?.positions.find(p => p.posId === (primaryPositionId.value || selectedPositionIds.value[0]));
 
     return generateLeadTitle({
       fullName: main?.fullName,
@@ -409,12 +435,13 @@ export function useCopyLead(lead: Lead) {
     currentStep,
     totalSteps,
     leadFields,
-    selectedPositionId,
+    selectedPositionIds,
+    primaryPositionId,
     currentPositions,
     selectedInsights,
     selectedSkills,
     companyFields,
-    selectedCompany,
+    selectedCompanies,
     isLoadingCompany,
     capturedCompanyUrns,
     isCopied,

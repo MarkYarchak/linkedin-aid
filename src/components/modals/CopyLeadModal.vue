@@ -6,7 +6,6 @@ import { getSalesNavigatorCompanyUrl } from '@/helpers/url-helpers';
 import AppStepper from '@/components/ui/AppStepper.vue';
 import AppModal from '@/components/ui/AppModal.vue';
 import AppCheckbox from '@/components/ui/AppCheckbox.vue';
-import AppRadio from '@/components/ui/AppRadio.vue';
 import AppTag from '@/components/ui/AppTag.vue';
 import AppSelectableItem from '@/components/ui/AppSelectableItem.vue';
 import AppPreviewBox from '@/components/ui/AppPreviewBox.vue';
@@ -26,12 +25,13 @@ const {
   currentStep,
   totalSteps,
   leadFields,
-  selectedPositionId,
+  selectedPositionIds,
+  primaryPositionId,
   currentPositions,
   selectedInsights,
   selectedSkills,
   companyFields,
-  selectedCompany,
+  selectedCompanies,
   isLoadingCompany,
   capturedCompanyUrns,
   isCopied,
@@ -84,11 +84,13 @@ const copyTitle = async () => {
   }, 2000);
 };
 
-const selectedCompanyUrl = computed(() => {
-  if (selectedPositionId.value === null) return null;
-  const pos = props.lead.main?.positions.find(p => p.posId === selectedPositionId.value);
-  if (!pos?.companyUrn) return null;
-  return getSalesNavigatorCompanyUrl(pos.companyUrn);
+const selectedCompanyUrls = computed(() => {
+  return props.lead.main?.positions
+    .filter(p => selectedPositionIds.value.includes(p.posId) && p.companyUrn)
+    .map(p => ({
+      name: p.companyName,
+      url: getSalesNavigatorCompanyUrl(p.companyUrn!)
+    })) || [];
 });
 
 const isJsonView = computed(() => viewMode.value === 'json');
@@ -140,24 +142,52 @@ const isJsonView = computed(() => viewMode.value === 'json');
           />
         </div>
 
-        <h4>Select Position</h4>
+        <h4>Select Positions</h4>
         <div v-if="currentPositions.length > 0" class="positions-list">
-          <AppRadio
+          <div
             v-for="pos in currentPositions"
             :key="pos.posId"
-            v-model="selectedPositionId"
-            :value="pos.posId"
+            :class="{ 'is-selected': selectedPositionIds.includes(pos.posId) }"
+            class="position-item-row"
           >
-            <strong>{{ pos.title }}</strong> at
-            <span
-              :class="[
-                'company-name-label',
-                pos.companyUrn && capturedCompanyUrns.includes(pos.companyUrn) ? 'is-captured' : 'is-not-captured'
-              ]"
+            <AppCheckbox
+              :model-value="selectedPositionIds.includes(pos.posId)"
+              class="flex-1"
+              @update:model-value="(val) => {
+                if (val) {
+                  selectedPositionIds.push(pos.posId);
+                  if (primaryPositionId === null) primaryPositionId = pos.posId;
+                } else {
+                  const idx = selectedPositionIds.indexOf(pos.posId);
+                  if (idx !== -1) selectedPositionIds.splice(idx, 1);
+                  if (primaryPositionId === pos.posId) {
+                    primaryPositionId = selectedPositionIds.length > 0 ? selectedPositionIds[0] : null;
+                  }
+                }
+              }"
             >
-              {{ pos.companyName }}
-            </span>
-          </AppRadio>
+              <div class="position-info-label">
+                <strong>{{ pos.title }}</strong> at
+                <span
+                  :class="[
+                    'company-name-label',
+                    pos.companyUrn && capturedCompanyUrns.includes(pos.companyUrn) ? 'is-captured' : 'is-not-captured'
+                  ]"
+                >
+                  {{ pos.companyName }}
+                </span>
+              </div>
+            </AppCheckbox>
+
+            <button
+              v-if="selectedPositionIds.includes(pos.posId)"
+              :class="['btn-primary-toggle', { 'is-primary': primaryPositionId === pos.posId }]"
+              title="Set as primary"
+              @click="primaryPositionId = pos.posId"
+            >
+              {{ primaryPositionId === pos.posId ? '★ Primary' : '☆ Primary' }}
+            </button>
+          </div>
         </div>
         <div v-else>No current positions found.</div>
       </div>
@@ -202,29 +232,39 @@ const isJsonView = computed(() => viewMode.value === 'json');
       <div v-if="currentStep === 3">
         <h4>Company Fields</h4>
         <div v-if="isLoadingCompany">Loading company data...</div>
-        <div v-else-if="selectedCompany">
-          <p>Data for: <strong>{{ selectedCompany.main?.name }}</strong></p>
-          <div class="field-group grid">
-            <AppCheckbox v-model="companyFields.name" label="Name" />
-            <AppCheckbox v-model="companyFields.industry" label="Industry" />
-            <AppCheckbox v-model="companyFields.location" label="Location" />
-            <AppCheckbox v-model="companyFields.revenueRange" label="Revenue" />
-            <AppCheckbox v-model="companyFields.type" label="Type" />
-            <AppCheckbox v-model="companyFields.yearFounded" label="Year Founded" />
-            <AppCheckbox v-model="companyFields.employeeCount" label="Headcount" />
-            <AppCheckbox v-model="companyFields.description" label="Description" />
-            <AppCheckbox v-model="companyFields.specialties" label="Specialties" />
+        <div v-else-if="Object.keys(selectedCompanies).length > 0">
+          <div v-for="(company, urn) in selectedCompanies" :key="urn" class="company-data-section">
+            <p>
+              Data for: <strong>{{ company.main?.name }}</strong>
+              <span v-if="primaryPositionId !== null && lead.main?.positions.find(p => p.posId === primaryPositionId)?.companyUrn === urn" class="primary-badge">
+                Primary
+              </span>
+            </p>
+            <div class="field-group grid">
+              <AppCheckbox v-model="companyFields.name" label="Name" />
+              <AppCheckbox v-model="companyFields.industry" label="Industry" />
+              <AppCheckbox v-model="companyFields.location" label="Location" />
+              <AppCheckbox v-model="companyFields.revenueRange" label="Revenue" />
+              <AppCheckbox v-model="companyFields.type" label="Type" />
+              <AppCheckbox v-model="companyFields.yearFounded" label="Year Founded" />
+              <AppCheckbox v-model="companyFields.employeeCount" label="Headcount" />
+              <AppCheckbox v-model="companyFields.description" label="Description" />
+              <AppCheckbox v-model="companyFields.specialties" label="Specialties" />
+            </div>
           </div>
         </div>
         <div v-else class="no-company-data">
-          <p>No collected data found for the selected company.</p>
-          <p v-if="selectedCompanyUrl">
-            You can open the company page to collect its data:
-            <br />
-            <a :href="selectedCompanyUrl" target="_blank" class="company-link">
-              Open LinkedIn Company Page
-            </a>
-          </p>
+          <p>No collected data found for the selected companies.</p>
+          <div v-if="selectedCompanyUrls.length > 0">
+            <p>You can open the company pages to collect data:</p>
+            <ul class="company-links-list">
+              <li v-for="item in selectedCompanyUrls" :key="item.url!">
+                <a :href="item.url!" target="_blank" class="company-link">
+                  Open {{ item.name }}
+                </a>
+              </li>
+            </ul>
+          </div>
         </div>
       </div>
 
@@ -529,5 +569,70 @@ button:hover {
 
 .btn-icon:focus {
   outline: none;
+}
+
+.position-item-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  margin-bottom: 8px;
+}
+
+.position-item-row.is-selected {
+  background: #f0f7ff;
+  border-color: #0a66c2;
+}
+
+.position-info-label {
+  flex: 1;
+}
+
+.btn-primary-toggle {
+  font-size: 0.75rem;
+  padding: 4px 8px;
+  border-radius: 4px;
+  border: 1px solid #cbd5e1;
+  background: white;
+  color: #64748b;
+  white-space: nowrap;
+}
+
+.btn-primary-toggle.is-primary {
+  border-color: #0a66c2;
+  color: #0a66c2;
+}
+
+.company-data-section {
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.company-data-section:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.primary-badge {
+  background: #0a66c2;
+  color: white;
+  font-size: 0.7rem;
+  padding: 2px 6px;
+  border-radius: 10px;
+  margin-left: 8px;
+  vertical-align: middle;
+}
+
+.company-links-list {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
 }
 </style>
