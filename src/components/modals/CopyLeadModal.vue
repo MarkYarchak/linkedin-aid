@@ -89,10 +89,19 @@ const copyTitle = async () => {
 const selectedCompanyUrls = computed(() => {
   return props.lead.main?.positions
     .filter(p => selectedPositionIds.value.includes(p.posId) && p.companyUrn)
-    .map(p => ({
-      name: p.companyName,
-      url: getSalesNavigatorCompanyUrl(p.companyUrn!)
-    })) || [];
+    .map(p => {
+      const isLoaded = !!selectedCompanies.value[p.companyUrn!];
+      return {
+        name: p.companyName,
+        urn: p.companyUrn!,
+        url: getSalesNavigatorCompanyUrl(p.companyUrn!),
+        isLoaded
+      };
+    }) || [];
+});
+
+const missingCompanies = computed(() => {
+  return selectedCompanyUrls.value.filter(c => !c.isLoaded);
 });
 
 const isJsonView = computed(() => viewMode.value === 'json');
@@ -221,40 +230,48 @@ const isJsonView = computed(() => viewMode.value === 'json');
 
       <!-- Step 3: Company Info -->
       <div v-if="currentStep === 3">
-        <h4>Company Fields</h4>
         <div v-if="isLoadingCompany">Loading company data...</div>
-        <div v-else-if="Object.keys(selectedCompanies).length > 0">
-          <div v-for="(company, urn) in selectedCompanies" :key="urn" class="company-data-section">
-            <p>
-              Data for: <strong>{{ company.main?.name }}</strong>
-              <span v-if="primaryPositionId !== null && lead.main?.positions.find(p => p.posId === primaryPositionId)?.companyUrn === urn" class="primary-badge">
-                Primary
-              </span>
-            </p>
-            <div class="field-group grid">
-              <AppCheckbox v-model="companyFields.name" label="Name" />
-              <AppCheckbox v-model="companyFields.industry" label="Industry" />
-              <AppCheckbox v-model="companyFields.location" label="Location" />
-              <AppCheckbox v-model="companyFields.revenueRange" label="Revenue" />
-              <AppCheckbox v-model="companyFields.type" label="Type" />
-              <AppCheckbox v-model="companyFields.yearFounded" label="Year Founded" />
-              <AppCheckbox v-model="companyFields.employeeCount" label="Headcount" />
-              <AppCheckbox v-model="companyFields.description" label="Description" />
-              <AppCheckbox v-model="companyFields.specialties" label="Specialties" />
+        <div v-else>
+          <!-- Loaded Companies -->
+          <div v-if="Object.keys(selectedCompanies).length > 0">
+            <h4>Company Fields</h4>
+            <div v-for="(company, urn) in selectedCompanies" :key="urn" class="company-data-section">
+              <p>
+                Data for: <strong>{{ company.main?.name }}</strong>
+                <span v-if="primaryPositionId !== null && lead.main?.positions.find(p => p.posId === primaryPositionId)?.companyUrn === urn" class="primary-badge">
+                  Primary
+                </span>
+              </p>
+              <div class="field-group grid">
+                <AppCheckbox v-model="companyFields.name" label="Name" />
+                <AppCheckbox v-model="companyFields.industry" label="Industry" />
+                <AppCheckbox v-model="companyFields.location" label="Location" />
+                <AppCheckbox v-model="companyFields.revenueRange" label="Revenue" />
+                <AppCheckbox v-model="companyFields.type" label="Type" />
+                <AppCheckbox v-model="companyFields.yearFounded" label="Year Founded" />
+                <AppCheckbox v-model="companyFields.employeeCount" label="Headcount" />
+                <AppCheckbox v-model="companyFields.description" label="Description" />
+                <AppCheckbox v-model="companyFields.specialties" label="Specialties" />
+              </div>
             </div>
           </div>
-        </div>
-        <div v-else class="no-company-data">
-          <p>No collected data found for the selected companies.</p>
-          <div v-if="selectedCompanyUrls.length > 0">
-            <p>You can open the company pages to collect data:</p>
-            <ul class="company-links-list">
-              <li v-for="item in selectedCompanyUrls" :key="item.url!">
-                <a :href="item.url!" target="_blank" class="company-link">
-                  Open {{ item.name }}
-                </a>
-              </li>
-            </ul>
+
+          <!-- Missing Companies -->
+          <div v-if="missingCompanies.length > 0" class="missing-companies-section" :class="{ 'mt-6': Object.keys(selectedCompanies).length > 0 }">
+            <div class="no-company-data">
+              <p v-if="Object.keys(selectedCompanies).length === 0">No collected data found for the selected companies.</p>
+              <p v-else>Some selected companies are missing data:</p>
+
+              <div class="company-links-list">
+                <div v-for="item in missingCompanies" :key="item.urn" class="missing-company-item">
+                  <span class="missing-company-name">{{ item.name }}</span>
+                  <a :href="item.url!" target="_blank" class="company-link">
+                    Open Company Page
+                  </a>
+                </div>
+              </div>
+              <p class="collect-hint">Opening the page will automatically collect the missing data.</p>
+            </div>
           </div>
         </div>
       </div>
@@ -494,24 +511,56 @@ const isJsonView = computed(() => viewMode.value === 'json');
 }
 
 .no-company-data p {
-  margin: 8px 0;
+  margin: 4px 0;
+}
+
+.company-links-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 16px 0;
+}
+
+.missing-company-item {
+  flex-grow: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  gap: 12px;
+}
+
+.missing-company-name {
+  font-weight: 600;
+  color: #1e293b;
+  text-align: left;
 }
 
 .company-link {
   display: inline-block;
-  margin-top: 8px;
-  padding: 8px 16px;
+  padding: 6px 12px;
   background-color: #0a66c2;
   color: white;
   text-decoration: none;
   border-radius: 4px;
+  font-size: 0.85rem;
   font-weight: 600;
   transition: background-color 0.2s;
+  white-space: nowrap;
 }
 
 .company-link:hover {
   background-color: #004182;
   color: white;
+}
+
+.collect-hint {
+  font-size: 0.8rem;
+  font-style: italic;
+  color: #94a3b8;
 }
 
 .copied-feedback {
@@ -616,14 +665,5 @@ button:hover {
   border-radius: 10px;
   margin-left: 8px;
   vertical-align: middle;
-}
-
-.company-links-list {
-  list-style: none;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  align-items: center;
 }
 </style>
