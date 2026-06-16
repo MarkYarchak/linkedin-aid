@@ -203,44 +203,8 @@ watch(currentStep, () => {
         <div v-else>No current positions found.</div>
       </div>
 
-      <!-- Step 2: Insights & Skills -->
+      <!-- Step 2: Company Info -->
       <div v-if="currentStep === 2">
-        <h4>Recent Activity</h4>
-        <div v-if="lead.insights?.elements?.length" class="insights-list">
-          <AppSelectableItem
-            v-for="insight in lead.insights.elements"
-            :key="insight.insightId"
-            :selected="selectedInsights.includes(insight.insightId)"
-            @toggle="toggleInsight(insight.insightId)"
-          >
-            <div class="insight-item">
-              <div class="insight-item__header">
-                <span class="insight-item__type">{{ getInsightData(insight).type }}</span>
-                <span v-if="getInsightData(insight).date" class="insight-item__date">{{ getInsightData(insight).date }}</span>
-              </div>
-              <div class="insight-item__text">
-                {{ getInsightData(insight).text }}
-              </div>
-            </div>
-          </AppSelectableItem>
-        </div>
-        <div v-else>No recent activity found.</div>
-
-        <h4 class="mt-6">Skills</h4>
-        <div v-if="lead.extra?.skills?.length" class="tags-list">
-          <AppTag
-            v-for="skill in lead.extra.skills"
-            :key="skill.name"
-            :label="skill.name"
-            :selected="selectedSkills.includes(skill.name)"
-            @toggle="toggleSkill(skill.name)"
-          />
-        </div>
-        <div v-else>No skills found.</div>
-      </div>
-
-      <!-- Step 3: Company Info -->
-      <div v-if="currentStep === 3">
         <div v-if="isLoadingCompany">Loading company data...</div>
         <div v-else>
           <!-- Loaded Companies -->
@@ -288,6 +252,42 @@ watch(currentStep, () => {
             </div>
           </div>
         </div>
+      </div>
+
+      <!-- Step 3: Insights & Skills -->
+      <div v-if="currentStep === 3">
+        <h4>Recent Activity</h4>
+        <div v-if="lead.insights?.elements?.length" class="insights-list">
+          <AppSelectableItem
+            v-for="insight in lead.insights.elements"
+            :key="insight.insightId"
+            :selected="selectedInsights.includes(insight.insightId)"
+            @toggle="toggleInsight(insight.insightId)"
+          >
+            <div class="insight-item">
+              <div class="insight-item__header">
+                <span class="insight-item__type">{{ getInsightData(insight).type }}</span>
+                <span v-if="getInsightData(insight).date" class="insight-item__date">{{ getInsightData(insight).date }}</span>
+              </div>
+              <div class="insight-item__text">
+                {{ getInsightData(insight).text }}
+              </div>
+            </div>
+          </AppSelectableItem>
+        </div>
+        <div v-else>No recent activity found.</div>
+
+        <h4 class="mt-6">Skills</h4>
+        <div v-if="lead.extra?.skills?.length" class="tags-list">
+          <AppTag
+            v-for="skill in lead.extra.skills"
+            :key="skill.name"
+            :label="skill.name"
+            :selected="selectedSkills.includes(skill.name)"
+            @toggle="toggleSkill(skill.name)"
+          />
+        </div>
+        <div v-else>No skills found.</div>
       </div>
 
       <!-- Step 4: Title Settings -->
