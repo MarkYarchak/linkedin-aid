@@ -74,7 +74,11 @@ function copyLeadInfo() {
       />
       <div class="header-info">
         <h3>{{ lead.main?.firstName || lead.searchResult?.firstName }} {{ lead.main?.lastName || lead.searchResult?.lastName }}</h3>
-        <div class="header-position">{{ lead.main?.defaultPosition.title }}</div>
+        <div v-if="lead.main?.defaultPosition?.title" class="header-position">{{ lead.main.defaultPosition.title }}</div>
+        <div v-else-if="lead.searchResult?.currentPositions?.[0]?.title" class="header-position">
+          {{ lead.searchResult.currentPositions[0].title }}
+        </div>
+        <div v-else class="header-position no-role">No current role listed</div>
       </div>
       <AppCopyButton primary @click="copyLeadInfo" />
     </div>
@@ -178,6 +182,11 @@ function copyLeadInfo() {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.no-role {
+  color: #999;
+  font-style: italic;
 }
 
 .lead-info h3 {
