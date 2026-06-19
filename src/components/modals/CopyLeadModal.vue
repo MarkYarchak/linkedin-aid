@@ -59,6 +59,10 @@ const {
   wrapText,
 } = useCopyLead(props.lead);
 
+const selectedPositionsTitle = computed(() => {
+  return `${selectedPositionIds.value.length} / ${currentPositions.value.length}`;
+});
+
 const getInsightData = (insight: any) => {
   const activity = insight.activityUnion;
   const date = insight.createdAt ? getRelativeTime(insight.createdAt) : '';
@@ -159,7 +163,10 @@ watch(currentStep, () => {
           />
         </div>
 
-        <h4>Select Positions</h4>
+        <div class="step-header-with-action">
+          <h4>Select Positions</h4>
+          <span class="selection-badge">{{ selectedPositionsTitle }}</span>
+        </div>
         <div v-if="currentPositions.length > 0" class="positions-list">
           <div
             v-for="pos in currentPositions"
@@ -446,6 +453,15 @@ watch(currentStep, () => {
 }
 .field-group.grid._three-cols {
   grid-template-columns: repeat(3, 1fr);
+}
+
+.selection-badge {
+  background: #eee;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 }
 
 .positions-list {
