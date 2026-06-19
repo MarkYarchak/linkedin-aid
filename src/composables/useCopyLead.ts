@@ -432,10 +432,25 @@ export function useCopyLead(lead: Lead) {
     copyTimeout.value = setTimeout(() => {
       isCopied.value = false;
     }, 2000);
+
+    // Save lead title to session storage
+    await saveSessionTitle();
+  };
+
+  const saveSessionTitle = async () => {
+    const title = generateTitle();
+    if (lead.entityUrn) {
+      const data = await browser.storage.session.get(LEAD_TITLES_KEY);
+      const titles = (data[LEAD_TITLES_KEY] || {}) as Record<string, string>;
+      titles[lead.entityUrn] = title;
+      await browser.storage.session.set({ [LEAD_TITLES_KEY]: titles });
+      sessionTitle.value = title;
+    }
+    return title;
   };
 
   const copyTitleToClipboard = async () => {
-    const title = generateTitle();
+    const title = await saveSessionTitle();
     await navigator.clipboard.writeText(title);
 
     // Save defaults to local storage
@@ -444,15 +459,6 @@ export function useCopyLead(lead: Lead) {
     s.selectedTarget = selectedTarget.value;
     s.selectedState = selectedState.value;
     await browser.storage.local.set({ copyLeadSettings: s });
-
-    // Save lead title to session storage
-    if (lead.entityUrn) {
-      const data = await browser.storage.session.get(LEAD_TITLES_KEY);
-      const titles = (data[LEAD_TITLES_KEY] || {}) as Record<string, string>;
-      titles[lead.entityUrn] = title;
-      await browser.storage.session.set({ [LEAD_TITLES_KEY]: titles });
-      sessionTitle.value = title;
-    }
 
     isTitleCopied.value = true;
     if (titleCopyTimeout.value) clearTimeout(titleCopyTimeout.value);
