@@ -37,6 +37,7 @@ const {
   isLoadingCompany,
   capturedCompanyUrns,
   isCopied,
+  isTitleCopied,
   targets,
   states,
   selectedTarget,
@@ -47,6 +48,7 @@ const {
   generateJsonData,
   generateTitle,
   copyToClipboard,
+  copyTitleToClipboard,
   toggleInsight,
   toggleSkill,
   togglePosition,
@@ -80,12 +82,7 @@ const getInsightData = (insight: any) => {
 };
 
 const copyTitle = async () => {
-  await navigator.clipboard.writeText(generateTitle());
-  // We can reuse isCopied for feedback
-  isCopied.value = true;
-  setTimeout(() => {
-    isCopied.value = false;
-  }, 2000);
+  await copyTitleToClipboard();
 };
 
 const selectedCompanyUrls = computed(() => {
@@ -362,6 +359,7 @@ watch(currentStep, () => {
 
     <template #footer>
       <div v-if="isCopied" class="copied-feedback">Copied!</div>
+      <div v-if="isTitleCopied" class="copied-feedback">Title Copied!</div>
       <button v-if="currentStep > 1" @click="prevStep">Back</button>
       <button v-if="currentStep < totalSteps" @click="nextStep" class="primary">Next</button>
       <button v-else @click="copyToClipboard" class="primary">

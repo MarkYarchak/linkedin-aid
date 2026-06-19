@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import { ref, computed } from 'vue';
+import { useCopyLead } from '@/composables/useCopyLead';
 import { sanitizeText } from '@/helpers/text-helper';
 import { getRelativeTime } from '@/helpers/date-helper';
 import AppCopyButton from '@/components/ui/AppCopyButton.vue';
@@ -11,6 +12,8 @@ interface Props {
   lead: Lead;
 }
 const props = defineProps<Props>();
+
+const { sessionTitle, isTitleCopied, copySessionTitle } = useCopyLead(props.lead);
 
 const showCopyModal = ref(false);
 
@@ -80,7 +83,14 @@ function copyLeadInfo() {
         </div>
         <div v-else class="header-position no-role">No current role listed</div>
       </div>
-      <AppCopyButton primary @click="copyLeadInfo" />
+      <div class="header-actions">
+        <AppCopyButton
+          v-if="sessionTitle"
+          :label="isTitleCopied ? 'Copied!' : 'Title'"
+          @click="copySessionTitle"
+        />
+        <AppCopyButton primary @click="copyLeadInfo" />
+      </div>
     </div>
 
     <div class="info-row">
@@ -161,7 +171,10 @@ function copyLeadInfo() {
   gap: 10px;
 }
 
-.header button {
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   margin-left: auto;
   flex-shrink: 0;
 }

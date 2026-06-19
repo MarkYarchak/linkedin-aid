@@ -70,9 +70,13 @@ export function useCopyLead(lead: Lead) {
   const selectedCompanies = ref<Record<string, Company>>({});
   const isLoadingCompany = ref(false);
   const capturedCompanyUrns = ref<string[]>([]);
+  const LEAD_TITLES_KEY = 'lead_titles';
 
   const isCopied = ref(false);
+  const isTitleCopied = ref(false);
   const copyTimeout = ref<ReturnType<typeof setTimeout> | null>(null);
+  const titleCopyTimeout = ref<ReturnType<typeof setTimeout> | null>(null);
+  const sessionTitle = ref<string | null>(null);
 
   const selectedTarget = ref(titleTargets[0].value);
   const selectedState = ref(titleStates[0].value);
@@ -84,8 +88,18 @@ export function useCopyLead(lead: Lead) {
     capturedCompanyUrns.value = Object.keys(companies);
   };
 
+  const loadSessionTitle = async () => {
+    if (!lead.entityUrn) return;
+    const data = await browser.storage.session.get(LEAD_TITLES_KEY);
+    const titles = (data[LEAD_TITLES_KEY] || {}) as Record<string, string>;
+    if (titles[lead.entityUrn]) {
+      sessionTitle.value = titles[lead.entityUrn];
+    }
+  };
+
   onMounted(async () => {
     await loadCapturedCompanyUrns();
+    await loadSessionTitle();
     // Load default settings if any
     const settings = await browser.storage.local.get('copyLeadSettings');
     if (settings.copyLeadSettings) {
@@ -420,6 +434,46 @@ export function useCopyLead(lead: Lead) {
     }, 2000);
   };
 
+  const copyTitleToClipboard = async () => {
+    const title = generateTitle();
+    await navigator.clipboard.writeText(title);
+
+    // Save defaults to local storage
+    const settings = await browser.storage.local.get('copyLeadSettings');
+    const s = (settings.copyLeadSettings || {}) as CopyLeadSettings;
+    s.selectedTarget = selectedTarget.value;
+    s.selectedState = selectedState.value;
+    await browser.storage.local.set({ copyLeadSettings: s });
+
+    // Save lead title to session storage
+    if (lead.entityUrn) {
+      const data = await browser.storage.session.get(LEAD_TITLES_KEY);
+      const titles = (data[LEAD_TITLES_KEY] || {}) as Record<string, string>;
+      titles[lead.entityUrn] = title;
+      await browser.storage.session.set({ [LEAD_TITLES_KEY]: titles });
+      sessionTitle.value = title;
+    }
+
+    isTitleCopied.value = true;
+    if (titleCopyTimeout.value) clearTimeout(titleCopyTimeout.value);
+    titleCopyTimeout.value = setTimeout(() => {
+      isTitleCopied.value = false;
+    }, 2000);
+  };
+
+  const copySessionTitle = async () => {
+    if (sessionTitle.value) {
+      await navigator.clipboard.writeText(sessionTitle.value);
+      isTitleCopied.value = true;
+      if (titleCopyTimeout.value) clearTimeout(titleCopyTimeout.value);
+      titleCopyTimeout.value = setTimeout(() => {
+        isTitleCopied.value = false;
+      }, 2000);
+    } else {
+      await copyTitleToClipboard();
+    }
+  };
+
   const toggleInsight = (id: string) => {
     const index = selectedInsights.value.indexOf(id);
     if (index === -1) selectedInsights.value.push(id);
@@ -462,6 +516,8 @@ export function useCopyLead(lead: Lead) {
     isLoadingCompany,
     capturedCompanyUrns,
     isCopied,
+    isTitleCopied,
+    sessionTitle,
     targets: titleTargets,
     states: titleStates,
     selectedTarget,
@@ -473,6 +529,8 @@ export function useCopyLead(lead: Lead) {
     generateJsonData,
     generateTitle,
     copyToClipboard,
+    copyTitleToClipboard,
+    copySessionTitle,
     toggleInsight,
     toggleSkill,
     togglePosition,
