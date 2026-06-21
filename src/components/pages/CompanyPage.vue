@@ -22,10 +22,10 @@ const { getLeadsByCompany, getLeadsByPersona, getSavedLeadsByCompany } = useLead
 const { getPersonasByCompany } = usePersonas();
 const { getSessionsByCompany } = useSearchSessions();
 
-const activeTab = ref('all');
+const activeTab = ref('persona');
 const tabs = [
-  { label: 'All Leads', value: 'all' },
   { label: 'By Persona', value: 'persona' },
+  { label: 'All Leads', value: 'all' },
   { label: 'Saved', value: 'saved' },
 ];
 
