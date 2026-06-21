@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { computed } from 'vue';
+import { computed, ref, onMounted, nextTick, watch } from 'vue';
 import { sanitizeText } from '@/helpers/text-helper';
 import AppAvatar from '@/components/ui/AppAvatar.vue';
 import type { Company } from '@/types/company/company';
@@ -8,6 +8,30 @@ interface Props {
   company: Company;
 }
 const props = defineProps<Props>();
+
+const isExpanded = ref(false);
+const isTruncated = ref(false);
+const descriptionRef = ref<HTMLElement | null>(null);
+
+const toggleExpand = () => {
+  isExpanded.value = !isExpanded.value;
+};
+
+const checkTruncation = () => {
+  if (descriptionRef.value) {
+    const { scrollHeight, clientHeight } = descriptionRef.value;
+    isTruncated.value = scrollHeight > clientHeight;
+  }
+};
+
+onMounted(() => {
+  checkTruncation();
+});
+
+watch(() => props.company.main?.description, async () => {
+  await nextTick();
+  checkTruncation();
+});
 
 const logoUrl = computed(() => {
   const company = props.company;
@@ -58,7 +82,19 @@ const revenueRangeString = computed(() => {
     </div>
     <div class="info-row" v-if="company.main?.description">
       <strong>Description:</strong>
-      <p class="description">{{ sanitizeText(company.main.description) }}</p>
+      <p
+        ref="descriptionRef"
+        :class="['description', { 'is-clamped': !isExpanded }]"
+      >
+        {{ sanitizeText(company.main.description) }}
+      </p>
+      <button
+        v-if="isTruncated || isExpanded"
+        class="toggle-button"
+        @click="toggleExpand"
+      >
+        {{ isExpanded ? 'Show less' : 'Show more' }}
+      </button>
     </div>
   </div>
 </template>
@@ -104,5 +140,25 @@ const revenueRangeString = computed(() => {
   overflow: hidden;
   color: #666;
   white-space: pre-wrap;
+}
+
+.description.is-clamped {
+  display: -webkit-box;
+  -webkit-line-clamp: 7;
+  -webkit-box-orient: vertical;
+}
+
+.toggle-button {
+  background: none;
+  border: none;
+  color: #0a66c2;
+  padding: 0;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 4px;
+}
+
+.toggle-button:hover {
+  text-decoration: underline;
 }
 </style>
