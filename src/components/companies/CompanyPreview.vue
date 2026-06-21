@@ -144,7 +144,7 @@ const revenueRangeString = computed(() => {
 
 .description.is-clamped {
   display: -webkit-box;
-  -webkit-line-clamp: 7;
+  -webkit-line-clamp: 5;
   -webkit-box-orient: vertical;
 }
 
