@@ -49,10 +49,6 @@ const emit = defineEmits(['update:modelValue']);
   user-select: none;
 }
 
-.segmented-button:focus {
-  outline: none;
-}
-
 .segmented-button.active {
   background: white;
   color: #0a66c2;

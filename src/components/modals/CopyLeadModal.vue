@@ -642,10 +642,6 @@ button:hover {
   border-color: #cbd5e1;
 }
 
-.btn-icon:focus {
-  outline: none;
-}
-
 .position-item-row {
   display: flex;
   align-items: center;
@@ -675,10 +671,6 @@ button:hover {
   background: white;
   color: #64748b;
   white-space: nowrap;
-}
-
-.btn-primary-toggle:focus {
-  outline: none;
 }
 
 .btn-primary-toggle.is-primary {
