@@ -38,14 +38,7 @@ export function leadSearchTabSignaturesEqual(a: LeadSearchTabSignature, b: LeadS
 }
 
 function getLeadSearchTabSessionKeyFromSignature(sig: LeadSearchTabSignature): string {
-  const query = sig.query ?? '';
-  const filters = extractFiltersFromQuery(query);
-  const normalizedFilters = normalizeFilters(filters);
-
-  if (sig.sessionId) {
-    return `sessionId:${sig.sessionId};filters:${normalizedFilters}`;
-  }
-  return `${sig.origin}${sig.pathname}?filters=${normalizedFilters}`;
+  return getLeadSearchSessionKey(sig.query ?? '', sig.sessionId);
 }
 
 function extractFiltersFromQuery(query: string): string {
@@ -82,13 +75,23 @@ function normalizeFilters(filters: string): string {
   return normalized;
 }
 
+export function getLeadSearchSessionKey(query: string, sessionId?: string | null): string {
+  const filters = extractFiltersFromQuery(query);
+  const normalizedFilters = normalizeFilters(filters);
+
+  if (sessionId) {
+    return `sessionId:${sessionId};filters:${normalizedFilters}`;
+  }
+  return `filters:${normalizedFilters}`;
+}
+
 /** Stable session storage key from a Sales Navigator people-search tab URL. */
 export function getLeadSearchTabSessionKey(tabUrl: string): string | null {
   const sig = getLeadSearchTabSignature(tabUrl);
   if (!sig) {
     return null;
   }
-  return getLeadSearchTabSessionKeyFromSignature(sig);
+  return getLeadSearchSessionKey(sig.query ?? '', sig.sessionId);
 }
 
 export function leadSearchTabUrlsMatch(a: string, b: string): boolean {

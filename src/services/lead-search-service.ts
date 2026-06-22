@@ -3,7 +3,7 @@ import { MessageType } from '@/constants/message-types';
 import { BASE_URL } from '@/constants/urls';
 import { companyService } from '@/services/company-service';
 import { leadService } from '@/services/lead-service';
-import { getLeadSearchTabSessionKey } from '@/helpers/search-url-helpers';
+import { getLeadSearchTabSessionKey, getLeadSearchSessionKey } from '@/helpers/search-url-helpers';
 import {
   getSalesNavigatorLeadUrl,
   getSalesNavigatorCompanyUrl,
@@ -37,9 +37,11 @@ export class LeadSearchService {
       const data = msg.data as SalesApiLeadSearchResponse;
       const requestUrl = new URL(msg.url, BASE_URL);
       const apiQuery = requestUrl.searchParams.get('query');
-      const sessionKey = tabUrl
-        ? (getLeadSearchTabSessionKey(tabUrl) ?? apiQuery)
-        : apiQuery;
+      const sessionId = requestUrl.searchParams.get('sessionId');
+
+      const sessionKey = (apiQuery ? getLeadSearchSessionKey(apiQuery, sessionId) : null)
+        || (tabUrl ? getLeadSearchTabSessionKey(tabUrl) : null)
+        || apiQuery;
 
       let companyUrn: string | undefined;
       let personaId: string | undefined;
