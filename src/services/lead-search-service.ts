@@ -93,29 +93,45 @@ export class LeadSearchService {
         session.companyUrn = companyUrn || session.companyUrn;
         session.personaId = personaId || session.personaId;
 
+        const companyUpdates: Record<string, { update: any, deepMerge: boolean }> = {};
         if (data.metadata.heroCard?.entityType === 'COMPANY') {
           const companyData = data.metadata.heroCard.entity['com.linkedin.sales.company.Company'];
           if (companyData?.entityUrn) {
-            await companyService.updateCompanyInStorage(companyData.entityUrn, {
-              main: companyData as any,
-              profileUrl: getSalesNavigatorCompanyUrl(companyData.entityUrn) || undefined,
-            }, true);
+            companyUpdates[companyData.entityUrn] = {
+              update: {
+                main: companyData as any,
+                profileUrl: getSalesNavigatorCompanyUrl(companyData.entityUrn) || undefined,
+              },
+              deepMerge: true,
+            };
           }
         }
 
         sessions[sessionKey] = session;
-        await browser.storage.session.set({ searchSessions: sessions });
+        const storageUpdate: any = { searchSessions: sessions };
+        await browser.storage.session.set(storageUpdate);
+
+        if (Object.keys(companyUpdates).length > 0) {
+          await companyService.updateCompaniesInStorage(companyUpdates);
+        }
       }
 
       if (data.elements) {
+        const leadUpdates: Record<string, { update: any, deepMerge: boolean }> = {};
         for (const element of data.elements) {
           const urn = element.entityUrn;
           if (urn) {
-            await leadService.updateLeadInStorage(urn, {
-              searchResult: element,
-              profileUrl: getProfileUrl(urn),
-            }, true);
+            leadUpdates[urn] = {
+              update: {
+                searchResult: element,
+                profileUrl: getProfileUrl(urn),
+              },
+              deepMerge: true,
+            };
           }
+        }
+        if (Object.keys(leadUpdates).length > 0) {
+          await leadService.updateLeadsInStorage(leadUpdates);
         }
       }
     }

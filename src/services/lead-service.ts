@@ -17,24 +17,29 @@ export class LeadService {
     this.lastTabUrls[tabId] = url;
   }
 
-  async updateLeadInStorage(urn: string, update: Partial<Lead>, deepMerge = false) {
+  async updateLeadsInStorage(updates: Record<string, { update: Partial<Lead>, deepMerge?: boolean }>) {
     const storage = await browser.storage.local.get('capturedLeads');
     const leads: Record<string, Lead> = (storage.capturedLeads || {}) as Record<string, Lead>;
 
-    const existingLead = leads[urn] || { entityUrn: urn, updatedAt: Date.now() };
+    for (const [urn, { update, deepMerge }] of Object.entries(updates)) {
+      const existingLead = leads[urn] || { entityUrn: urn, updatedAt: Date.now() };
 
-    if (deepMerge) {
-      leads[urn] = merge(existingLead, update);
+      if (deepMerge) {
+        leads[urn] = merge(existingLead, update);
+      } else {
+        leads[urn] = {
+          ...existingLead,
+          ...update,
+        };
+      }
       leads[urn].updatedAt = Date.now();
-    } else {
-      leads[urn] = {
-        ...existingLead,
-        ...update,
-        updatedAt: Date.now(),
-      };
     }
 
     await browser.storage.local.set({ capturedLeads: leads });
+  }
+
+  async updateLeadInStorage(urn: string, update: Partial<Lead>, deepMerge = false) {
+    await this.updateLeadsInStorage({ [urn]: { update, deepMerge } });
   }
 
   async updateLeadInsightsInStorage(urn: string, data: SalesApiInsightsV2) {

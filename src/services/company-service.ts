@@ -28,23 +28,28 @@ export class CompanyService {
       .find((company) => parseLinkedInUrn(company.entityUrn).id === id);
   }
 
-  async updateCompanyInStorage(urn: string, update: Partial<Company>, deepMerge = false) {
+  async updateCompaniesInStorage(updates: Record<string, { update: Partial<Company>, deepMerge?: boolean }>) {
     const companies = await this.findCompanies();
 
-    const existingCompany = companies[urn] || { entityUrn: urn, updatedAt: Date.now() };
+    for (const [urn, { update, deepMerge }] of Object.entries(updates)) {
+      const existingCompany = companies[urn] || { entityUrn: urn, updatedAt: Date.now() };
 
-    if (deepMerge) {
-      companies[urn] = merge(existingCompany, update);
+      if (deepMerge) {
+        companies[urn] = merge(existingCompany, update);
+      } else {
+        companies[urn] = {
+          ...existingCompany,
+          ...update,
+        };
+      }
       companies[urn].updatedAt = Date.now();
-    } else {
-      companies[urn] = {
-        ...existingCompany,
-        ...update,
-        updatedAt: Date.now(),
-      };
     }
 
     await browser.storage.local.set({ capturedCompanies: companies });
+  }
+
+  async updateCompanyInStorage(urn: string, update: Partial<Company>, deepMerge = false) {
+    await this.updateCompaniesInStorage({ [urn]: { update, deepMerge } });
   }
 
   async handleMessage(msg: any, sender: any) {
