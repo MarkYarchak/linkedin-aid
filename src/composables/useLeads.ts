@@ -13,6 +13,10 @@ export function useLeads(tabUrl?: string) {
     return Object.values(leadsMap.value).sort((a, b) => b.updatedAt - a.updatedAt);
   });
 
+  const getLeadByUrn = (urn: string) => {
+    return leadsMap.value[urn];
+  };
+
   const companyUrns = computed(() => {
     const map: Record<string, string[]> = {};
     searchPageSessions.value.forEach(s => {
@@ -106,6 +110,7 @@ export function useLeads(tabUrl?: string) {
   return {
     leads,
     currentUrlLead,
+    getLeadByUrn,
     getLeadsByCompany,
     getLeadsByPersona,
     getSavedLeadsByCompany,

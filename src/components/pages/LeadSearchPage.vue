@@ -14,13 +14,13 @@ interface Props {
 }
 const props = defineProps<Props>();
 
-const { leads } = useLeads(props.tabUrl);
+const { leads, getLeadByUrn } = useLeads(props.tabUrl);
 const { currentSession } = useSearchSessions(props.tabUrl);
 
 const displayedLeads = computed(() => {
   if (currentSession.value) {
     const urns = currentSession.value.leadUrnsByPage[currentPage.value] || [];
-    return urns.map(urn => leads.value.find(l => l.entityUrn === urn)).filter(Boolean) as Lead[];
+    return urns.map(urn => getLeadByUrn(urn)).filter(Boolean) as Lead[];
   }
 
   return [];
@@ -30,7 +30,7 @@ const allSessionLeads = computed(() => {
   if (currentSession.value) {
     const allUrns = Object.values(currentSession.value.leadUrnsByPage).flat();
     const uniqueUrns = [...new Set(allUrns)];
-    return uniqueUrns.map(urn => leads.value.find(l => l.entityUrn === urn)).filter(Boolean) as Lead[];
+    return uniqueUrns.map(urn => getLeadByUrn(urn)).filter(Boolean) as Lead[];
   }
   return [];
 });
