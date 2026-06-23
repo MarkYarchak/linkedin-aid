@@ -10,6 +10,10 @@ export function useSearchSessions(tabUrl?: string) {
     return Object.values(sessionsMap.value).sort((a, b) => b.updatedAt - a.updatedAt);
   });
 
+  const searchPageSessions = computed(() => {
+    return sessions.value.filter(s => s.source === 'search');
+  });
+
   const currentSession = computed(() => {
     if (!tabUrl) return null;
     return findSearchSessionForTabUrl(sessions.value, tabUrl);
@@ -43,6 +47,7 @@ export function useSearchSessions(tabUrl?: string) {
 
   return {
     sessions,
+    searchPageSessions,
     currentSession,
     getSessionsByCompany,
     loadSessions,

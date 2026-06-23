@@ -6,7 +6,7 @@ import { useSearchSessions } from '@/composables/useSearchSessions';
 import type { Lead } from '@/types/lead/lead';
 
 export function useLeads(tabUrl?: string) {
-  const { sessions, getSessionsByCompany } = useSearchSessions();
+  const { sessions, searchPageSessions, getSessionsByCompany } = useSearchSessions();
   const leadsMap = ref<Record<string, Lead>>({});
 
   const leads = computed(() => {
@@ -15,7 +15,7 @@ export function useLeads(tabUrl?: string) {
 
   const companyUrns = computed(() => {
     const map: Record<string, string[]> = {};
-    sessions.value.forEach(s => {
+    searchPageSessions.value.forEach(s => {
       if (s.companyUrn) {
         if (!map[s.companyUrn]) map[s.companyUrn] = [];
         Object.values(s.leadUrnsByPage).forEach(pageUrns => {
@@ -28,8 +28,21 @@ export function useLeads(tabUrl?: string) {
     return map;
   });
 
-  const getLeadsByCompany = (companyUrn: string) => {
-    const leadUrns = companyUrns.value[companyUrn] || [];
+  const getLeadsByCompany = (companyUrn: string, includeAllSessions = false) => {
+    let leadUrns: string[];
+    if (includeAllSessions) {
+      const set = new Set<string>();
+      sessions.value
+        .filter(s => s.companyUrn === companyUrn)
+        .forEach(s => {
+          Object.values(s.leadUrnsByPage).forEach(pageUrns => {
+            pageUrns.forEach(urn => set.add(urn));
+          });
+        });
+      leadUrns = Array.from(set);
+    } else {
+      leadUrns = companyUrns.value[companyUrn] || [];
+    }
     return leadUrns.map(urn => leadsMap.value[urn]).filter(Boolean);
   };
 
@@ -51,7 +64,7 @@ export function useLeads(tabUrl?: string) {
   };
 
   const getSavedLeadsByCompany = (companyUrn: string) => {
-    return getLeadsByCompany(companyUrn).filter(lead => lead.searchResult?.saved);
+    return getLeadsByCompany(companyUrn, true).filter(lead => lead.searchResult?.saved);
   };
 
   const currentUrlLead = computed(() => {

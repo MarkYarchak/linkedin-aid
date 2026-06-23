@@ -8,6 +8,7 @@ import {
   getSalesNavigatorLeadUrl,
   getSalesNavigatorCompanyUrl,
   isSalesNavigatorLeadUrl,
+  isSalesNavigatorCompanyUrl,
   normalizeSalesNavigatorLeadUrl,
 } from '@/helpers/url-helpers';
 import type { SalesApiLeadSearchResponse } from '@/types/search/salesApiLeadSearch';
@@ -71,6 +72,7 @@ export class LeadSearchService {
           searchTitle: data.metadata.searchTitle,
           companyUrn,
           personaId,
+          source: tabUrl && isSalesNavigatorCompanyUrl(tabUrl) ? 'company' : 'search',
         };
 
         const page = Math.floor(data.paging.start / data.paging.count);
@@ -79,6 +81,9 @@ export class LeadSearchService {
         session.leadUrnsByPage[page] = leadUrns;
         if (tabUrl) {
           session.tabUrl = tabUrl;
+          if (!session.source || session.source === 'search') {
+            session.source = isSalesNavigatorCompanyUrl(tabUrl) ? 'company' : 'search';
+          }
         }
         session.updatedAt = Date.now();
         session.total = data.paging.total;

@@ -81,7 +81,7 @@ const companyLeads = computed(() => {
   if (activeTab.value === 'saved') {
     return getSavedLeadsByCompany(urn);
   }
-  return getLeadsByCompany(urn);
+  return getLeadsByCompany(urn, true);
 });
 
 const selectedUrns = ref<Set<string>>(new Set());

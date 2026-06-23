@@ -11,6 +11,7 @@ export interface SearchSession {
   heroCard?: any;
   companyUrn?: string;
   personaId?: string;
+  source?: 'company' | 'search';
 }
 
 export interface PersonasStorage {
