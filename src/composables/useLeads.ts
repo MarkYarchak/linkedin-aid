@@ -39,7 +39,7 @@ export function useLeads(tabUrl?: string) {
     if (includeAllSessions) {
       const set = new Set<string>();
       sessions.value
-        .filter(s => s.companyUrn === companyUrn)
+        .filter(s => s.companyUrn === companyUrn && s.source === 'company')
         .forEach(s => {
           Object.values(s.leadUrnsByPage).forEach(pageUrns => {
             pageUrns.forEach(urn => set.add(urn));
@@ -54,7 +54,7 @@ export function useLeads(tabUrl?: string) {
 
   const getLeadsByPersona = (companyUrn: string, personaId?: string) => {
     const normalizedPersonaId = personaId ? normalizePersonaSearchId(personaId) : undefined;
-    const personaSessions = getSessionsByCompany(companyUrn).filter(s => {
+    const personaSessions = getSessionsByCompany(companyUrn, 'company').filter(s => {
       if (normalizedPersonaId) {
         return s.personaId && normalizePersonaSearchId(s.personaId) === normalizedPersonaId;
       }

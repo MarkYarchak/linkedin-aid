@@ -40,9 +40,22 @@ export class LeadSearchService {
       const apiQuery = requestUrl.searchParams.get('query');
       const sessionId = requestUrl.searchParams.get('sessionId');
 
-      const sessionKey = (apiQuery ? getLeadSearchSessionKey(apiQuery, sessionId) : null)
+      const q = requestUrl.searchParams.get('q');
+
+      let source: 'search' | 'company' = 'search';
+      if (q === 'relationshipExplorerSearchQuery' || q === 'organization') {
+        source = 'company';
+      } else if (q === 'searchQuery') {
+        source = 'search';
+      } else {
+        // Fallback to previous logic if q doesn't match known patterns
+        source = tabUrl && isSalesNavigatorCompanyUrl(tabUrl) ? 'company' : 'search';
+      }
+
+      const sessionKeyPrefix = source;
+      const sessionKey = `${sessionKeyPrefix}:${(apiQuery ? getLeadSearchSessionKey(apiQuery, sessionId) : null)
         || (tabUrl ? getLeadSearchTabSessionKey(tabUrl) : null)
-        || apiQuery;
+        || apiQuery}`;
 
       let companyUrn: string | undefined;
       let personaId: string | undefined;
@@ -72,7 +85,7 @@ export class LeadSearchService {
           searchTitle: data.metadata.searchTitle,
           companyUrn,
           personaId,
-          source: tabUrl && isSalesNavigatorCompanyUrl(tabUrl) ? 'company' : 'search',
+          source,
         };
 
         const page = Math.floor(data.paging.start / data.paging.count);
@@ -81,8 +94,8 @@ export class LeadSearchService {
         session.leadUrnsByPage[page] = leadUrns;
         if (tabUrl) {
           session.tabUrl = tabUrl;
-          if (!session.source || session.source === 'search') {
-            session.source = isSalesNavigatorCompanyUrl(tabUrl) ? 'company' : 'search';
+          if (!session.source || session.source === 'search' || session.source === 'company') {
+            session.source = source;
           }
         }
         session.updatedAt = Date.now();

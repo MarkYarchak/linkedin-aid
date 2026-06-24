@@ -18,8 +18,8 @@ export function useSearchSessions(tabUrl?: string) {
     return findSearchSessionForTabUrl(sessions.value, tabUrl);
   });
 
-  const getSessionsByCompany = (companyUrn: string) => {
-    return sessions.value.filter(s => s.companyUrn === companyUrn);
+  const getSessionsByCompany = (companyUrn: string, source?: 'company' | 'search') => {
+    return sessions.value.filter(s => s.companyUrn === companyUrn && (!source || s.source === source));
   };
 
   return {
