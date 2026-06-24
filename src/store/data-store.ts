@@ -66,7 +66,7 @@ browser.storage.onChanged.addListener((changes, areaName) => {
       sessionsMap.value = newValue || {};
     }
     if (changes.personas) {
-      const { newValue } = changes.searchSessions as CustomStorageChange<SessionData['personas']>;
+      const { newValue } = changes.personas as CustomStorageChange<SessionData['personas']>;
       personasStorage.value = newValue || { general: [], byCompany: {} };
     }
   }
