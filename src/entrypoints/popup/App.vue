@@ -1,11 +1,15 @@
 <script lang="ts" setup>
-import CapturedDataView from '@/components/views/CapturedDataView.vue';
 import { onMounted, ref } from 'vue';
 import { browser } from 'wxt/browser';
+import { useDataStore } from '@/store/data-store';
+import CapturedDataView from '@/components/views/CapturedDataView.vue';
 
 const tabUrl = ref('');
 const isLinkedIn = ref(false);
 const isLoading = ref(true);
+
+const { isLoaded, loadData } = useDataStore();
+loadData();
 
 onMounted(async () => {
   try {
@@ -21,7 +25,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div v-if="isLoading" class="loading">
+  <div v-if="isLoading || !isLoaded" class="loading">
     Loading...
   </div>
   <CapturedDataView

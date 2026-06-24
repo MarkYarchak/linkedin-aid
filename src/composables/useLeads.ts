@@ -1,13 +1,12 @@
-import { ref, onMounted, onUnmounted, computed } from 'vue';
-import { browser } from 'wxt/browser';
+import { computed } from 'vue';
 import { normalizeSalesNavigatorLeadUrl } from '@/helpers/url-helpers';
 import { normalizePersonaSearchId } from '@/helpers/urn';
 import { useSearchSessions } from '@/composables/useSearchSessions';
-import type { Lead } from '@/types/lead/lead';
+import { useDataStore } from '@/store/data-store';
 
 export function useLeads(tabUrl?: string) {
   const { sessions, searchPageSessions, getSessionsByCompany } = useSearchSessions();
-  const leadsMap = ref<Record<string, Lead>>({});
+  const { leadsMap, loadData } = useDataStore();
 
   const leads = computed(() => {
     return Object.values(leadsMap.value).sort((a, b) => b.updatedAt - a.updatedAt);
@@ -18,18 +17,21 @@ export function useLeads(tabUrl?: string) {
   };
 
   const companyUrns = computed(() => {
-    const map: Record<string, string[]> = {};
+    const map: Record<string, Set<string>> = {};
     searchPageSessions.value.forEach(s => {
       if (s.companyUrn) {
-        if (!map[s.companyUrn]) map[s.companyUrn] = [];
+        if (!map[s.companyUrn]) map[s.companyUrn] = new Set();
+        const set = map[s.companyUrn];
         Object.values(s.leadUrnsByPage).forEach(pageUrns => {
-          pageUrns.forEach(urn => {
-            if (!map[s.companyUrn!].includes(urn)) map[s.companyUrn!].push(urn);
-          });
+          pageUrns.forEach(urn => set.add(urn));
         });
       }
     });
-    return map;
+    const result: Record<string, string[]> = {};
+    for (const [urn, set] of Object.entries(map)) {
+      result[urn] = Array.from(set);
+    }
+    return result;
   });
 
   const getLeadsByCompany = (companyUrn: string, includeAllSessions = false) => {
@@ -78,33 +80,6 @@ export function useLeads(tabUrl?: string) {
       if (!lead.profileUrl) return false;
       return normalizeSalesNavigatorLeadUrl(lead.profileUrl) === profileUrl;
     }) || null;
-  });
-
-  const loadData = async () => {
-    const [leadsStorage] = await Promise.all([
-      browser.storage.local.get(['capturedLeads']),
-    ]);
-
-    if (leadsStorage.capturedLeads) {
-      leadsMap.value = leadsStorage.capturedLeads as Record<string, Lead>;
-    }
-  };
-
-
-  const changesListener = (changes: any, areaName: string) => {
-    if (areaName === 'local' && changes.capturedLeads) {
-      leadsMap.value = changes.capturedLeads.newValue as Record<string, Lead>;
-    }
-  };
-
-  onMounted(() => {
-    loadData();
-
-    browser.storage.onChanged.addListener(changesListener);
-  });
-
-  onUnmounted(() => {
-    browser.storage.onChanged.removeListener(changesListener);
   });
 
   return {

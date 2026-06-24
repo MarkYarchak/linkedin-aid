@@ -1,10 +1,9 @@
-import { ref, onMounted, computed, onUnmounted } from 'vue';
-import { browser } from 'wxt/browser';
+import { computed } from 'vue';
 import { getSalesNavigatorCompanyUrl, normalizeUrl } from '@/helpers/url-helpers';
-import type { Company } from '@/types/company/company';
+import { useDataStore } from '@/store/data-store';
 
 export function useCompanies(tabUrl?: string) {
-  const companiesMap = ref<Record<string, Company>>({});
+  const { companiesMap, loadData } = useDataStore();
 
   const companies = computed(() => {
     return Object.values(companiesMap.value).sort((a, b) => b.updatedAt - a.updatedAt);
@@ -19,32 +18,9 @@ export function useCompanies(tabUrl?: string) {
     }) || null;
   });
 
-  const loadCompanies = async () => {
-    const storage = await browser.storage.local.get(['capturedCompanies']);
-    if (storage.capturedCompanies) {
-      companiesMap.value = storage.capturedCompanies as Record<string, Company>;
-    }
-  };
-
-  const changesListener = (changes: any, areaName: string) => {
-    if (areaName === 'local' && changes.capturedCompanies) {
-      companiesMap.value = changes.capturedCompanies.newValue as Record<string, Company>;
-    }
-  };
-
-  onMounted(() => {
-    loadCompanies();
-
-    browser.storage.onChanged.addListener(changesListener);
-  });
-
-  onUnmounted(() => {
-    browser.storage.onChanged.removeListener(changesListener);
-  });
-
   return {
     companies,
     currentUrlCompany,
-    loadCompanies,
+    loadCompanies: loadData,
   };
 }
