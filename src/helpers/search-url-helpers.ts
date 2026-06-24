@@ -96,11 +96,15 @@ export function getLeadSearchTabSessionKey(tabUrl: string): string | null {
   return getLeadSearchSessionKey(sig.query ?? '', sig.sessionId);
 }
 
-export function leadSearchTabUrlsMatch(a: string, b: string): boolean {
+export function leadSearchTabUrlsMatch(a: string, b: string, ignoreSessionId: boolean = false): boolean {
   const sigA = getLeadSearchTabSignature(a);
   const sigB = getLeadSearchTabSignature(b);
   if (!sigA || !sigB) {
     return false;
+  }
+  if (ignoreSessionId) {
+    sigA.sessionId = null;
+    sigB.sessionId = null;
   }
   return leadSearchTabSignaturesEqual(sigA, sigB);
 }
@@ -112,9 +116,23 @@ export function findSearchSessionForTabUrl(
   const isCompanyPage = isSalesNavigatorCompanyUrl(tabUrl);
   const source = isCompanyPage ? SearchSessionSource.COMPANY : SearchSessionSource.SEARCH;
 
-  const matching = sessions.filter(
+  // 1. Try exact match
+  let matching = sessions.filter(
     s => s.source === source && s.tabUrl && leadSearchTabUrlsMatch(s.tabUrl, tabUrl),
   );
+
+  // 2. If no exact match and tabUrl has sessionId, try matching against sessions without sessionId
+  if (matching.length === 0) {
+    const sig = getLeadSearchTabSignature(tabUrl);
+    if (sig?.sessionId) {
+      matching = sessions.filter(s => {
+        if (s.source !== source || !s.tabUrl) return false;
+        const sSig = getLeadSearchTabSignature(s.tabUrl);
+        // Only fallback to sessions that explicitly don't have a sessionId
+        return !sSig?.sessionId && leadSearchTabUrlsMatch(s.tabUrl, tabUrl, true);
+      });
+    }
+  }
 
   if (matching.length === 0) {
     return null;

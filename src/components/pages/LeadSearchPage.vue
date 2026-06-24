@@ -14,7 +14,7 @@ interface Props {
 }
 const props = defineProps<Props>();
 
-const { leads, getLeadByUrn } = useLeads(props.tabUrl);
+const { getLeadByUrn } = useLeads(props.tabUrl);
 const { currentSession } = useSearchSessions(props.tabUrl);
 
 const displayedLeads = computed(() => {
