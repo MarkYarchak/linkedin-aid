@@ -5,10 +5,11 @@ import AppCheckbox from '@/components/ui/AppCheckbox.vue';
 import IconLocation from '@/components/icons/IconLocation.vue';
 import IconIndustry from '@/components/icons/IconIndustry.vue';
 import AppDivider from '@/components/ui/AppDivider.vue';
+import type { OptionalDeepReadonly } from '@/types/common';
 import type { Lead } from '@/types/lead/lead';
 
 interface Props {
-  lead: Lead;
+  lead: OptionalDeepReadonly<Lead>;
 }
 const props = defineProps<Props>();
 

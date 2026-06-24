@@ -6,10 +6,11 @@ import AppModal from '@/components/ui/AppModal.vue';
 import AppCheckbox from '@/components/ui/AppCheckbox.vue';
 import AppPreviewBox from '@/components/ui/AppPreviewBox.vue';
 import AppSegmentedControl from '@/components/ui/AppSegmentedControl.vue';
+import type { OptionalDeepReadonly } from '@/types/common';
 import type { Lead } from '@/types/lead/lead';
 
 interface Props {
-  leads: Lead[];
+  leads: OptionalDeepReadonly<Lead>[];
   heroCard?: any;
   show: boolean;
 }

@@ -5,11 +5,12 @@ import { titleTargets, titleStates, generateLeadTitle } from '@/helpers/title-he
 import { parseLinkedInUrn } from '@/helpers/urn';
 import { getRelativeTime } from '@/helpers/date-helper';
 import { browser } from 'wxt/browser';
+import type { OptionalDeepReadonly } from '@/types/common';
 import type { Lead } from '@/types/lead/lead';
 import type { Company } from '@/types/company/company';
 import type { CopyLeadSettings } from '@/types/copy-lead-settings';
 
-export function useCopyLead(lead: Lead) {
+export function useCopyLead(lead: OptionalDeepReadonly<Lead>) {
   const currentStep = ref(1);
   const totalSteps = 5;
   const viewMode = ref('text');

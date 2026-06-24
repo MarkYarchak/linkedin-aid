@@ -1,6 +1,6 @@
 import { computed } from 'vue';
 import { useDataStore } from '@/store/data-store';
-import type { DeepReadonly } from 'vue';
+import type { OptionalDeepReadonly } from '@/types/common';
 import type { Persona } from '@/types/search/salesApiPersonas';
 
 export function usePersonas() {
@@ -9,7 +9,7 @@ export function usePersonas() {
   const generalPersonas = computed(() => personasStorage.value.general);
   const companyPersonasMap = computed(() => personasStorage.value.byCompany);
 
-  const getPersonasByCompany = (companyUrn: string): DeepReadonly<Persona[]> => {
+  const getPersonasByCompany = (companyUrn: string): OptionalDeepReadonly<Persona[]> => {
     return companyPersonasMap.value[companyUrn] || [];
   };
 

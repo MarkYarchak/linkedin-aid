@@ -6,10 +6,11 @@ import { getRelativeTime } from '@/helpers/date-helper';
 import AppCopyButton from '@/components/ui/AppCopyButton.vue';
 import AppAvatar from '@/components/ui/AppAvatar.vue';
 import CopyLeadModal from '@/components/modals/CopyLeadModal.vue';
+import type { OptionalDeepReadonly } from '@/types/common';
 import type { Lead } from '@/types/lead/lead';
 
 interface Props {
-  lead: Lead;
+  lead: OptionalDeepReadonly<Lead>;
 }
 const props = defineProps<Props>();
 

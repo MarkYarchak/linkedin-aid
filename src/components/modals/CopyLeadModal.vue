@@ -11,10 +11,11 @@ import AppSelectableItem from '@/components/ui/AppSelectableItem.vue';
 import AppPreviewBox from '@/components/ui/AppPreviewBox.vue';
 import AppSegmentedControl from '@/components/ui/AppSegmentedControl.vue';
 import IconCopy from '@/components/icons/IconCopy.vue';
+import type { OptionalDeepReadonly } from '@/types/common';
 import type { Lead } from '@/types/lead/lead';
 
 interface Props {
-  lead: Lead;
+  lead: OptionalDeepReadonly<Lead>;
   show: boolean;
 }
 

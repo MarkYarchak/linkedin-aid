@@ -1,5 +1,5 @@
 import { isSalesNavigatorPeopleSearchUrl } from '@/helpers/url-helpers';
-import type { DeepReadonly } from 'vue';
+import type { OptionalDeepReadonly } from '@/types/common';
 import type { SearchSession } from '@/types/search/search';
 
 export interface LeadSearchTabSignature {
@@ -105,9 +105,9 @@ export function leadSearchTabUrlsMatch(a: string, b: string): boolean {
 }
 
 export function findSearchSessionForTabUrl(
-  sessions: DeepReadonly<SearchSession[]>,
+  sessions: OptionalDeepReadonly<SearchSession[]>,
   tabUrl: string,
-): DeepReadonly<SearchSession> | null {
+): OptionalDeepReadonly<SearchSession> | null {
   const matching = sessions.filter(
     s => s.tabUrl && leadSearchTabUrlsMatch(s.tabUrl, tabUrl),
   );

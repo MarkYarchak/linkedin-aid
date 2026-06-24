@@ -1,9 +1,10 @@
 <script lang="ts" setup>
 import LeadSearchPreview from '@/components/lead-search/LeadSearchPreview.vue';
+import type { OptionalDeepReadonly } from '@/types/common';
 import type { Lead } from '@/types/lead/lead';
 
 interface Props {
-  leads: Lead[];
+  leads: OptionalDeepReadonly<Lead[]>;
   selectedUrns?: Set<string>;
 }
 defineProps<Props>();

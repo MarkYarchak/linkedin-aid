@@ -2,10 +2,11 @@
 import { computed, ref, onMounted, nextTick, watch } from 'vue';
 import { sanitizeText } from '@/helpers/text-helper';
 import AppAvatar from '@/components/ui/AppAvatar.vue';
+import type { OptionalDeepReadonly } from '@/types/common';
 import type { Company } from '@/types/company/company';
 
 interface Props {
-  company: Company;
+  company: OptionalDeepReadonly<Company>;
 }
 const props = defineProps<Props>();
 

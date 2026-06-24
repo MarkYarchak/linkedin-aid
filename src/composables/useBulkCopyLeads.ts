@@ -2,10 +2,11 @@ import { ref, onMounted } from 'vue';
 import { browser } from 'wxt/browser';
 import { sanitizeText } from '@/helpers/text-helper';
 import { getRelativeTime } from '@/helpers/date-helper';
+import type { OptionalDeepReadonly } from '@/types/common';
 import type { Lead } from '@/types/lead/lead';
 import type { HeroCard } from '@/types/search/salesApiLeadSearch';
 
-export function useBulkCopyLeads(leads: Lead[], heroCard?: HeroCard) {
+export function useBulkCopyLeads(leads: OptionalDeepReadonly<Lead>[], heroCard?: HeroCard) {
   const currentStep = ref(1);
   const totalSteps = 2; // Reduced steps for bulk copy: Fields selection and Preview
   const viewMode = ref('text');
@@ -78,7 +79,7 @@ export function useBulkCopyLeads(leads: Lead[], heroCard?: HeroCard) {
     if (currentStep.value > 1) currentStep.value--;
   };
 
-  const formatLead = (lead: Lead, options?: { skipCompanyFields?: boolean }) => {
+  const formatLead = (lead: OptionalDeepReadonly<Lead>, options?: { skipCompanyFields?: boolean }) => {
     let sections: string[] = [];
     const searchResult = lead.searchResult;
 
@@ -136,7 +137,7 @@ export function useBulkCopyLeads(leads: Lead[], heroCard?: HeroCard) {
     return sections.join('\n');
   };
 
-  const formatLeadJson = (lead: Lead, options?: { skipCompanyFields?: boolean }) => {
+  const formatLeadJson = (lead: OptionalDeepReadonly<Lead>, options?: { skipCompanyFields?: boolean }) => {
     const data: any = {};
     const searchResult = lead.searchResult;
 
@@ -297,8 +298,8 @@ export function useBulkCopyLeads(leads: Lead[], heroCard?: HeroCard) {
     }
 
     if (groupByCompany.value) {
-      const grouped: Record<string, Lead[]> = {};
-      const noCompanyLeads: Lead[] = [];
+      const grouped: Record<string, OptionalDeepReadonly<Lead>[]> = {};
+      const noCompanyLeads: OptionalDeepReadonly<Lead>[] = [];
 
       leads.forEach(lead => {
         const companyUrn = lead.searchResult?.currentPositions?.[0]?.companyUrn;
