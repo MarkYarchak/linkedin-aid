@@ -5,6 +5,12 @@ export enum SearchSessionSource {
   COMPANY = 'company',
 }
 
+export enum SearchApiQueryType {
+  SEARCH_QUERY = 'searchQuery',
+  RELATIONSHIP_EXPLORER = 'relationshipExplorerSearchQuery',
+  ORGANIZATION = 'organization',
+}
+
 export interface SearchSession {
   query: string;
   tabUrl?: string;

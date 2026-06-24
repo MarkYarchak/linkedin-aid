@@ -11,7 +11,7 @@ import {
   isSalesNavigatorCompanyUrl,
   normalizeSalesNavigatorLeadUrl,
 } from '@/helpers/url-helpers';
-import { SearchSessionSource } from '@/types/search/search';
+import { SearchSessionSource, SearchApiQueryType } from '@/types/search/search';
 import type { SalesApiLeadSearchResponse } from '@/types/search/salesApiLeadSearch';
 import type { SearchSession } from '@/types/search/search';
 import type { PersonasStorage } from '@/types/search/search';
@@ -44,9 +44,9 @@ export class LeadSearchService {
       const q = requestUrl.searchParams.get('q');
 
       let source = SearchSessionSource.SEARCH;
-      if (q === 'relationshipExplorerSearchQuery' || q === 'organization') {
+      if (q === SearchApiQueryType.RELATIONSHIP_EXPLORER || q === SearchApiQueryType.ORGANIZATION) {
         source = SearchSessionSource.COMPANY;
-      } else if (q === 'searchQuery') {
+      } else if (q === SearchApiQueryType.SEARCH_QUERY) {
         source = SearchSessionSource.SEARCH;
       } else {
         // Fallback to previous logic if q doesn't match known patterns
