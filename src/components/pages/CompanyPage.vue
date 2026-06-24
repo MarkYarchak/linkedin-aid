@@ -132,7 +132,7 @@ watch([activeTab, selectedPersonaId, () => props.tabUrl], () => {
 
       <div class="leads-section">
         <div class="leads-header">
-          <h4>Leads ({{ companyLeads.length }})</h4>
+          <h4>Loaded leads ({{ companyLeads.length }})</h4>
           <AppSegmentedControl
             v-model="activeTab"
             :options="tabs"
