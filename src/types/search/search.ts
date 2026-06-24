@@ -1,5 +1,10 @@
 import { Persona } from '@/types/search/salesApiPersonas';
 
+export enum SearchSessionSource {
+  SEARCH = 'search',
+  COMPANY = 'company',
+}
+
 export interface SearchSession {
   query: string;
   tabUrl?: string;
@@ -11,7 +16,7 @@ export interface SearchSession {
   heroCard?: any;
   companyUrn?: string;
   personaId?: string;
-  source?: 'company' | 'search';
+  source?: SearchSessionSource;
 }
 
 export interface PersonasStorage {

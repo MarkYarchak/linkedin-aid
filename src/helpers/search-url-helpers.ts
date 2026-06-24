@@ -1,4 +1,5 @@
 import { isSalesNavigatorPeopleSearchUrl, isSalesNavigatorCompanyUrl } from '@/helpers/url-helpers';
+import { SearchSessionSource } from '@/types/search/search';
 import type { OptionalDeepReadonly } from '@/types/common';
 import type { SearchSession } from '@/types/search/search';
 
@@ -109,7 +110,7 @@ export function findSearchSessionForTabUrl(
   tabUrl: string,
 ): OptionalDeepReadonly<SearchSession> | null {
   const isCompanyPage = isSalesNavigatorCompanyUrl(tabUrl);
-  const source = isCompanyPage ? 'company' : 'search';
+  const source = isCompanyPage ? SearchSessionSource.COMPANY : SearchSessionSource.SEARCH;
 
   const matching = sessions.filter(
     s => s.source === source && s.tabUrl && leadSearchTabUrlsMatch(s.tabUrl, tabUrl),

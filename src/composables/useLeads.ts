@@ -3,6 +3,7 @@ import { normalizeSalesNavigatorLeadUrl } from '@/helpers/url-helpers';
 import { normalizePersonaSearchId } from '@/helpers/urn';
 import { useSearchSessions } from '@/composables/useSearchSessions';
 import { useDataStore } from '@/store/data-store';
+import { SearchSessionSource } from '@/types/search/search';
 
 export function useLeads(tabUrl?: string) {
   const { sessions, searchPageSessions, getSessionsByCompany } = useSearchSessions();
@@ -39,7 +40,7 @@ export function useLeads(tabUrl?: string) {
     if (includeAllSessions) {
       const set = new Set<string>();
       sessions.value
-        .filter(s => s.companyUrn === companyUrn && s.source === 'company')
+        .filter(s => s.companyUrn === companyUrn && s.source === SearchSessionSource.COMPANY)
         .forEach(s => {
           Object.values(s.leadUrnsByPage).forEach(pageUrns => {
             pageUrns.forEach(urn => set.add(urn));
@@ -54,7 +55,7 @@ export function useLeads(tabUrl?: string) {
 
   const getLeadsByPersona = (companyUrn: string, personaId?: string) => {
     const normalizedPersonaId = personaId ? normalizePersonaSearchId(personaId) : undefined;
-    const personaSessions = getSessionsByCompany(companyUrn, 'company').filter(s => {
+    const personaSessions = getSessionsByCompany(companyUrn, SearchSessionSource.COMPANY).filter(s => {
       if (normalizedPersonaId) {
         return s.personaId && normalizePersonaSearchId(s.personaId) === normalizedPersonaId;
       }
