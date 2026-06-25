@@ -22,6 +22,7 @@
     "vue-json-pretty": "^2.6.0"
   },
   "devDependencies": {
+    "@types/ms": "^2.1.0",
     "@wxt-dev/module-vue": "^1.0.3",
     "typescript": "^5.9.3",
     "vue-tsc": "^3.2.5",
