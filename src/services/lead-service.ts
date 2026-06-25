@@ -1,5 +1,5 @@
-import { browser } from 'wxt/browser';
 import merge from 'deepmerge';
+import { db } from '@/db/schema';
 import { MessageType } from '@/constants/message-types';
 import { BASE_URL } from '@/constants/urls';
 import {
@@ -18,24 +18,29 @@ export class LeadService {
   }
 
   async updateLeadsInStorage(updates: Record<string, { update: Partial<Lead>, deepMerge?: boolean }>) {
-    const storage = await browser.storage.local.get('capturedLeads');
-    const leads: Record<string, Lead> = (storage.capturedLeads || {}) as Record<string, Lead>;
+    const urns = Object.keys(updates);
+    const existingLeads = await db.leads.bulkGet(urns);
+    const leadsToPut: Lead[] = [];
 
-    for (const [urn, { update, deepMerge }] of Object.entries(updates)) {
-      const existingLead = leads[urn] || { entityUrn: urn, updatedAt: Date.now() };
+    for (let i = 0; i < urns.length; i++) {
+      const urn = urns[i];
+      const { update, deepMerge } = updates[urn];
+      const existingLead = existingLeads[i] || { entityUrn: urn, updatedAt: Date.now() };
 
+      let updatedLead: Lead;
       if (deepMerge) {
-        leads[urn] = merge(existingLead, update);
+        updatedLead = merge(existingLead, update);
       } else {
-        leads[urn] = {
+        updatedLead = {
           ...existingLead,
           ...update,
         };
       }
-      leads[urn].updatedAt = Date.now();
+      updatedLead.updatedAt = Date.now();
+      leadsToPut.push(updatedLead);
     }
 
-    await browser.storage.local.set({ capturedLeads: leads });
+    await db.leads.bulkPut(leadsToPut);
   }
 
   async updateLeadInStorage(urn: string, update: Partial<Lead>, deepMerge = false) {
@@ -46,9 +51,7 @@ export class LeadService {
     const isPagination = data.paging?.start > 0;
 
     if (isPagination) {
-      const storage = await browser.storage.local.get('capturedLeads');
-      const leads: Record<string, Lead> = (storage.capturedLeads || {}) as Record<string, Lead>;
-      const existingLead = leads[urn];
+      const existingLead = await db.leads.get(urn);
 
       if (existingLead?.insights) {
         const mergedElements = [...(existingLead.insights.elements || []), ...(data.elements || [])];

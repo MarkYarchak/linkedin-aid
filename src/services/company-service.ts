@@ -1,5 +1,5 @@
-import { browser } from 'wxt/browser';
 import merge from 'deepmerge';
+import { db } from '@/db/schema';
 import { parseLinkedInUrn } from '@/helpers/urn';
 import { MessageType } from '@/constants/message-types';
 import {
@@ -17,35 +17,41 @@ export class CompanyService {
   }
 
   async findCompanies(): Promise<Record<string, Company>> {
-    const storage = await browser.storage.local.get('capturedCompanies');
-    return (storage.capturedCompanies || {}) as Record<string, Company>;
+    const companies = await db.companies.toArray();
+    const map: Record<string, Company> = {};
+    companies.forEach(c => map[c.entityUrn] = c);
+    return map;
   }
 
   async findCompanyById(id: string): Promise<Company | undefined> {
-    const companies = await this.findCompanies();
-    const companyEntries = Object.values(companies);
-    return companyEntries
-      .find((company) => parseLinkedInUrn(company.entityUrn).id === id);
+    // We can use Dexie to filter if we had indexed ID, but for now we can still do it in memory or use filter
+    return db.companies.filter(c => parseLinkedInUrn(c.entityUrn).id === id).first();
   }
 
   async updateCompaniesInStorage(updates: Record<string, { update: Partial<Company>, deepMerge?: boolean }>) {
-    const companies = await this.findCompanies();
+    const urns = Object.keys(updates);
+    const existingCompanies = await db.companies.bulkGet(urns);
+    const companiesToPut: Company[] = [];
 
-    for (const [urn, { update, deepMerge }] of Object.entries(updates)) {
-      const existingCompany = companies[urn] || { entityUrn: urn, updatedAt: Date.now() };
+    for (let i = 0; i < urns.length; i++) {
+      const urn = urns[i];
+      const { update, deepMerge } = updates[urn];
+      const existingCompany = existingCompanies[i] || { entityUrn: urn, updatedAt: Date.now() };
 
+      let updatedCompany: Company;
       if (deepMerge) {
-        companies[urn] = merge(existingCompany, update);
+        updatedCompany = merge(existingCompany, update);
       } else {
-        companies[urn] = {
+        updatedCompany = {
           ...existingCompany,
           ...update,
         };
       }
-      companies[urn].updatedAt = Date.now();
+      updatedCompany.updatedAt = Date.now();
+      companiesToPut.push(updatedCompany);
     }
 
-    await browser.storage.local.set({ capturedCompanies: companies });
+    await db.companies.bulkPut(companiesToPut);
   }
 
   async updateCompanyInStorage(urn: string, update: Partial<Company>, deepMerge = false) {
