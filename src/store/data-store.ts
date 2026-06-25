@@ -1,6 +1,7 @@
 import { ref, readonly } from 'vue';
 import { browser } from 'wxt/browser';
 import { liveQuery } from 'dexie';
+import ms from 'ms';
 import { db } from '@/db/schema';
 import type { Lead } from '@/types/lead/lead';
 import type { Company } from '@/types/company/company';
@@ -28,7 +29,20 @@ liveQuery(() => db.companies.toArray()).subscribe((companies) => {
   companiesMap.value = map;
 });
 
+const cleanupOldData = async () => {
+  const threshold = Date.now() - ms('30d');
+
+  const oldLeadsCount = await db.leads.where('updatedAt').below(threshold).delete();
+  const oldCompaniesCount = await db.companies.where('updatedAt').below(threshold).delete();
+
+  if (oldLeadsCount > 0 || oldCompaniesCount > 0) {
+    console.log(`Cleaned up ${oldLeadsCount} leads and ${oldCompaniesCount} companies older than 30 days.`);
+  }
+};
+
 const loadData = async () => {
+  await cleanupOldData();
+
   const session = await browser.storage.session.get<SessionData>(['searchSessions', 'personas']);
 
   if (session.searchSessions) sessionsMap.value = session.searchSessions;
