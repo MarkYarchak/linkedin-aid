@@ -121,17 +121,11 @@ export function findSearchSessionForTabUrl(
     s => s.source === source && s.tabUrl && leadSearchTabUrlsMatch(s.tabUrl, tabUrl),
   );
 
-  // 2. If no exact match and tabUrl has sessionId, try matching against sessions without sessionId
+  // 2. If no exact match, try ignoring sessionId completely
   if (matching.length === 0) {
-    const sig = getLeadSearchTabSignature(tabUrl);
-    if (sig?.sessionId) {
-      matching = sessions.filter(s => {
-        if (s.source !== source || !s.tabUrl) return false;
-        const sSig = getLeadSearchTabSignature(s.tabUrl);
-        // Only fallback to sessions that explicitly don't have a sessionId
-        return !sSig?.sessionId && leadSearchTabUrlsMatch(s.tabUrl, tabUrl, true);
-      });
-    }
+    matching = sessions.filter(
+      s => s.source === source && s.tabUrl && leadSearchTabUrlsMatch(s.tabUrl, tabUrl, true),
+    );
   }
 
   if (matching.length === 0) {
