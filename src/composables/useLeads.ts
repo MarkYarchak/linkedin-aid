@@ -36,21 +36,29 @@ export function useLeads(tabUrl?: string) {
   });
 
   const getLeadsByCompany = (companyUrn: string, includeAllSessions = false) => {
-    let leadUrns: string[];
+    const set = new Set<string>();
+
     if (includeAllSessions) {
-      const set = new Set<string>();
       sessions.value
-        .filter(s => s.companyUrn === companyUrn && s.source === SearchSessionSource.COMPANY)
+        .filter(s => s.companyUrn === companyUrn)
         .forEach(s => {
           Object.values(s.leadUrnsByPage).forEach(pageUrns => {
             pageUrns.forEach(urn => set.add(urn));
           });
         });
-      leadUrns = Array.from(set);
     } else {
-      leadUrns = companyUrns.value[companyUrn] || [];
+      const leadUrns = companyUrns.value[companyUrn] || [];
+      leadUrns.forEach(urn => set.add(urn));
     }
-    return leadUrns.map(urn => leadsMap.value[urn]).filter(Boolean);
+
+    // Also include leads that are currently at this company according to their search result
+    leads.value.forEach(lead => {
+      if (lead.searchResult?.currentPositions?.some(pos => pos.companyUrn === companyUrn)) {
+        set.add(lead.entityUrn);
+      }
+    });
+
+    return Array.from(set).map(urn => leadsMap.value[urn]).filter(Boolean);
   };
 
   const getLeadsByPersona = (companyUrn: string, personaId?: string) => {
