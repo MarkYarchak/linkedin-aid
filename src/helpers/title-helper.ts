@@ -24,6 +24,7 @@ export const titleStates: TitleState[] = [
   { label: 'Hot', emoji: '🔥', value: 'hot' },
   { label: 'Couldn\'t interact', emoji: '⚫', value: 'failed' },
   { label: 'Declined', emoji: '🔴', value: 'declined' },
+  { label: 'Keep in mind', emoji: '⏳', value: 'later' },
 ];
 
 export function generateLeadTitle(params: {
