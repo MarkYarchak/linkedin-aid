@@ -3,6 +3,7 @@ import { onMounted, ref } from 'vue';
 import { browser } from 'wxt/browser';
 import { useDataStore } from '@/store/data-store';
 import CapturedDataView from '@/components/views/CapturedDataView.vue';
+import LegendView from '@/components/views/LegendView.vue';
 
 const tabUrl = ref('');
 const isLinkedIn = ref(false);
@@ -32,9 +33,7 @@ onMounted(async () => {
     v-else-if="isLinkedIn"
     :tab-url="tabUrl"
   />
-  <div v-else class="no-data">
-    This extension only works on LinkedIn.
-  </div>
+  <LegendView v-else />
 </template>
 
 <style scoped>
