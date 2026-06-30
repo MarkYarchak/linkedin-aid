@@ -55,6 +55,48 @@ export function useCopyLead(lead: OptionalDeepReadonly<Lead>) {
   const selectedInsights = ref<string[]>([]);
   const selectedSkills = ref<string[]>([]);
 
+  const insightSelectionOptions = [
+    { label: 'Select all', value: 'all' },
+    { label: 'Select posts', value: 'posts' },
+    { label: 'Select comments', value: 'comments' },
+    { label: 'Select posts and comments', value: 'posts_comments' },
+    { label: 'Select posts and reshared posts', value: 'posts_reshared' },
+  ];
+
+  const selectInsightsByType = (type: string) => {
+    if (!lead.insights?.elements) return;
+
+    let targetIds: string[] = [];
+
+    switch (type) {
+      case 'all':
+        targetIds = lead.insights.elements.map(e => e.insightId);
+        break;
+      case 'posts':
+        targetIds = lead.insights.elements
+          .filter(e => e.activityUnion?.postActivity && !e.activityUnion.postActivity.rootActivity)
+          .map(e => e.insightId);
+        break;
+      case 'comments':
+        targetIds = lead.insights.elements
+          .filter(e => e.activityUnion?.commentActivity)
+          .map(e => e.insightId);
+        break;
+      case 'posts_comments':
+        targetIds = lead.insights.elements
+          .filter(e => (e.activityUnion?.postActivity && !e.activityUnion.postActivity.rootActivity) || e.activityUnion?.commentActivity)
+          .map(e => e.insightId);
+        break;
+      case 'posts_reshared':
+        targetIds = lead.insights.elements
+          .filter(e => e.activityUnion?.postActivity)
+          .map(e => e.insightId);
+        break;
+    }
+
+    selectedInsights.value = targetIds;
+  };
+
   // Company Fields
   const companyFields = ref({
     name: true,
@@ -542,6 +584,8 @@ export function useCopyLead(lead: OptionalDeepReadonly<Lead>) {
     toggleSkill,
     togglePosition,
     togglePrimary,
+    insightSelectionOptions,
+    selectInsightsByType,
     viewMode,
     viewOptions,
     wrapText,

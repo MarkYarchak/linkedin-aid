@@ -54,6 +54,8 @@ const {
   toggleSkill,
   togglePosition,
   togglePrimary,
+  insightSelectionOptions,
+  selectInsightsByType,
   viewMode,
   viewOptions,
   prefix,
@@ -261,7 +263,17 @@ watch(currentStep, () => {
 
       <!-- Step 3: Insights & Skills -->
       <div v-if="currentStep === 3">
-        <h4>Recent Activity</h4>
+        <div class="step-header-with-action">
+          <h4>Recent Activity</h4>
+          <div v-if="lead.insights?.elements?.length" class="select-group recent-activity-selector">
+            <select @change="selectInsightsByType(($event.target as HTMLSelectElement).value)">
+              <option value="" disabled selected>Select by type...</option>
+              <option v-for="opt in insightSelectionOptions" :key="opt.value" :value="opt.value">
+                {{ opt.label }}
+              </option>
+            </select>
+          </div>
+        </div>
         <div v-if="lead.insights?.elements?.length" class="insights-list">
           <AppSelectableItem
             v-for="insight in lead.insights.elements"
@@ -395,6 +407,7 @@ watch(currentStep, () => {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 12px;
+  gap: 12px;
 }
 
 .step-header-with-action h4 {
@@ -439,6 +452,16 @@ watch(currentStep, () => {
   border: 1px solid #cbd5e1;
   font-size: 0.85rem;
   background: white;
+}
+
+.select-group.recent-activity-selector {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+}
+
+.select-group.recent-activity-selector select {
+  min-width: 180px;
 }
 
 .field-group {
