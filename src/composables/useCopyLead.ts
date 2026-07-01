@@ -1,4 +1,5 @@
 import { ref, computed, onMounted, watch } from 'vue';
+import { useDataStore } from '@/store/data-store';
 import { companyService } from '@/services/company-service';
 import { sanitizeText } from '@/helpers/text-helper';
 import { titleTargets, titleStates, generateLeadTitle } from '@/helpers/title-helper';
@@ -110,6 +111,9 @@ export function useCopyLead(lead: OptionalDeepReadonly<Lead>) {
   const isCopied = ref(false);
   const isTitleCopied = ref(false);
   const copyTimeout = ref<ReturnType<typeof setTimeout> | null>(null);
+
+  const { copyLeadSettings, leadTitles } = useDataStore();
+
   const titleCopyTimeout = ref<ReturnType<typeof setTimeout> | null>(null);
   const sessionTitle = ref<string | null>(null);
 
@@ -125,8 +129,7 @@ export function useCopyLead(lead: OptionalDeepReadonly<Lead>) {
 
   const loadSessionTitle = async () => {
     if (!lead.entityUrn) return;
-    const data = await browser.storage.session.get(LEAD_TITLES_KEY);
-    const titles = (data[LEAD_TITLES_KEY] || {}) as Record<string, string>;
+    const titles = leadTitles.value;
     if (titles[lead.entityUrn]) {
       sessionTitle.value = titles[lead.entityUrn];
     }
@@ -135,10 +138,10 @@ export function useCopyLead(lead: OptionalDeepReadonly<Lead>) {
   onMounted(async () => {
     await loadCapturedCompanyUrns();
     await loadSessionTitle();
-    // Load default settings if any
-    const settings = await browser.storage.local.get('copyLeadSettings');
-    if (settings.copyLeadSettings) {
-      const s = settings.copyLeadSettings as CopyLeadSettings;
+
+    // Load default settings if any from store
+    if (copyLeadSettings.value) {
+      const s = copyLeadSettings.value;
       if (s.leadFields) leadFields.value = { ...leadFields.value, ...s.leadFields };
       if (s.companyFields) companyFields.value = { ...companyFields.value, ...s.companyFields };
       if (s.selectedTarget) selectedTarget.value = s.selectedTarget;
@@ -475,8 +478,7 @@ export function useCopyLead(lead: OptionalDeepReadonly<Lead>) {
   const saveSessionTitle = async () => {
     const title = generateTitle();
     if (lead.entityUrn) {
-      const data = await browser.storage.session.get(LEAD_TITLES_KEY);
-      const titles = (data[LEAD_TITLES_KEY] || {}) as Record<string, string>;
+      const titles = { ...leadTitles.value };
       titles[lead.entityUrn] = title;
       await browser.storage.session.set({ [LEAD_TITLES_KEY]: titles });
       sessionTitle.value = title;

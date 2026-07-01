@@ -6,14 +6,33 @@ import { db } from '@/db/schema';
 import type { Lead } from '@/types/lead/lead';
 import type { Company } from '@/types/company/company';
 import type { SearchSession, PersonasStorage } from '@/types/search/search';
+import type { CopyLeadSettings } from '@/types/copy-lead-settings';
 
-export type SessionData = { searchSessions: Record<string, SearchSession>, personas: PersonasStorage };
+export type SessionData = {
+  searchSessions: Record<string, SearchSession>,
+  personas: PersonasStorage,
+  lead_titles: Record<string, string>,
+};
+
+export type LocalData = {
+  copyLeadSettings: CopyLeadSettings,
+  bulkCopyLeadSettings: {
+    leadFields?: any;
+    prefix?: string;
+    viewMode?: string;
+    wrapText?: boolean;
+  },
+};
+
 export type CustomStorageChange<T = unknown> = { oldValue: T, newValue: T };
 
 const leadsMap = ref<Record<string, Lead>>({});
 const companiesMap = ref<Record<string, Company>>({});
 const sessionsMap = ref<Record<string, SearchSession>>({});
 const personasStorage = ref<PersonasStorage>({ general: [], byCompany: {} });
+const leadTitles = ref<Record<string, string>>({});
+const copyLeadSettings = ref<CopyLeadSettings | null>(null);
+const bulkCopyLeadSettings = ref<LocalData['bulkCopyLeadSettings'] | null>(null);
 const isLoaded = ref(false);
 
 // Sync Dexie to Vue refs
@@ -43,10 +62,18 @@ const cleanupOldData = async () => {
 const loadData = async () => {
   await cleanupOldData();
 
-  const session = await browser.storage.session.get<SessionData>(['searchSessions', 'personas']);
+  const [session, local] = await Promise.all([
+    browser.storage.session.get<SessionData>(['searchSessions', 'personas', 'lead_titles']),
+    browser.storage.local.get<LocalData>(['copyLeadSettings', 'bulkCopyLeadSettings']),
+  ]);
 
   if (session.searchSessions) sessionsMap.value = session.searchSessions;
   if (session.personas) personasStorage.value = session.personas;
+  if (session.lead_titles) leadTitles.value = session.lead_titles;
+
+  if (local.copyLeadSettings) copyLeadSettings.value = local.copyLeadSettings;
+  if (local.bulkCopyLeadSettings) bulkCopyLeadSettings.value = local.bulkCopyLeadSettings;
+
   isLoaded.value = true;
 };
 
@@ -68,6 +95,21 @@ browser.storage.onChanged.addListener((changes, areaName) => {
       const { newValue } = changes.personas as CustomStorageChange<SessionData['personas']>;
       personasStorage.value = newValue || { general: [], byCompany: {} };
     }
+    if (changes.lead_titles) {
+      const { newValue } = changes.lead_titles as CustomStorageChange<SessionData['lead_titles']>;
+      leadTitles.value = newValue || {};
+    }
+  }
+
+  if (areaName === 'local') {
+    if (changes.copyLeadSettings) {
+      const { newValue } = changes.copyLeadSettings as CustomStorageChange<LocalData['copyLeadSettings']>;
+      copyLeadSettings.value = newValue || null;
+    }
+    if (changes.bulkCopyLeadSettings) {
+      const { newValue } = changes.bulkCopyLeadSettings as CustomStorageChange<LocalData['bulkCopyLeadSettings']>;
+      bulkCopyLeadSettings.value = newValue || null;
+    }
   }
 });
 
@@ -77,6 +119,9 @@ export const useDataStore = () => {
     companiesMap: readonly(companiesMap),
     sessionsMap: readonly(sessionsMap),
     personasStorage: readonly(personasStorage),
+    leadTitles: readonly(leadTitles),
+    copyLeadSettings: readonly(copyLeadSettings),
+    bulkCopyLeadSettings: readonly(bulkCopyLeadSettings),
     isLoaded: readonly(isLoaded),
     loadData,
   };

@@ -1,4 +1,5 @@
 import { ref, onMounted } from 'vue';
+import { useDataStore } from '@/store/data-store';
 import { browser } from 'wxt/browser';
 import { sanitizeText } from '@/helpers/text-helper';
 import { getRelativeTime } from '@/helpers/date-helper';
@@ -39,15 +40,11 @@ export function useBulkCopyLeads(leads: OptionalDeepReadonly<Lead>[], heroCard?:
   const prefix = ref('');
   const wrapText = ref(false);
 
+  const { bulkCopyLeadSettings } = useDataStore();
+
   onMounted(async () => {
-    // Load default settings if any
-    const settings = await browser.storage.local.get('bulkCopyLeadSettings');
-    const bulkCopySettings = settings.bulkCopyLeadSettings as {
-      leadFields?: any;
-      prefix?: string;
-      viewMode?: string;
-      wrapText?: boolean;
-    } | undefined;
+    // Load default settings if any from store
+    const bulkCopySettings = bulkCopyLeadSettings.value;
     if (bulkCopySettings?.leadFields) {
       leadFields.value = { ...leadFields.value, ...bulkCopySettings.leadFields };
     }
