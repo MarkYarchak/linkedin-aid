@@ -1,8 +1,7 @@
 <script lang="ts" setup>
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 
 interface Props {
-  modelValue: any[];
   options: { label: string; value: any }[];
   placeholder?: string;
   label?: string;
@@ -14,7 +13,7 @@ const props = withDefaults(defineProps<Props>(), {
   displayMode: 'count',
 });
 
-const emit = defineEmits(['update:modelValue']);
+const modelValue = defineModel<any[]>({ default: () => [] });
 
 const isOpen = ref(false);
 const containerRef = ref<HTMLElement | null>(null);
@@ -38,55 +37,48 @@ onUnmounted(() => {
 });
 
 const isAllSelected = computed(() => {
-  return props.options.length > 0 && props.modelValue.length === props.options.length;
+  return props.options.length > 0 && modelValue.value.length === props.options.length;
 });
 
 const toggleAll = () => {
   if (isAllSelected.value) {
-    emit('update:modelValue', []);
+    modelValue.value = [];
   } else {
-    emit('update:modelValue', props.options.map(opt => opt.value));
+    modelValue.value = props.options.map(opt => opt.value);
   }
 };
 
 const toggleItem = (value: any) => {
-  const newValue = [...props.modelValue];
+  const newValue = [...modelValue.value];
   const index = newValue.indexOf(value);
   if (index === -1) {
     newValue.push(value);
   } else {
     newValue.splice(index, 1);
   }
-  emit('update:modelValue', newValue);
+  modelValue.value = newValue;
 };
 
-const getDisplayText = computed(() => {
-  if (props.modelValue.length === 0) return props.placeholder;
-  if (props.modelValue.length === props.options.length) return 'All selected';
+const displayText = computed(() => {
+  if (modelValue.value.length === 0) return props.placeholder;
+  if (modelValue.value.length === props.options.length) return 'All selected';
 
   if (props.displayMode === 'labels') {
-    return props.options
-      .filter(opt => props.modelValue.includes(opt.value))
-      .map(opt => opt.label)
+    return modelValue.value
+      .map(val => props.options.find(opt => opt.value === val)?.label)
+      .filter(label => !!label)
       .join(', ');
   }
 
-  return `${props.modelValue.length} items selected`;
+  return `${modelValue.value.length} items selected`;
 });
-</script>
-
-<script lang="ts">
-import { computed } from 'vue';
-export default {
-  name: 'AppMultiSelect'
-}
 </script>
 
 <template>
   <div ref="containerRef" class="app-multi-select">
     <label v-if="label" class="multi-select-label">{{ label }}</label>
     <div class="dropdown-trigger" :class="{ 'is-open': isOpen }" @click="toggleDropdown">
-      <span class="display-text">{{ getDisplayText }}</span>
+      <span class="display-text">{{ displayText }}</span>
       <span class="chevron" :class="{ 'is-open': isOpen }">
         <svg viewBox="0 0 24 24" width="16" height="16">
           <path d="M7 10l5 5 5-5z" fill="currentColor" />
