@@ -1,5 +1,5 @@
 import { browser } from 'wxt/browser';
-import { toRaw } from 'vue';
+import { deepToRaw } from '@/helpers/vue-helper';
 
 export class StorageService {
   async setLocal(items: Record<string, any>): Promise<void> {
@@ -15,7 +15,7 @@ export class StorageService {
   private prepareItems(items: Record<string, any>): Record<string, any> {
     const result: Record<string, any> = {};
     for (const key in items) {
-      result[key] = toRaw(items[key]);
+      result[key] = deepToRaw(items[key]);
     }
     return result;
   }
