@@ -55,47 +55,39 @@ export function useCopyLead(lead: OptionalDeepReadonly<Lead>) {
   const selectedInsights = ref<string[]>([]);
   const selectedSkills = ref<string[]>([]);
 
+  const insightFilters = ref<string[]>([]);
+
   const insightSelectionOptions = [
-    { label: 'Select all', value: 'all' },
-    { label: 'Select posts', value: 'posts' },
-    { label: 'Select comments', value: 'comments' },
-    { label: 'Select posts and comments', value: 'posts_comments' },
-    { label: 'Select posts and reshared posts', value: 'posts_reshared' },
+    { label: 'Posts', value: 'posts' },
+    { label: 'Reshared posts', value: 'posts_reshared' },
+    { label: 'Comments', value: 'comments' },
   ];
 
-  const selectInsightsByType = (type: string) => {
+  watch(insightFilters, (newFilters) => {
     if (!lead.insights?.elements) return;
 
-    let targetIds: string[] = [];
+    const targetIds = new Set<string>();
 
-    switch (type) {
-      case 'all':
-        targetIds = lead.insights.elements.map(e => e.insightId);
-        break;
-      case 'posts':
-        targetIds = lead.insights.elements
+    newFilters.forEach(filter => {
+      if (filter === 'posts') {
+        lead.insights!.elements
           .filter(e => e.activityUnion?.postActivity && !e.activityUnion.postActivity.rootActivity)
-          .map(e => e.insightId);
-        break;
-      case 'comments':
-        targetIds = lead.insights.elements
+          .forEach(e => targetIds.add(e.insightId));
+      }
+      if (filter === 'posts_reshared') {
+        lead.insights!.elements
+          .filter(e => e.activityUnion?.postActivity?.rootActivity)
+          .forEach(e => targetIds.add(e.insightId));
+      }
+      if (filter === 'comments') {
+        lead.insights!.elements
           .filter(e => e.activityUnion?.commentActivity)
-          .map(e => e.insightId);
-        break;
-      case 'posts_comments':
-        targetIds = lead.insights.elements
-          .filter(e => (e.activityUnion?.postActivity && !e.activityUnion.postActivity.rootActivity) || e.activityUnion?.commentActivity)
-          .map(e => e.insightId);
-        break;
-      case 'posts_reshared':
-        targetIds = lead.insights.elements
-          .filter(e => e.activityUnion?.postActivity)
-          .map(e => e.insightId);
-        break;
-    }
+          .forEach(e => targetIds.add(e.insightId));
+      }
+    });
 
-    selectedInsights.value = targetIds;
-  };
+    selectedInsights.value = Array.from(targetIds);
+  }, { deep: true });
 
   // Company Fields
   const companyFields = ref({
@@ -585,7 +577,7 @@ export function useCopyLead(lead: OptionalDeepReadonly<Lead>) {
     togglePosition,
     togglePrimary,
     insightSelectionOptions,
-    selectInsightsByType,
+    insightFilters,
     viewMode,
     viewOptions,
     wrapText,

@@ -7,6 +7,7 @@ import AppStepper from '@/components/ui/AppStepper.vue';
 import AppModal from '@/components/ui/AppModal.vue';
 import AppCheckbox from '@/components/ui/AppCheckbox.vue';
 import AppTag from '@/components/ui/AppTag.vue';
+import AppMultiSelect from '@/components/ui/AppMultiSelect.vue';
 import AppSelectableItem from '@/components/ui/AppSelectableItem.vue';
 import AppPreviewBox from '@/components/ui/AppPreviewBox.vue';
 import AppSegmentedControl from '@/components/ui/AppSegmentedControl.vue';
@@ -55,7 +56,7 @@ const {
   togglePosition,
   togglePrimary,
   insightSelectionOptions,
-  selectInsightsByType,
+  insightFilters,
   viewMode,
   viewOptions,
   prefix,
@@ -265,13 +266,13 @@ watch(currentStep, () => {
       <div v-if="currentStep === 3">
         <div class="step-header-with-action">
           <h4>Recent Activity</h4>
-          <div v-if="lead.insights?.elements?.length" class="select-group recent-activity-selector">
-            <select @change="selectInsightsByType(($event.target as HTMLSelectElement).value)">
-              <option value="" disabled selected>Select by type...</option>
-              <option v-for="opt in insightSelectionOptions" :key="opt.value" :value="opt.value">
-                {{ opt.label }}
-              </option>
-            </select>
+          <div v-if="lead.insights?.elements?.length" class="recent-activity-multi-select">
+            <AppMultiSelect
+              v-model="insightFilters"
+              :options="insightSelectionOptions"
+              display-mode="labels"
+              placeholder="Activities selection..."
+            />
           </div>
         </div>
         <div v-if="lead.insights?.elements?.length" class="insights-list">
@@ -454,14 +455,9 @@ watch(currentStep, () => {
   background: white;
 }
 
-.select-group.recent-activity-selector {
-  flex-direction: row;
-  align-items: center;
-  gap: 8px;
-}
-
-.select-group.recent-activity-selector select {
-  min-width: 180px;
+.recent-activity-multi-select {
+  min-width: 220px;
+  max-width: 220px;
 }
 
 .field-group {
