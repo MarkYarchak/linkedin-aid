@@ -1,6 +1,6 @@
 import { ref, onMounted } from 'vue';
 import { useDataStore } from '@/store/data-store';
-import { browser } from 'wxt/browser';
+import { storageService } from '@/services/storage-service';
 import { sanitizeText } from '@/helpers/text-helper';
 import { getRelativeTime } from '@/helpers/date-helper';
 import type { OptionalDeepReadonly } from '@/types/common';
@@ -379,8 +379,8 @@ export function useBulkCopyLeads(leads: OptionalDeepReadonly<Lead>[], heroCard?:
       viewMode: viewMode.value,
       wrapText: wrapText.value,
     };
-    await browser.storage.local.set({
-        bulkCopyLeadSettings: settings
+    await storageService.setLocal({
+      bulkCopyLeadSettings: settings
     });
 
     isCopied.value = true;

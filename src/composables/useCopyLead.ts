@@ -1,11 +1,11 @@
 import { ref, computed, onMounted, watch } from 'vue';
 import { useDataStore } from '@/store/data-store';
 import { companyService } from '@/services/company-service';
+import { storageService } from '@/services/storage-service';
 import { sanitizeText } from '@/helpers/text-helper';
 import { titleTargets, titleStates, generateLeadTitle } from '@/helpers/title-helper';
 import { parseLinkedInUrn } from '@/helpers/urn';
 import { getRelativeTime } from '@/helpers/date-helper';
-import { browser } from 'wxt/browser';
 import type { OptionalDeepReadonly } from '@/types/common';
 import type { Lead } from '@/types/lead/lead';
 import type { Company } from '@/types/company/company';
@@ -465,7 +465,7 @@ export function useCopyLead(lead: OptionalDeepReadonly<Lead>) {
       wrapText: wrapText.value,
       insightFilters: insightFilters.value,
     };
-    await browser.storage.local.set({ copyLeadSettings: settings });
+    await storageService.setLocal({ copyLeadSettings: settings });
 
     isCopied.value = true;
     if (copyTimeout.value) clearTimeout(copyTimeout.value);
@@ -482,7 +482,7 @@ export function useCopyLead(lead: OptionalDeepReadonly<Lead>) {
     if (lead.entityUrn) {
       const titles = { ...leadTitles.value };
       titles[lead.entityUrn] = title;
-      await browser.storage.session.set({ [LEAD_TITLES_KEY]: titles });
+      await storageService.setSession({ [LEAD_TITLES_KEY]: titles });
       sessionTitle.value = title;
     }
     return title;
@@ -493,12 +493,12 @@ export function useCopyLead(lead: OptionalDeepReadonly<Lead>) {
     await navigator.clipboard.writeText(title);
 
     // Save defaults to local storage
-    const settings = await browser.storage.local.get('copyLeadSettings');
+    const settings = await storageService.getLocal('copyLeadSettings');
     const s = (settings.copyLeadSettings || {}) as CopyLeadSettings;
     s.selectedTarget = selectedTarget.value;
     s.selectedState = selectedState.value;
     s.insightFilters = insightFilters.value;
-    await browser.storage.local.set({ copyLeadSettings: s });
+    await storageService.setLocal({ copyLeadSettings: s });
 
     isTitleCopied.value = true;
     if (titleCopyTimeout.value) clearTimeout(titleCopyTimeout.value);

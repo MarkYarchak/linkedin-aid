@@ -3,6 +3,7 @@ import { browser } from 'wxt/browser';
 import { liveQuery } from 'dexie';
 import ms from 'ms';
 import { db } from '@/db/schema';
+import { storageService } from '@/services/storage-service';
 import type { Lead } from '@/types/lead/lead';
 import type { Company } from '@/types/company/company';
 import type { SearchSession, PersonasStorage } from '@/types/search/search';
@@ -63,8 +64,8 @@ const loadData = async () => {
   await cleanupOldData();
 
   const [session, local] = await Promise.all([
-    browser.storage.session.get<SessionData>(['searchSessions', 'personas', 'lead_titles']),
-    browser.storage.local.get<LocalData>(['copyLeadSettings', 'bulkCopyLeadSettings']),
+    storageService.getSession(['searchSessions', 'personas', 'lead_titles']),
+    storageService.getLocal(['copyLeadSettings', 'bulkCopyLeadSettings']),
   ]);
 
   if (session.searchSessions) sessionsMap.value = session.searchSessions;

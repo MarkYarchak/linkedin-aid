@@ -1,4 +1,4 @@
-import { browser } from 'wxt/browser';
+import { storageService } from '@/services/storage-service';
 import { MessageType } from '@/constants/message-types';
 import { BASE_URL } from '@/constants/urls';
 import { companyService } from '@/services/company-service';
@@ -73,8 +73,8 @@ export class LeadSearchService {
           personaId = personaMatch[1];
         }
 
-        const storage = await browser.storage.session.get('searchSessions');
-        const sessions: Record<string, SearchSession> = (storage.searchSessions || {}) as Record<string, SearchSession>;
+      const storage = await storageService.getSession('searchSessions');
+      const sessions: Record<string, SearchSession> = (storage.searchSessions || {}) as Record<string, SearchSession>;
 
         const session = sessions[sessionKey] || {
           query: apiQuery,
@@ -123,7 +123,7 @@ export class LeadSearchService {
 
         sessions[sessionKey] = session;
         const storageUpdate: any = { searchSessions: sessions };
-        await browser.storage.session.set(storageUpdate);
+        await storageService.setSession(storageUpdate);
 
         if (Object.keys(companyUpdates).length > 0) {
           await companyService.updateCompaniesInStorage(companyUpdates);
@@ -155,7 +155,7 @@ export class LeadSearchService {
       const url = new URL(msg.url, BASE_URL);
       const targetCompanyId = url.searchParams.get('targetCompanyId');
 
-      const storage = await browser.storage.session.get('personas');
+      const storage = await storageService.getSession('personas');
       const personasStorage: PersonasStorage = (storage.personas || { general: [], byCompany: {} }) as PersonasStorage;
 
       if (targetCompanyId) {
@@ -165,7 +165,7 @@ export class LeadSearchService {
         personasStorage.general = data.elements;
       }
 
-      await browser.storage.session.set({ personas: personasStorage });
+      await storageService.setSession({ personas: personasStorage });
     }
   }
 }
