@@ -29,4 +29,5 @@ export interface CopyLeadSettings {
   prefix?: string;
   viewMode?: string;
   wrapText?: boolean;
+  insightFilters?: string[];
 }

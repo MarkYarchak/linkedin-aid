@@ -149,6 +149,7 @@ export function useCopyLead(lead: OptionalDeepReadonly<Lead>) {
       if (s.prefix) prefix.value = s.prefix;
       if (s.viewMode) viewMode.value = s.viewMode;
       if (s.wrapText !== undefined) wrapText.value = s.wrapText;
+      if (s.insightFilters) insightFilters.value = s.insightFilters;
     }
 
     // Set default position
@@ -462,6 +463,7 @@ export function useCopyLead(lead: OptionalDeepReadonly<Lead>) {
       prefix: prefix.value,
       viewMode: viewMode.value,
       wrapText: wrapText.value,
+      insightFilters: insightFilters.value,
     };
     await browser.storage.local.set({ copyLeadSettings: settings });
 
@@ -495,6 +497,7 @@ export function useCopyLead(lead: OptionalDeepReadonly<Lead>) {
     const s = (settings.copyLeadSettings || {}) as CopyLeadSettings;
     s.selectedTarget = selectedTarget.value;
     s.selectedState = selectedState.value;
+    s.insightFilters = insightFilters.value;
     await browser.storage.local.set({ copyLeadSettings: s });
 
     isTitleCopied.value = true;
