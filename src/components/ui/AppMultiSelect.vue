@@ -6,10 +6,12 @@ interface Props {
   options: { label: string; value: any }[];
   placeholder?: string;
   label?: string;
+  displayMode?: 'count' | 'labels';
 }
 
 const props = withDefaults(defineProps<Props>(), {
   placeholder: 'Select items...',
+  displayMode: 'count',
 });
 
 const emit = defineEmits(['update:modelValue']);
@@ -61,6 +63,14 @@ const toggleItem = (value: any) => {
 const getDisplayText = computed(() => {
   if (props.modelValue.length === 0) return props.placeholder;
   if (props.modelValue.length === props.options.length) return 'All selected';
+
+  if (props.displayMode === 'labels') {
+    return props.options
+      .filter(opt => props.modelValue.includes(opt.value))
+      .map(opt => opt.label)
+      .join(', ');
+  }
+
   return `${props.modelValue.length} items selected`;
 });
 </script>
