@@ -149,7 +149,7 @@ export function useCopyLead(lead: OptionalDeepReadonly<Lead>) {
       if (s.prefix) prefix.value = s.prefix;
       if (s.viewMode) viewMode.value = s.viewMode;
       if (s.wrapText !== undefined) wrapText.value = s.wrapText;
-      if (s.insightFilters) insightFilters.value = s.insightFilters;
+      if (s.insightFilters) insightFilters.value = [...s.insightFilters];
     }
 
     // Set default position
