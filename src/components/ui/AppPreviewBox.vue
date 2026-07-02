@@ -8,6 +8,7 @@ interface Props {
   json?: any;
   editablePrefix?: boolean;
   deep?: number;
+  isCopied?: boolean;
 }
 
 withDefaults(defineProps<Props>(), {
@@ -16,6 +17,7 @@ withDefaults(defineProps<Props>(), {
   json: null,
   editablePrefix: false,
   deep: 3,
+  isCopied: false,
 });
 
 const prefix = defineModel('prefix', { default: ''});
@@ -24,7 +26,7 @@ const prefix = defineModel('prefix', { default: ''});
 <template>
   <div
     class="preview-box"
-    :class="{ mini }"
+    :class="{ mini, 'is-copied': isCopied }"
   >
     <div v-if="$slots.prepend" class="preview-prepend">
       <slot name="prepend" />
@@ -130,6 +132,25 @@ const prefix = defineModel('prefix', { default: ''});
 .preview-box.mini {
   max-height: none;
   font-weight: 500;
+}
+
+.preview-box.is-copied {
+  animation: copy-flash 0.6s ease-out;
+}
+
+@keyframes copy-flash {
+  0% {
+    background-color: #f5f5f5;
+    box-shadow: 0 0 0 0 rgba(10, 102, 194, 0.4);
+  }
+  20% {
+    background-color: #e0f2fe;
+    box-shadow: 0 0 0 4px rgba(10, 102, 194, 0.2);
+  }
+  100% {
+    background-color: #f5f5f5;
+    box-shadow: 0 0 0 0 rgba(10, 102, 194, 0);
+  }
 }
 
 .preview-prepend,

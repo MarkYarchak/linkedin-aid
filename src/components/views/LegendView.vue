@@ -107,6 +107,19 @@ h3 {
 .item.copied {
   background: #e8f5e9;
   border-color: #4caf50;
+  animation: copy-flash-green 0.6s ease-out;
+}
+
+@keyframes copy-flash-green {
+  0% {
+    background-color: #f5f5f5;
+  }
+  20% {
+    background-color: #e8f5e9;
+  }
+  100% {
+    background-color: #e8f5e9;
+  }
 }
 
 .emoji {

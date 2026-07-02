@@ -104,6 +104,7 @@ watch(currentStep, () => {
           :json="isJsonView ? generateJsonData() : null"
           :wrap-text="wrapText"
           :deep="4"
+          :is-copied="isCopied"
         >
           <template v-if="!heroCard" #header>
             <AppCheckbox

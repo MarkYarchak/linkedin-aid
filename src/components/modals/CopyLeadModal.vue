@@ -338,6 +338,7 @@ watch(currentStep, () => {
             <AppPreviewBox
               mini
               wrap-text
+              :is-copied="isTitleCopied"
               class="mt-1"
             >
               {{ generateTitle() }}
@@ -372,6 +373,7 @@ watch(currentStep, () => {
           editable-prefix
           :json="isJsonView ? generateJsonData() : null"
           :wrap-text="wrapText"
+          :is-copied="isCopied"
         >
           <template v-if="!isJsonView">{{ generateCopyText() }}</template>
         </AppPreviewBox>
