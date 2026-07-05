@@ -2,13 +2,22 @@
 import { computed, ref, onMounted, nextTick, watch } from 'vue';
 import { sanitizeText } from '@/helpers/text-helper';
 import AppAvatar from '@/components/ui/AppAvatar.vue';
+import AppCheckbox from '@/components/ui/AppCheckbox.vue';
+import CompanyPreviewDense from './CompanyPreviewDense.vue';
 import type { OptionalDeepReadonly } from '@/types/common';
 import type { Company } from '@/types/company/company';
 
 interface Props {
   company: OptionalDeepReadonly<Company>;
+  selectable?: boolean;
+  dense?: boolean;
 }
-const props = defineProps<Props>();
+const props = withDefaults(defineProps<Props>(), {
+  selectable: false,
+  dense: false,
+});
+
+const selected = defineModel<boolean>('selected', { default: false });
 
 const isExpanded = ref(false);
 const isTruncated = ref(false);
@@ -26,12 +35,16 @@ const checkTruncation = () => {
 };
 
 onMounted(() => {
-  checkTruncation();
+  if (!props.dense) {
+    checkTruncation();
+  }
 });
 
 watch(() => props.company.main?.description, async () => {
-  await nextTick();
-  checkTruncation();
+  if (!props.dense) {
+    await nextTick();
+    checkTruncation();
+  }
 });
 
 const logoUrl = computed(() => {
@@ -55,54 +68,87 @@ const revenueRangeString = computed(() => {
 </script>
 
 <template>
-  <div class="company-info">
-    <div class="header">
-      <AppAvatar
-        :src="logoUrl"
-        :alt="company.main?.name"
-        shape="square"
-        size="md"
-      />
-      <h3>{{ company.main?.name }}</h3>
+  <div class="company-info" :class="{ selected: selected, 'is-dense': dense }">
+    <div v-if="dense" class="dense-view">
+      <div v-if="selectable" class="selection-area">
+        <AppCheckbox v-model="selected" @click.stop />
+      </div>
+      <CompanyPreviewDense :company="company" />
     </div>
 
-    <div class="info-row">
-      <strong>Industry:</strong> {{ company.main?.industry || 'N/A' }}
-    </div>
-    <div class="info-row">
-      <strong>Location:</strong> {{ company.main?.location || 'N/A' }}
-    </div>
-    <div class="info-row" v-if="company.main?.website">
-      <strong>Website:</strong> <a :href="company.main.website" target="_blank">{{ company.main.website }}</a>
-    </div>
-    <div class="info-row" v-if="company.extra?.employeeDisplayCount">
-      <strong>Headcount:</strong> {{ company.extra.employeeDisplayCount }} employees
-    </div>
-    <div class="info-row" v-if="company.main?.revenueRange">
-      <strong>Revenue:</strong> {{ revenueRangeString }}
-    </div>
-    <div class="info-row" v-if="company.main?.description">
-      <strong>Description:</strong>
-      <p
-        ref="descriptionRef"
-        :class="['description', { 'is-clamped': !isExpanded }]"
-      >
-        {{ sanitizeText(company.main.description) }}
-      </p>
-      <button
-        v-if="isTruncated || isExpanded"
-        class="toggle-button"
-        @click="toggleExpand"
-      >
-        {{ isExpanded ? 'Show less' : 'Show more' }}
-      </button>
-    </div>
+    <template v-else>
+      <div class="header">
+        <div v-if="selectable" class="selection-area">
+          <AppCheckbox v-model="selected" @click.stop />
+        </div>
+        <AppAvatar
+          :src="logoUrl"
+          :alt="company.main?.name"
+          shape="square"
+          size="md"
+        />
+        <h3>{{ company.main?.name }}</h3>
+      </div>
+
+      <div class="info-row">
+        <strong>Industry:</strong> {{ company.main?.industry || 'N/A' }}
+      </div>
+      <div class="info-row">
+        <strong>Location:</strong> {{ company.main?.location || 'N/A' }}
+      </div>
+      <div class="info-row" v-if="company.main?.website">
+        <strong>Website:</strong> <a :href="company.main.website" target="_blank">{{ company.main.website }}</a>
+      </div>
+      <div class="info-row" v-if="company.extra?.employeeDisplayCount">
+        <strong>Headcount:</strong> {{ company.extra.employeeDisplayCount }} employees
+      </div>
+      <div class="info-row" v-if="company.main?.revenueRange">
+        <strong>Revenue:</strong> {{ revenueRangeString }}
+      </div>
+      <div class="info-row" v-if="company.main?.description">
+        <strong>Description:</strong>
+        <p
+          ref="descriptionRef"
+          :class="['description', { 'is-clamped': !isExpanded }]"
+        >
+          {{ sanitizeText(company.main.description) }}
+        </p>
+        <button
+          v-if="isTruncated || isExpanded"
+          class="toggle-button"
+          @click="toggleExpand"
+        >
+          {{ isExpanded ? 'Show less' : 'Show more' }}
+        </button>
+      </div>
+    </template>
   </div>
 </template>
 
 <style scoped>
 .company-info {
   padding: 4px 4px 12px;
+  transition: background-color 0.2s;
+  border-radius: 8px;
+}
+
+.company-info.selected {
+  background-color: #f0f7ff;
+}
+
+.company-info.is-dense {
+  padding: 4px;
+}
+
+.dense-view {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.selection-area {
+  display: flex;
+  align-items: center;
 }
 
 .header {
