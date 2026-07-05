@@ -33,6 +33,7 @@ loadData();
 .settings-container {
   max-width: 1200px;
   margin: 0 auto;
+  padding-bottom: 24px;
   display: flex;
   flex-direction: column;
 }
