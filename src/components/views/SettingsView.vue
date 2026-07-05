@@ -1,103 +1,36 @@
 <script lang="ts" setup>
-import { computed } from 'vue';
+import { ref } from 'vue';
 import { browser } from 'wxt/browser';
-import { useDataStore } from '@/store/data-store';
-import { db } from '@/db/schema';
-import AppPreviewBox from '@/components/ui/AppPreviewBox.vue';
-import AppDivider from '@/components/ui/AppDivider.vue';
+import AppSegmentedControl from '@/components/ui/AppSegmentedControl.vue';
+import SettingsEntitiesTab from '@/components/settings/SettingsEntitiesTab.vue';
+import SettingsSessionsTab from '@/components/settings/SettingsSessionsTab.vue';
+import SettingsCopyTab from '@/components/settings/SettingsCopyTab.vue';
+import SettingsGeneralTab from '@/components/settings/SettingsGeneralTab.vue';
 
-const { leadsMap, companiesMap, sessionsMap, personasStorage, copyLeadSettings, bulkCopyLeadSettings } = useDataStore();
-
-const leadsCount = computed(() => Object.keys(leadsMap.value).length);
-const companiesCount = computed(() => Object.keys(companiesMap.value).length);
-const sessionsCount = computed(() => Object.keys(sessionsMap.value).length);
-const personasCount = computed(() => {
-  const general = personasStorage.value.general.length;
-  const byCompany = Object.values(personasStorage.value.byCompany).reduce((acc, val) => acc + val.length, 0);
-  return general + byCompany;
-});
-
-const clearData = async () => {
-  if (confirm('Are you sure you want to clear all stored leads and companies?')) {
-    await db.leads.clear();
-    await db.companies.clear();
-    alert('Leads and companies cleared.');
-  }
-};
-
-const clearSessionData = async () => {
-  if (confirm('Are you sure you want to clear session data (search sessions and personas)?')) {
-    await browser.storage.session.remove(['searchSessions', 'personas', 'lead_titles']);
-    alert('Session data cleared.');
-  }
-};
-
-const resetSettings = async () => {
-  if (confirm('Are you sure you want to reset all settings?')) {
-    await browser.storage.local.remove(['copyLeadSettings', 'bulkCopyLeadSettings']);
-    alert('Settings reset.');
-  }
-};
+const tabs = ref([
+  { label: 'General', value: 'general' },
+  { label: 'Entities', value: 'entities' },
+  { label: 'Sessions', value: 'sessions' },
+  { label: 'Copy', value: 'copy' },
+]);
+const activeTab = ref('general');
 
 const version = browser.runtime.getManifest().version;
 </script>
 
 <template>
   <div class="settings-view">
-    <AppPreviewBox>
-      <template #header>
-        <span class="section-title">Data Management</span>
-      </template>
-      <div class="data-stats">
-        <div class="stat-item">
-          <span class="label">Stored Leads:</span>
-          <span class="value">{{ leadsCount }}</span>
-        </div>
-        <div class="stat-item">
-          <span class="label">Stored Companies:</span>
-          <span class="value">{{ companiesCount }}</span>
-        </div>
-        <div class="stat-item">
-          <span class="label">Search Sessions:</span>
-          <span class="value">{{ sessionsCount }}</span>
-        </div>
-        <div class="stat-item">
-          <span class="label">Stored Personas:</span>
-          <span class="value">{{ personasCount }}</span>
-        </div>
-      </div>
+    <div class="tabs-container">
+      <AppSegmentedControl
+        v-model="activeTab"
+        :options="tabs"
+      />
+    </div>
 
-      <AppDivider />
-
-      <div class="actions">
-        <button class="danger-button" @click="clearData">
-          Clear Leads & Companies
-        </button>
-        <button class="secondary-button" @click="clearSessionData">
-          Clear Session Data
-        </button>
-      </div>
-    </AppPreviewBox>
-
-    <AppPreviewBox>
-      <template #header>
-        <span class="section-title">Application Settings</span>
-      </template>
-      <div class="settings-summary">
-        <div class="stat-item">
-          <span class="label">Copy Settings:</span>
-          <span class="value">{{ copyLeadSettings ? 'Configured' : 'Default' }}</span>
-        </div>
-      </div>
-
-      <AppDivider />
-
-      <div class="actions">
-        <button class="secondary-button" @click="resetSettings">
-          Reset All Settings
-        </button>
-      </div>
-    </AppPreviewBox>
+    <SettingsGeneralTab v-if="activeTab === 'general'" />
+    <SettingsEntitiesTab v-else-if="activeTab === 'entities'" />
+    <SettingsSessionsTab v-else-if="activeTab === 'sessions'" />
+    <SettingsCopyTab v-else-if="activeTab === 'copy'" />
 
     <div class="footer">
       <p>LinkedIn AID v{{ version }}</p>
@@ -117,65 +50,8 @@ const version = browser.runtime.getManifest().version;
   box-sizing: border-box;
 }
 
-.section-title {
-  font-weight: bold;
-  color: #333;
-}
-
-.stat-item {
-  display: flex;
-  justify-content: space-between;
-}
-
-.label {
-  color: #666;
-}
-
-.value {
-  font-weight: bold;
-}
-
-.actions {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-top: 12px;
-}
-
-.danger-button {
-  background-color: #ff4d4f;
-  color: white;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 4px;
-  cursor: pointer;
-  width: 100%;
-  font-weight: bold;
-}
-
-.danger-button:hover {
-  background-color: #ff7875;
-}
-
-.secondary-button {
-  background-color: #f0f0f0;
-  color: #333;
-  border: 1px solid #ddd;
-  padding: 8px 16px;
-  border-radius: 4px;
-  cursor: pointer;
-  width: 100%;
-}
-
-.secondary-button:hover {
-  background-color: #e6e6e6;
-}
-
-.data-stats {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-bottom: 12px;
+.tabs-container {
+  margin-bottom: 4px;
 }
 
 .footer {
