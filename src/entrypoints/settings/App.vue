@@ -1,12 +1,10 @@
 <script lang="ts" setup>
-import { onMounted } from 'vue';
 import { useDataStore } from '@/store/data-store';
+import SettingsView from '@/components/views/SettingsView.vue';
 
 const { isLoaded, loadData } = useDataStore();
 
-onMounted(() => {
-  loadData();
-});
+loadData();
 </script>
 
 <template>
@@ -18,7 +16,7 @@ onMounted(() => {
       <h1>LinkedIn AID Settings</h1>
     </header>
     <main class="settings-content">
-      <!-- Settings view -->
+      <SettingsView />
     </main>
   </div>
 </template>
