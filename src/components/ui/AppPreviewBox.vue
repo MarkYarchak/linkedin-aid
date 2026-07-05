@@ -36,6 +36,7 @@ const prefix = defineModel('prefix', { default: ''});
         <slot name="header"></slot>
 
         <input
+          v-if="editablePrefix"
           v-model="prefix"
           type="text"
           placeholder="Add a prefix (e.g., #lead)"
