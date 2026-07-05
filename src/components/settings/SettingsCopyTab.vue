@@ -2,11 +2,9 @@
 import { ref, watch } from 'vue';
 import { useDataStore } from '@/store/data-store';
 import { storageService } from '@/services/storage-service';
-import { titleTargets, titleStates } from '@/helpers/title-helper';
 import AppCard from '@/components/ui/AppCard.vue';
 import AppDivider from '@/components/ui/AppDivider.vue';
 import AppCheckbox from '@/components/ui/AppCheckbox.vue';
-import AppRadio from '@/components/ui/AppRadio.vue';
 import AppMultiSelect from '@/components/ui/AppMultiSelect.vue';
 import AppSegmentedControl from '@/components/ui/AppSegmentedControl.vue';
 
@@ -41,8 +39,6 @@ const localCopySettings = ref({
     yearFounded: true,
     employeeCount: true,
   },
-  selectedTarget: titleTargets[0].value,
-  selectedState: titleStates[0].value,
   prefix: '',
   viewMode: 'text',
   wrapText: false,
@@ -85,7 +81,12 @@ const viewOptions = [
 // Initialize local state from store
 watch(() => copyLeadSettings.value, (val) => {
   if (val) {
-    localCopySettings.value = JSON.parse(JSON.stringify(val));
+    if (val.leadFields) localCopySettings.value.leadFields = JSON.parse(JSON.stringify(val.leadFields));
+    if (val.companyFields) localCopySettings.value.companyFields = JSON.parse(JSON.stringify(val.companyFields));
+    if (val.prefix !== undefined) localCopySettings.value.prefix = val.prefix;
+    if (val.viewMode !== undefined) localCopySettings.value.viewMode = val.viewMode;
+    if (val.wrapText !== undefined) localCopySettings.value.wrapText = val.wrapText;
+    if (val.insightFilters) localCopySettings.value.insightFilters = JSON.parse(JSON.stringify(val.insightFilters));
   }
 }, { immediate: true, deep: true });
 
@@ -97,7 +98,14 @@ watch(() => bulkCopyLeadSettings.value, (val) => {
 
 // Auto-save changes
 watch(localCopySettings, async (newValue) => {
-  await storageService.setLocal({ copyLeadSettings: newValue });
+  if (copyLeadSettings.value) {
+    await storageService.setLocal({
+      copyLeadSettings: {
+        ...copyLeadSettings.value,
+        ...newValue,
+      }
+    });
+  }
 }, { deep: true });
 
 watch(localBulkCopySettings, async (newValue) => {
@@ -181,36 +189,6 @@ watch(localBulkCopySettings, async (newValue) => {
           <AppCheckbox v-model="localBulkCopySettings.leadFields.position.location" label="Location" size="sm" />
           <AppCheckbox v-model="localBulkCopySettings.leadFields.position.startedOn" label="Started On" size="sm" />
           <AppCheckbox v-model="localBulkCopySettings.leadFields.position.description" label="Description" size="sm" />
-        </div>
-      </div>
-    </AppCard>
-
-    <AppCard title="Title Defaults">
-      <div class="settings-column">
-        <span class="group-title">Target</span>
-        <div class="radio-grid">
-          <AppRadio
-            v-for="target in titleTargets"
-            :key="target.value"
-            v-model="localCopySettings.selectedTarget"
-            :value="target.value"
-          >
-            {{ target.emoji }} {{ target.label }}
-          </AppRadio>
-        </div>
-
-        <AppDivider />
-
-        <span class="group-title">State</span>
-        <div class="radio-grid">
-          <AppRadio
-            v-for="state in titleStates"
-            :key="state.value"
-            v-model="localCopySettings.selectedState"
-            :value="state.value"
-          >
-            {{ state.emoji }} {{ state.label }}
-          </AppRadio>
         </div>
       </div>
     </AppCard>
@@ -309,12 +287,6 @@ watch(localBulkCopySettings, async (newValue) => {
 
 .settings-row {
   margin-top: 8px;
-}
-
-.radio-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 8px;
 }
 
 .form-item {
