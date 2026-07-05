@@ -2,7 +2,7 @@
   "name": "linkedin-aid",
   "description": "LinkedIn SN data interceptor & assistant",
   "private": true,
-  "version": "1.9.2",
+  "version": "1.9.3",
   "type": "module",
   "scripts": {
     "dev": "wxt",
