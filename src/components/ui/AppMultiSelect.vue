@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue';
 
 interface Props {
   options: { label: string; value: any }[];
@@ -17,13 +17,53 @@ const modelValue = defineModel<any[]>({ default: () => [] });
 
 const isOpen = ref(false);
 const containerRef = ref<HTMLElement | null>(null);
+const triggerRef = ref<HTMLElement | null>(null);
+const menuRef = ref<HTMLElement | null>(null);
+
+const instanceId = Math.random().toString(36).substring(2, 9);
+const inputId = `multi-select-${instanceId}`;
+
+const dropdownStyle = ref({
+  top: '0px',
+  left: '0px',
+  width: '0px',
+  zIndex: '9999',
+});
+
+const updateDropdownPosition = () => {
+  if (triggerRef.value && isOpen.value) {
+    const rect = triggerRef.value.getBoundingClientRect();
+    dropdownStyle.value = {
+      ...dropdownStyle.value,
+      top: `${rect.bottom + 4}px`,
+      left: `${rect.left}px`,
+      width: `${rect.width}px`,
+    };
+  }
+};
+
+watch(isOpen, async (val) => {
+  if (val) {
+    await nextTick();
+    updateDropdownPosition();
+    window.addEventListener('scroll', updateDropdownPosition, true);
+    window.addEventListener('resize', updateDropdownPosition);
+  } else {
+    window.removeEventListener('scroll', updateDropdownPosition, true);
+    window.removeEventListener('resize', updateDropdownPosition);
+  }
+});
 
 const toggleDropdown = () => {
   isOpen.value = !isOpen.value;
 };
 
 const closeDropdown = (e: MouseEvent) => {
-  if (containerRef.value && !containerRef.value.contains(e.target as Node)) {
+  const target = e.target as Node;
+  const isInsideContainer = containerRef.value?.contains(target);
+  const isInsideMenu = menuRef.value?.contains(target);
+
+  if (!isInsideContainer && !isInsideMenu) {
     isOpen.value = false;
   }
 };
@@ -34,6 +74,8 @@ onMounted(() => {
 
 onUnmounted(() => {
   window.removeEventListener('click', closeDropdown);
+  window.removeEventListener('scroll', updateDropdownPosition, true);
+  window.removeEventListener('resize', updateDropdownPosition);
 });
 
 const isAllSelected = computed(() => {
@@ -76,8 +118,17 @@ const displayText = computed(() => {
 
 <template>
   <div ref="containerRef" class="app-multi-select">
-    <label v-if="label" class="multi-select-label">{{ label }}</label>
-    <div class="dropdown-trigger" :class="{ 'is-open': isOpen }" @click="toggleDropdown">
+    <label v-if="label" :for="inputId" class="multi-select-label">{{ label }}</label>
+    <div
+      ref="triggerRef"
+      :id="inputId"
+      class="dropdown-trigger"
+      :class="{ 'is-open': isOpen }"
+      @click="toggleDropdown"
+      tabindex="0"
+      @keydown.enter.prevent="toggleDropdown"
+      @keydown.space.prevent="toggleDropdown"
+    >
       <span class="display-text">{{ displayText }}</span>
       <span class="chevron" :class="{ 'is-open': isOpen }">
         <svg viewBox="0 0 24 24" width="16" height="16">
@@ -86,36 +137,43 @@ const displayText = computed(() => {
       </span>
     </div>
 
-    <transition name="fade">
-      <div v-if="isOpen" class="dropdown-menu">
-        <div class="dropdown-item select-all" @click.stop="toggleAll">
-          <div class="checkbox-box" :class="{ checked: isAllSelected }">
-            <svg v-if="isAllSelected" viewBox="0 0 24 24" class="check-icon">
-              <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" fill="currentColor" />
-            </svg>
-          </div>
-          <span class="item-label">Select All</span>
-        </div>
-
-        <div class="divider"></div>
-
-        <div class="options-container">
-          <div
-            v-for="opt in options"
-            :key="opt.value"
-            class="dropdown-item"
-            @click.stop="toggleItem(opt.value)"
-          >
-            <div class="checkbox-box" :class="{ checked: modelValue.includes(opt.value) }">
-              <svg v-if="modelValue.includes(opt.value)" viewBox="0 0 24 24" class="check-icon">
+    <teleport to="body">
+      <transition name="fade">
+        <div
+          v-if="isOpen"
+          ref="menuRef"
+          :style="dropdownStyle"
+          class="dropdown-menu"
+        >
+          <div class="dropdown-item select-all" @click.stop="toggleAll">
+            <div class="checkbox-box" :class="{ checked: isAllSelected }">
+              <svg v-if="isAllSelected" viewBox="0 0 24 24" class="check-icon">
                 <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" fill="currentColor" />
               </svg>
             </div>
-            <span class="item-label">{{ opt.label }}</span>
+            <span class="item-label">Select All</span>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="options-container">
+            <div
+              v-for="opt in options"
+              :key="opt.value"
+              class="dropdown-item"
+              @click.stop="toggleItem(opt.value)"
+            >
+              <div class="checkbox-box" :class="{ checked: modelValue.includes(opt.value) }">
+                <svg v-if="modelValue.includes(opt.value)" viewBox="0 0 24 24" class="check-icon">
+                  <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" fill="currentColor" />
+                </svg>
+              </div>
+              <span class="item-label">{{ opt.label }}</span>
+            </div>
           </div>
         </div>
-      </div>
-    </transition>
+      </transition>
+    </teleport>
   </div>
 </template>
 
@@ -175,15 +233,12 @@ const displayText = computed(() => {
 }
 
 .dropdown-menu {
-  position: absolute;
-  top: calc(100% + 4px);
-  left: 0;
-  right: 0;
+  position: fixed;
   background: white;
   border: 1px solid #e2e8f0;
   border-radius: 8px;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  z-index: 50;
+  z-index: 9999;
   max-height: 300px;
   overflow-y: auto;
 }
