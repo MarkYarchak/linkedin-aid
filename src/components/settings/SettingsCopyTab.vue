@@ -354,6 +354,5 @@ watch(localBulkCopySettings, async (newValue) => {
 
 .align-end {
   margin-top: auto;
-  padding-bottom: 4px;
 }
 </style>
