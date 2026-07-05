@@ -16,7 +16,13 @@ const toggle = () => {
 </script>
 
 <template>
-  <label :class="['app-checkbox', `size-${size}`]" @click.prevent="toggle">
+  <label :class="['app-checkbox', `size-${size}`]">
+    <input
+      type="checkbox"
+      class="checkbox-input"
+      :checked="modelValue"
+      @change="toggle"
+    />
     <div :class="['checkbox-box', { checked: modelValue }]">
       <svg v-if="modelValue" viewBox="0 0 24 24" class="check-icon">
         <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" fill="currentColor" />
@@ -36,6 +42,19 @@ const toggle = () => {
   cursor: pointer;
   user-select: none;
   padding: 4px 0;
+  width: fit-content;
+}
+
+.checkbox-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
 }
 
 .app-checkbox.size-sm {
@@ -84,6 +103,11 @@ const toggle = () => {
 .checkbox-box.checked {
   background: #0a66c2;
   border-color: #0a66c2;
+}
+
+.checkbox-input:focus-visible + .checkbox-box {
+  outline: 2px solid #0a66c2;
+  outline-offset: 2px;
 }
 
 .check-icon {
