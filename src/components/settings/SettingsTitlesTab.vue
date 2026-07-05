@@ -77,6 +77,15 @@ const removeState = (index: number) => {
     localSettings.value.selectedState = localSettings.value.titleStates[0]?.value || '';
   }
 };
+
+const resetToDefaults = () => {
+  if (confirm('Are you sure you want to reset all title options to defaults? This will remove your custom entries.')) {
+    localSettings.value.titleTargets = JSON.parse(JSON.stringify(titleTargets));
+    localSettings.value.titleStates = JSON.parse(JSON.stringify(titleStates));
+    localSettings.value.selectedTarget = titleTargets[0].value;
+    localSettings.value.selectedState = titleStates[0].value;
+  }
+};
 </script>
 
 <template>
@@ -136,6 +145,12 @@ const removeState = (index: number) => {
         <button class="add-btn" @click="addState">+ Add State</button>
       </div>
     </AppCard>
+
+    <div class="actions">
+      <button class="reset-btn" @click="resetToDefaults">
+        Reset Titles to Defaults
+      </button>
+    </div>
   </div>
 </template>
 
@@ -227,5 +242,28 @@ const removeState = (index: number) => {
 .add-btn:hover {
   background-color: #f8fafc;
   border-color: #0a66c2;
+}
+
+.actions {
+  margin-top: 8px;
+}
+
+.reset-btn {
+  width: 100%;
+  padding: 10px;
+  background-color: #f8fafc;
+  color: #64748b;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.reset-btn:hover {
+  background-color: #f1f5f9;
+  color: #ef4444;
+  border-color: #fca5a5;
 }
 </style>
