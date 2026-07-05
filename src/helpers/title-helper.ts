@@ -33,9 +33,14 @@ export function generateLeadTitle(params: {
   companyName?: string;
   targetValue: string;
   stateValue: string;
+  customTargets?: TitleTarget[];
+  customStates?: TitleState[];
 }) {
-  const target = titleTargets.find(t => t.value === params.targetValue);
-  const state = titleStates.find(s => s.value === params.stateValue);
+  const targets = params.customTargets || titleTargets;
+  const states = params.customStates || titleStates;
+
+  const target = targets.find(t => t.value === params.targetValue);
+  const state = states.find(s => s.value === params.stateValue);
 
   const targetEmoji = target?.emoji || '🔵';
   const stateEmoji = state?.emoji || '🟡';

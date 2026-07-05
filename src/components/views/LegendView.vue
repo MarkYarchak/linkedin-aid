@@ -1,6 +1,12 @@
 <script lang="ts" setup>
-import { ref } from 'vue';
-import { titleTargets, titleStates } from '@/helpers/title-helper';
+import { ref, computed } from 'vue';
+import { useDataStore } from '@/store/data-store';
+import { titleTargets as defaultTargets, titleStates as defaultStates } from '@/helpers/title-helper';
+
+const { copyLeadSettings } = useDataStore();
+
+const targets = computed(() => copyLeadSettings.value?.titleTargets || defaultTargets);
+const states = computed(() => copyLeadSettings.value?.titleStates || defaultStates);
 
 const copiedValue = ref<string | null>(null);
 
@@ -25,7 +31,7 @@ const copyToClipboard = async (text: string, value: string) => {
       <h3>Title Targets</h3>
       <div class="list">
         <div
-          v-for="target in titleTargets"
+          v-for="target in targets"
           :key="target.value"
           title="Click to copy emoji"
           class="item"
@@ -43,7 +49,7 @@ const copyToClipboard = async (text: string, value: string) => {
       <h3>Title Statuses</h3>
       <div class="list">
         <div
-          v-for="state in titleStates"
+          v-for="state in states"
           :key="state.value"
           title="Click to copy emoji"
           class="item"

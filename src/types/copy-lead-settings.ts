@@ -1,3 +1,5 @@
+import type { TitleTarget, TitleState } from '@/helpers/title-helper';
+
 export interface CopyLeadSettings {
   leadFields: {
     fullName: boolean;
@@ -24,6 +26,8 @@ export interface CopyLeadSettings {
     yearFounded: boolean;
     employeeCount: boolean;
   };
+  titleTargets?: TitleTarget[];
+  titleStates?: TitleState[];
   selectedTarget?: string;
   selectedState?: string;
   prefix?: string;

@@ -3,7 +3,7 @@ import { useDataStore } from '@/store/data-store';
 import { companyService } from '@/services/company-service';
 import { storageService } from '@/services/storage-service';
 import { sanitizeText } from '@/helpers/text-helper';
-import { titleTargets, titleStates, generateLeadTitle } from '@/helpers/title-helper';
+import { titleTargets, titleStates, generateLeadTitle, TitleTarget, TitleState } from '@/helpers/title-helper';
 import { parseLinkedInUrn } from '@/helpers/urn';
 import { getRelativeTime } from '@/helpers/date-helper';
 import type { OptionalDeepReadonly } from '@/types/common';
@@ -117,8 +117,11 @@ export function useCopyLead(lead: OptionalDeepReadonly<Lead>) {
   const titleCopyTimeout = ref<ReturnType<typeof setTimeout> | null>(null);
   const sessionTitle = ref<string | null>(null);
 
-  const selectedTarget = ref(titleTargets[0].value);
-  const selectedState = ref(titleStates[0].value);
+  const targets = computed(() => copyLeadSettings.value?.titleTargets || titleTargets);
+  const states = computed(() => copyLeadSettings.value?.titleStates || titleStates);
+
+  const selectedTarget = ref(targets.value[0]?.value || '');
+  const selectedState = ref(states.value[0]?.value || '');
   const prefix = ref('');
   const wrapText = ref(false);
 
@@ -440,6 +443,8 @@ export function useCopyLead(lead: OptionalDeepReadonly<Lead>) {
       companyName: pos?.companyName,
       targetValue: selectedTarget.value,
       stateValue: selectedState.value,
+      customTargets: targets.value as TitleTarget[],
+      customStates: states.value as TitleState[],
     });
   };
 
@@ -460,6 +465,8 @@ export function useCopyLead(lead: OptionalDeepReadonly<Lead>) {
       companyFields: companyFields.value,
       selectedTarget: selectedTarget.value,
       selectedState: selectedState.value,
+      titleTargets: targets.value as TitleTarget[],
+      titleStates: states.value as TitleState[],
       prefix: prefix.value,
       viewMode: viewMode.value,
       wrapText: wrapText.value,
@@ -564,8 +571,8 @@ export function useCopyLead(lead: OptionalDeepReadonly<Lead>) {
     isCopied,
     isTitleCopied,
     sessionTitle,
-    targets: titleTargets,
-    states: titleStates,
+    targets,
+    states,
     selectedTarget,
     selectedState,
     prefix,
