@@ -5,6 +5,7 @@ import { db } from '@/db/schema';
 import AppCard from '@/components/ui/AppCard.vue';
 import AppDivider from '@/components/ui/AppDivider.vue';
 import AppSegmentedControl from '@/components/ui/AppSegmentedControl.vue';
+import AppCheckbox from '@/components/ui/AppCheckbox.vue';
 import LeadPreviewList from '@/components/leads/LeadPreviewList.vue';
 import CompanyPreview from '@/components/companies/CompanyPreview.vue';
 
@@ -18,17 +19,84 @@ const companies = computed(() => Object.values(companiesMap.value).sort((a, b) =
 
 const activeTab = ref('leads');
 
+const selectedLeadUrns = ref(new Set<string>());
+const selectedCompanyUrns = ref(new Set<string>());
+
+const toggleLeadSelection = (urn: string, selected: boolean) => {
+  const next = new Set(selectedLeadUrns.value);
+  if (selected) {
+    next.add(urn);
+  } else {
+    next.delete(urn);
+  }
+  selectedLeadUrns.value = next;
+};
+
+const toggleCompanySelection = (urn: string, selected: boolean) => {
+  const next = new Set(selectedCompanyUrns.value);
+  if (selected) {
+    next.add(urn);
+  } else {
+    next.delete(urn);
+  }
+  selectedCompanyUrns.value = next;
+};
+
+const allLeadsSelected = computed({
+  get: () => leadsCount.value > 0 && selectedLeadUrns.value.size === leadsCount.value,
+  set: (val) => {
+    if (val) {
+      selectedLeadUrns.value = new Set(leads.value.map(l => l.entityUrn));
+    } else {
+      selectedLeadUrns.value = new Set();
+    }
+  }
+});
+
+const allCompaniesSelected = computed({
+  get: () => companiesCount.value > 0 && selectedCompanyUrns.value.size === companiesCount.value,
+  set: (val) => {
+    if (val) {
+      selectedCompanyUrns.value = new Set(companies.value.map(c => c.entityUrn));
+    } else {
+      selectedCompanyUrns.value = new Set();
+    }
+  }
+});
+
 const clearLeads = async () => {
   if (confirm('Are you sure you want to clear all stored leads?')) {
     await db.leads.clear();
+    selectedLeadUrns.value = new Set();
     alert('Leads cleared.');
+  }
+};
+
+const clearSelectedLeads = async () => {
+  const urns = Array.from(selectedLeadUrns.value);
+  if (urns.length === 0) return;
+  if (confirm(`Are you sure you want to clear ${urns.length} selected leads?`)) {
+    await db.leads.bulkDelete(urns);
+    selectedLeadUrns.value = new Set();
+    alert('Selected leads cleared.');
   }
 };
 
 const clearCompanies = async () => {
   if (confirm('Are you sure you want to clear all stored companies?')) {
     await db.companies.clear();
+    selectedCompanyUrns.value = new Set();
     alert('Companies cleared.');
+  }
+};
+
+const clearSelectedCompanies = async () => {
+  const urns = Array.from(selectedCompanyUrns.value);
+  if (urns.length === 0) return;
+  if (confirm(`Are you sure you want to clear ${urns.length} selected companies?`)) {
+    await db.companies.bulkDelete(urns);
+    selectedCompanyUrns.value = new Set();
+    alert('Selected companies cleared.');
   }
 };
 </script>
@@ -48,13 +116,26 @@ const clearCompanies = async () => {
 
       <div v-if="activeTab === 'leads'" class="nested-tab-content">
         <div class="actions mb-3">
+          <AppCheckbox v-model="allLeadsSelected" label="Select All" />
+          <div class="flex-spacer"></div>
+          <button
+            class="danger-button outline"
+            :disabled="selectedLeadUrns.size === 0"
+            @click="clearSelectedLeads"
+          >
+            Clear Selected ({{ selectedLeadUrns.size }})
+          </button>
           <button class="danger-button" :disabled="leadsCount === 0" @click="clearLeads">
-            Clear All Leads
+            Clear All
           </button>
         </div>
 
         <div v-if="leads.length > 0" class="entity-list">
-          <LeadPreviewList :leads="leads" />
+          <LeadPreviewList
+            :leads="leads"
+            :selected-urns="selectedLeadUrns"
+            @update:selected="toggleLeadSelection"
+          />
         </div>
         <div v-else class="empty-state">
           No leads stored.
@@ -63,15 +144,30 @@ const clearCompanies = async () => {
 
       <div v-else-if="activeTab === 'companies'" class="nested-tab-content">
         <div class="actions mb-3">
+          <AppCheckbox v-model="allCompaniesSelected" label="Select All" />
+          <div class="flex-spacer"></div>
+          <button
+            class="danger-button outline"
+            :disabled="selectedCompanyUrns.size === 0"
+            @click="clearSelectedCompanies"
+          >
+            Clear Selected ({{ selectedCompanyUrns.size }})
+          </button>
           <button class="danger-button" :disabled="companiesCount === 0" @click="clearCompanies">
-            Clear All Companies
+            Clear All
           </button>
         </div>
 
         <div v-if="companies.length > 0" class="entity-list">
           <div class="company-list">
             <div v-for="company in companies" :key="company.entityUrn" class="company-item">
-              <CompanyPreview :company="company" />
+              <CompanyPreview
+                :company="company"
+                selectable
+                dense
+                :selected="selectedCompanyUrns.has(company.entityUrn)"
+                @update:selected="(val) => toggleCompanySelection(company.entityUrn, val)"
+              />
               <AppDivider v-if="company !== companies[companies.length - 1]" />
             </div>
           </div>
@@ -107,32 +203,46 @@ const clearCompanies = async () => {
 .actions {
   display: flex;
   gap: 8px;
+  align-items: center;
+}
+
+.flex-spacer {
+  flex: 1;
 }
 
 .danger-button {
   background-color: #ff4d4f;
   color: white;
-  border: none;
-  padding: 8px 16px;
+  border: 1px solid #ff4d4f;
+  padding: 6px 12px;
   border-radius: 4px;
   cursor: pointer;
-  width: 100%;
-  font-weight: bold;
+  font-weight: 600;
+  font-size: 0.9em;
+  transition: all 0.2s;
+}
+
+.danger-button.outline {
+  background-color: transparent;
+  color: #ff4d4f;
 }
 
 .danger-button:hover:not(:disabled) {
   background-color: #ff7875;
+  border-color: #ff7875;
+  color: white;
 }
 
 .danger-button:disabled {
   background-color: #ffa39e;
+  border-color: #ffa39e;
   cursor: not-allowed;
 }
 
-.entity-list {
-  padding: 4px;
-  border: 1px solid #f0f0f0;
-  border-radius: 4px;
+.danger-button.outline:disabled {
+  background-color: transparent;
+  color: #ffa39e;
+  border-color: #ffa39e;
 }
 
 .company-list {
