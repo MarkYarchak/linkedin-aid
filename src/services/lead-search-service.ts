@@ -73,8 +73,8 @@ export class LeadSearchService {
           personaId = personaMatch[1];
         }
 
-      const storage = await storageService.getSession('searchSessions');
-      const sessions: Record<string, SearchSession> = (storage.searchSessions || {}) as Record<string, SearchSession>;
+        const storage = await storageService.getSession('searchSessions');
+        const sessions: Record<string, SearchSession> = (storage.searchSessions || {}) as Record<string, SearchSession>;
 
         const session = sessions[sessionKey] || {
           query: apiQuery,
