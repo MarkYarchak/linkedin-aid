@@ -24,6 +24,11 @@ const selectedCompanyUrns = ref(new Set<string>());
 
 const isCompaniesDense = ref(true);
 
+const companyViewMode = computed({
+  get: () => isCompaniesDense.value ? 'dense' : 'detailed',
+  set: (val) => isCompaniesDense.value = val === 'dense'
+});
+
 const toggleLeadSelection = (urn: string, selected: boolean) => {
   const next = new Set(selectedLeadUrns.value);
   if (selected) {
@@ -147,7 +152,18 @@ const clearSelectedCompanies = async () => {
       <div v-else-if="activeTab === 'companies'" class="nested-tab-content">
         <div class="actions mb-3">
           <AppCheckbox v-model="allCompaniesSelected" label="Select All" />
-          <AppCheckbox v-model="isCompaniesDense" label="Dense View" />
+
+          <div class="view-options">
+            <span class="view-label">View:</span>
+            <AppSegmentedControl
+              v-model="companyViewMode"
+              :options="[
+                { label: 'Compact', value: 'dense' },
+                { label: 'Detailed', value: 'detailed' }
+              ]"
+            />
+          </div>
+
           <div class="flex-spacer"></div>
           <button
             class="danger-button outline"
@@ -211,6 +227,20 @@ const clearSelectedCompanies = async () => {
 
 .flex-spacer {
   flex: 1;
+}
+
+.view-options {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-left: 8px;
+  border-left: 1px solid #eee;
+}
+
+.view-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #64748b;
 }
 
 .danger-button {
