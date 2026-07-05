@@ -8,6 +8,10 @@ export default defineConfig({
     description: 'LinkedIn SN data interceptor & assistant',
     permissions: ['scripting', 'storage', 'tabs'],
     host_permissions: ['*://*.linkedin.com/*'],
+    options_ui: {
+      page: 'settings.html',
+      open_in_tab: true,
+    },
   },
   modules: ['@wxt-dev/module-vue'],
 });
