@@ -3,7 +3,7 @@ import { ref, watch } from 'vue';
 import { useDataStore } from '@/store/data-store';
 import { storageService } from '@/services/storage-service';
 import { titleTargets, titleStates } from '@/helpers/title-helper';
-import AppPreviewBox from '@/components/ui/AppPreviewBox.vue';
+import AppCard from '@/components/ui/AppCard.vue';
 import AppDivider from '@/components/ui/AppDivider.vue';
 import AppCheckbox from '@/components/ui/AppCheckbox.vue';
 import AppRadio from '@/components/ui/AppRadio.vue';
@@ -107,10 +107,7 @@ watch(localBulkCopySettings, async (newValue) => {
 
 <template>
   <div class="tab-content">
-    <AppPreviewBox>
-      <template #header>
-        <span class="section-title">Single Lead Copy Fields</span>
-      </template>
+    <AppCard title="Single Lead Copy Fields">
       <div class="settings-grid">
         <div class="settings-group">
           <span class="group-title">Lead Info</span>
@@ -162,12 +159,9 @@ watch(localBulkCopySettings, async (newValue) => {
           display-mode="labels"
         />
       </div>
-    </AppPreviewBox>
+    </AppCard>
 
-    <AppPreviewBox>
-      <template #header>
-        <span class="section-title">Bulk Copy Fields</span>
-      </template>
+    <AppCard title="Bulk Copy Fields">
       <div class="settings-grid">
         <div class="settings-group">
           <span class="group-title">Lead Info</span>
@@ -189,12 +183,9 @@ watch(localBulkCopySettings, async (newValue) => {
           <AppCheckbox v-model="localBulkCopySettings.leadFields.position.description" label="Description" size="sm" />
         </div>
       </div>
-    </AppPreviewBox>
+    </AppCard>
 
-    <AppPreviewBox>
-      <template #header>
-        <span class="section-title">Title Defaults</span>
-      </template>
+    <AppCard title="Title Defaults">
       <div class="settings-column">
         <span class="group-title">Target</span>
         <div class="radio-grid">
@@ -222,12 +213,9 @@ watch(localBulkCopySettings, async (newValue) => {
           </AppRadio>
         </div>
       </div>
-    </AppPreviewBox>
+    </AppCard>
 
-    <AppPreviewBox>
-      <template #header>
-        <span class="section-title">Single Copy Preferences</span>
-      </template>
+    <AppCard title="Single Copy Preferences">
       <div class="settings-column">
         <div class="form-item">
           <label class="item-label">Default Prefix</label>
@@ -252,12 +240,9 @@ watch(localBulkCopySettings, async (newValue) => {
           </div>
         </div>
       </div>
-    </AppPreviewBox>
+    </AppCard>
 
-    <AppPreviewBox>
-      <template #header>
-        <span class="section-title">Bulk Copy Preferences</span>
-      </template>
+    <AppCard title="Bulk Copy Preferences">
       <div class="settings-column">
         <div class="form-item">
           <label class="item-label">Default Prefix</label>
@@ -282,7 +267,7 @@ watch(localBulkCopySettings, async (newValue) => {
           </div>
         </div>
       </div>
-    </AppPreviewBox>
+    </AppCard>
   </div>
 </template>
 
@@ -291,11 +276,6 @@ watch(localBulkCopySettings, async (newValue) => {
   display: flex;
   flex-direction: column;
   gap: 16px;
-}
-
-.section-title {
-  font-weight: bold;
-  color: #333;
 }
 
 .settings-grid {

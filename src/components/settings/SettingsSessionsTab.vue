@@ -2,7 +2,7 @@
 import { computed } from 'vue';
 import { browser } from 'wxt/browser';
 import { useDataStore } from '@/store/data-store';
-import AppPreviewBox from '@/components/ui/AppPreviewBox.vue';
+import AppCard from '@/components/ui/AppCard.vue';
 import AppDivider from '@/components/ui/AppDivider.vue';
 
 const { sessionsMap, personasStorage, leadTitles } = useDataStore();
@@ -25,10 +25,7 @@ const clearSessionData = async () => {
 
 <template>
   <div class="tab-content">
-    <AppPreviewBox>
-      <template #header>
-        <span class="section-title">Session Management</span>
-      </template>
+    <AppCard title="Session Management">
       <div class="data-stats">
         <div class="stat-item">
           <span class="label">Search Sessions:</span>
@@ -51,7 +48,7 @@ const clearSessionData = async () => {
           Clear Session Data
         </button>
       </div>
-    </AppPreviewBox>
+    </AppCard>
   </div>
 </template>
 
@@ -60,11 +57,6 @@ const clearSessionData = async () => {
   display: flex;
   flex-direction: column;
   gap: 16px;
-}
-
-.section-title {
-  font-weight: bold;
-  color: #333;
 }
 
 .data-stats {

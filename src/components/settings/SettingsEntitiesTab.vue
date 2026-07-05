@@ -2,7 +2,7 @@
 import { computed } from 'vue';
 import { useDataStore } from '@/store/data-store';
 import { db } from '@/db/schema';
-import AppPreviewBox from '@/components/ui/AppPreviewBox.vue';
+import AppCard from '@/components/ui/AppCard.vue';
 import AppDivider from '@/components/ui/AppDivider.vue';
 
 const { leadsMap, companiesMap } = useDataStore();
@@ -21,10 +21,7 @@ const clearData = async () => {
 
 <template>
   <div class="tab-content">
-    <AppPreviewBox>
-      <template #header>
-        <span class="section-title">Entities Management</span>
-      </template>
+    <AppCard title="Entities Management">
       <div class="data-stats">
         <div class="stat-item">
           <span class="label">Stored Leads:</span>
@@ -43,7 +40,7 @@ const clearData = async () => {
           Clear Leads & Companies
         </button>
       </div>
-    </AppPreviewBox>
+    </AppCard>
   </div>
 </template>
 
@@ -52,11 +49,6 @@ const clearData = async () => {
   display: flex;
   flex-direction: column;
   gap: 16px;
-}
-
-.section-title {
-  font-weight: bold;
-  color: #333;
 }
 
 .data-stats {

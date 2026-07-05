@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { browser } from 'wxt/browser';
-import AppPreviewBox from '@/components/ui/AppPreviewBox.vue';
+import AppCard from '@/components/ui/AppCard.vue';
 
 const resetSettings = async () => {
   if (confirm('Are you sure you want to reset all settings?')) {
@@ -12,35 +12,25 @@ const resetSettings = async () => {
 
 <template>
   <div class="tab-content">
-    <AppPreviewBox>
-      <template #header>
-        <span class="section-title">Profile</span>
-      </template>
+    <AppCard title="Profile">
       <div class="placeholder-content">
         Profile settings will be available here soon.
       </div>
-    </AppPreviewBox>
+    </AppCard>
 
-    <AppPreviewBox>
-      <template #header>
-        <span class="section-title">Subscription</span>
-      </template>
+    <AppCard title="Subscription">
       <div class="placeholder-content">
         Subscription management will be available here soon.
       </div>
-    </AppPreviewBox>
+    </AppCard>
 
-    <AppPreviewBox>
-      <template #header>
-        <span class="section-title">Maintenance</span>
-      </template>
-      
+    <AppCard title="Maintenance">
       <div class="actions">
         <button class="secondary-button" @click="resetSettings">
           Reset All Settings
         </button>
       </div>
-    </AppPreviewBox>
+    </AppCard>
   </div>
 </template>
 
@@ -49,11 +39,6 @@ const resetSettings = async () => {
   display: flex;
   flex-direction: column;
   gap: 16px;
-}
-
-.section-title {
-  font-weight: bold;
-  color: #333;
 }
 
 .placeholder-content {
