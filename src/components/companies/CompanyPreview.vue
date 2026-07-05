@@ -23,6 +23,8 @@ const isExpanded = ref(false);
 const isTruncated = ref(false);
 const descriptionRef = ref<HTMLElement | null>(null);
 
+const isCurrentlyDense = computed(() => props.dense && !isExpanded.value);
+
 const toggleExpand = () => {
   isExpanded.value = !isExpanded.value;
 };
@@ -35,13 +37,20 @@ const checkTruncation = () => {
 };
 
 onMounted(() => {
-  if (!props.dense) {
+  if (!isCurrentlyDense.value) {
+    checkTruncation();
+  }
+});
+
+watch(isCurrentlyDense, async (val) => {
+  if (!val) {
+    await nextTick();
     checkTruncation();
   }
 });
 
 watch(() => props.company.main?.description, async () => {
-  if (!props.dense) {
+  if (!isCurrentlyDense.value) {
     await nextTick();
     checkTruncation();
   }
@@ -68,8 +77,12 @@ const revenueRangeString = computed(() => {
 </script>
 
 <template>
-  <div class="company-info" :class="{ selected: selected, 'is-dense': dense }">
-    <div v-if="dense" class="dense-view">
+  <div
+    class="company-info"
+    :class="{ selected: selected, 'is-dense': isCurrentlyDense }"
+    @click="toggleExpand"
+  >
+    <div v-if="isCurrentlyDense" class="dense-view">
       <div v-if="selectable" class="selection-area">
         <AppCheckbox v-model="selected" @click.stop />
       </div>
@@ -97,7 +110,7 @@ const revenueRangeString = computed(() => {
         <strong>Location:</strong> {{ company.main?.location || 'N/A' }}
       </div>
       <div class="info-row" v-if="company.main?.website">
-        <strong>Website:</strong> <a :href="company.main.website" target="_blank">{{ company.main.website }}</a>
+        <strong>Website:</strong> <a :href="company.main.website" target="_blank" @click.stop>{{ company.main.website }}</a>
       </div>
       <div class="info-row" v-if="company.extra?.employeeDisplayCount">
         <strong>Headcount:</strong> {{ company.extra.employeeDisplayCount }} employees
@@ -116,7 +129,7 @@ const revenueRangeString = computed(() => {
         <button
           v-if="isTruncated || isExpanded"
           class="toggle-button"
-          @click="toggleExpand"
+          @click.stop="toggleExpand"
         >
           {{ isExpanded ? 'Show less' : 'Show more' }}
         </button>
@@ -130,10 +143,19 @@ const revenueRangeString = computed(() => {
   padding: 4px 4px 12px;
   transition: background-color 0.2s;
   border-radius: 8px;
+  cursor: pointer;
+}
+
+.company-info:hover {
+  background-color: #f9f9f9;
 }
 
 .company-info.selected {
   background-color: #f0f7ff;
+}
+
+.company-info.selected:hover {
+  background-color: #e1efff;
 }
 
 .company-info.is-dense {

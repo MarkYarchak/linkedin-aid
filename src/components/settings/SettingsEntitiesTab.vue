@@ -22,6 +22,8 @@ const activeTab = ref('leads');
 const selectedLeadUrns = ref(new Set<string>());
 const selectedCompanyUrns = ref(new Set<string>());
 
+const isCompaniesDense = ref(true);
+
 const toggleLeadSelection = (urn: string, selected: boolean) => {
   const next = new Set(selectedLeadUrns.value);
   if (selected) {
@@ -145,6 +147,7 @@ const clearSelectedCompanies = async () => {
       <div v-else-if="activeTab === 'companies'" class="nested-tab-content">
         <div class="actions mb-3">
           <AppCheckbox v-model="allCompaniesSelected" label="Select All" />
+          <AppCheckbox v-model="isCompaniesDense" label="Dense View" />
           <div class="flex-spacer"></div>
           <button
             class="danger-button outline"
@@ -164,7 +167,7 @@ const clearSelectedCompanies = async () => {
               <CompanyPreview
                 :company="company"
                 selectable
-                dense
+                :dense="isCompaniesDense"
                 :selected="selectedCompanyUrns.has(company.entityUrn)"
                 @update:selected="(val) => toggleCompanySelection(company.entityUrn, val)"
               />
