@@ -24,19 +24,6 @@ onMounted(() => {
 </template>
 
 <style>
-:root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
-  color: #213547;
-  background-color: #f6f6f6;
-}
-
-body {
-  margin: 0;
-  min-height: 100vh;
-}
-
 .loading {
   display: flex;
   justify-content: center;
@@ -69,3 +56,4 @@ body {
   min-height: 500px;
 }
 </style>
+
