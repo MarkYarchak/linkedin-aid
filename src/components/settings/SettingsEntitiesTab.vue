@@ -1,20 +1,34 @@
 <script lang="ts" setup>
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { useDataStore } from '@/store/data-store';
 import { db } from '@/db/schema';
 import AppCard from '@/components/ui/AppCard.vue';
 import AppDivider from '@/components/ui/AppDivider.vue';
+import AppSegmentedControl from '@/components/ui/AppSegmentedControl.vue';
+import LeadPreviewList from '@/components/leads/LeadPreviewList.vue';
+import CompanyPreview from '@/components/companies/CompanyPreview.vue';
 
 const { leadsMap, companiesMap } = useDataStore();
 
 const leadsCount = computed(() => Object.keys(leadsMap.value).length);
 const companiesCount = computed(() => Object.keys(companiesMap.value).length);
 
-const clearData = async () => {
-  if (confirm('Are you sure you want to clear all stored leads and companies?')) {
+const leads = computed(() => Object.values(leadsMap.value).sort((a, b) => b.updatedAt - a.updatedAt));
+const companies = computed(() => Object.values(companiesMap.value).sort((a, b) => b.updatedAt - a.updatedAt));
+
+const activeTab = ref('leads');
+
+const clearLeads = async () => {
+  if (confirm('Are you sure you want to clear all stored leads?')) {
     await db.leads.clear();
+    alert('Leads cleared.');
+  }
+};
+
+const clearCompanies = async () => {
+  if (confirm('Are you sure you want to clear all stored companies?')) {
     await db.companies.clear();
-    alert('Leads and companies cleared.');
+    alert('Companies cleared.');
   }
 };
 </script>
@@ -22,23 +36,49 @@ const clearData = async () => {
 <template>
   <div class="tab-content">
     <AppCard title="Entities Management">
-      <div class="data-stats">
-        <div class="stat-item">
-          <span class="label">Stored Leads:</span>
-          <span class="value">{{ leadsCount }}</span>
+      <div class="mb-4">
+        <AppSegmentedControl
+          v-model="activeTab"
+          :options="[
+            { label: `Leads (${leadsCount})`, value: 'leads' },
+            { label: `Companies (${companiesCount})`, value: 'companies' }
+          ]"
+        />
+      </div>
+
+      <div v-if="activeTab === 'leads'" class="nested-tab-content">
+        <div class="actions mb-3">
+          <button class="danger-button" :disabled="leadsCount === 0" @click="clearLeads">
+            Clear All Leads
+          </button>
         </div>
-        <div class="stat-item">
-          <span class="label">Stored Companies:</span>
-          <span class="value">{{ companiesCount }}</span>
+
+        <div v-if="leads.length > 0" class="entity-list">
+          <LeadPreviewList :leads="leads" />
+        </div>
+        <div v-else class="empty-state">
+          No leads stored.
         </div>
       </div>
 
-      <AppDivider />
+      <div v-else-if="activeTab === 'companies'" class="nested-tab-content">
+        <div class="actions mb-3">
+          <button class="danger-button" :disabled="companiesCount === 0" @click="clearCompanies">
+            Clear All Companies
+          </button>
+        </div>
 
-      <div class="actions">
-        <button class="danger-button" @click="clearData">
-          Clear Leads & Companies
-        </button>
+        <div v-if="companies.length > 0" class="entity-list">
+          <div class="company-list">
+            <div v-for="company in companies" :key="company.entityUrn" class="company-item">
+              <CompanyPreview :company="company" />
+              <AppDivider v-if="company !== companies[companies.length - 1]" />
+            </div>
+          </div>
+        </div>
+        <div v-else class="empty-state">
+          No companies stored.
+        </div>
       </div>
     </AppCard>
   </div>
@@ -51,31 +91,22 @@ const clearData = async () => {
   gap: 16px;
 }
 
-.data-stats {
+.nested-tab-content {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+}
+
+.mb-4 {
+  margin-bottom: 16px;
+}
+
+.mb-3 {
   margin-bottom: 12px;
-}
-
-.stat-item {
-  display: flex;
-  justify-content: space-between;
-}
-
-.label {
-  color: #666;
-}
-
-.value {
-  font-weight: bold;
 }
 
 .actions {
   display: flex;
-  flex-direction: column;
   gap: 8px;
-  margin-top: 12px;
 }
 
 .danger-button {
@@ -89,7 +120,35 @@ const clearData = async () => {
   font-weight: bold;
 }
 
-.danger-button:hover {
+.danger-button:hover:not(:disabled) {
   background-color: #ff7875;
+}
+
+.danger-button:disabled {
+  background-color: #ffa39e;
+  cursor: not-allowed;
+}
+
+.entity-list {
+  padding: 4px;
+  border: 1px solid #f0f0f0;
+  border-radius: 4px;
+}
+
+.company-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.company-item {
+  padding: 8px 0;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 24px;
+  color: #999;
+  background: #fafafa;
+  border-radius: 4px;
 }
 </style>
