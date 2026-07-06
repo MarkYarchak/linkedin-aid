@@ -25,7 +25,7 @@ const title = computed(() => props.session.searchTitle || props.session.id);
 </script>
 
 <template>
-  <div class="session-preview" :class="{ selected }">
+  <div class="search-preview" :class="{ selected }">
     <div v-if="selectable" class="selection-area">
       <AppCheckbox v-model="selected" @click.stop />
     </div>
@@ -47,7 +47,7 @@ const title = computed(() => props.session.searchTitle || props.session.id);
 </template>
 
 <style scoped>
-.session-preview {
+.search-preview {
   display: flex;
   gap: 12px;
   padding: 12px;
@@ -55,11 +55,11 @@ const title = computed(() => props.session.searchTitle || props.session.id);
   transition: background-color 0.2s;
 }
 
-.session-preview:hover {
+.search-preview:hover {
   background-color: #f9f9f9;
 }
 
-.session-preview.selected {
+.search-preview.selected {
   background-color: #f0f7ff;
 }
 

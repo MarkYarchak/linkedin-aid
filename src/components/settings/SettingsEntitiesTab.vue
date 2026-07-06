@@ -179,7 +179,7 @@ const clearSessions = async () => {
   if (confirm('Are you sure you want to clear all stored search sessions?')) {
     await db.searchSessions.clear();
     selectedSessionIds.value = new Set();
-    alert('Sessions cleared.');
+    alert('Search sessions cleared.');
   }
 };
 
@@ -189,7 +189,7 @@ const clearSelectedSessions = async () => {
   if (confirm(`Are you sure you want to clear ${ids.length} selected search sessions?`)) {
     await db.searchSessions.bulkDelete(ids);
     selectedSessionIds.value = new Set();
-    alert('Selected sessions cleared.');
+    alert('Selected search sessions cleared.');
   }
 };
 </script>
@@ -203,7 +203,7 @@ const clearSelectedSessions = async () => {
           :options="[
             { label: `Leads (${leadsCount})`, value: 'leads' },
             { label: `Companies (${companiesCount})`, value: 'companies' },
-            { label: `Sessions (${sessionsCount})`, value: 'sessions' }
+            { label: `Search sessions (${sessionsCount})`, value: 'sessions' }
           ]"
         />
       </div>
