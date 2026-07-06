@@ -1,21 +1,51 @@
 <script lang="ts" setup>
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useDataStore } from '@/store/data-store';
 import { db } from '@/db/schema';
 import AppCard from '@/components/ui/AppCard.vue';
 import AppDivider from '@/components/ui/AppDivider.vue';
 import AppSegmentedControl from '@/components/ui/AppSegmentedControl.vue';
 import AppCheckbox from '@/components/ui/AppCheckbox.vue';
+import AppPagination from '@/components/ui/AppPagination.vue';
 import LeadPreviewList from '@/components/leads/LeadPreviewList.vue';
 import CompanyPreview from '@/components/companies/CompanyPreview.vue';
 
 const { leadsMap, companiesMap } = useDataStore();
+
+const PAGE_SIZE = 50;
 
 const leadsCount = computed(() => Object.keys(leadsMap.value).length);
 const companiesCount = computed(() => Object.keys(companiesMap.value).length);
 
 const leads = computed(() => Object.values(leadsMap.value).sort((a, b) => b.updatedAt - a.updatedAt));
 const companies = computed(() => Object.values(companiesMap.value).sort((a, b) => b.updatedAt - a.updatedAt));
+
+const leadsPage = ref(1);
+const companiesPage = ref(1);
+
+const paginatedLeads = computed(() => {
+  const start = (leadsPage.value - 1) * PAGE_SIZE;
+  return leads.value.slice(start, start + PAGE_SIZE);
+});
+
+const paginatedCompanies = computed(() => {
+  const start = (companiesPage.value - 1) * PAGE_SIZE;
+  return companies.value.slice(start, start + PAGE_SIZE);
+});
+
+watch(leadsCount, (newCount) => {
+  const maxPage = Math.max(1, Math.ceil(newCount / PAGE_SIZE));
+  if (leadsPage.value > maxPage) {
+    leadsPage.value = maxPage;
+  }
+});
+
+watch(companiesCount, (newCount) => {
+  const maxPage = Math.max(1, Math.ceil(newCount / PAGE_SIZE));
+  if (companiesPage.value > maxPage) {
+    companiesPage.value = maxPage;
+  }
+});
 
 const activeTab = ref('leads');
 
@@ -139,9 +169,15 @@ const clearSelectedCompanies = async () => {
 
         <div v-if="leads.length > 0" class="entity-list">
           <LeadPreviewList
-            :leads="leads"
+            :leads="paginatedLeads"
             :selected-urns="selectedLeadUrns"
             @update:selected="toggleLeadSelection"
+          />
+
+          <AppPagination
+            v-model="leadsPage"
+            :total-items="leadsCount"
+            :page-size="PAGE_SIZE"
           />
         </div>
         <div v-else class="empty-state">
@@ -179,7 +215,7 @@ const clearSelectedCompanies = async () => {
 
         <div v-if="companies.length > 0" class="entity-list">
           <div class="company-list">
-            <template v-for="company in companies" :key="company.entityUrn">
+            <template v-for="company in paginatedCompanies" :key="company.entityUrn">
               <CompanyPreview
                 :company="company"
                 selectable
@@ -187,9 +223,15 @@ const clearSelectedCompanies = async () => {
                 :selected="selectedCompanyUrns.has(company.entityUrn)"
                 @update:selected="(val) => toggleCompanySelection(company.entityUrn, val)"
               />
-              <AppDivider v-if="company !== companies[companies.length - 1]" class="my-1" />
+              <AppDivider v-if="company !== paginatedCompanies[paginatedCompanies.length - 1]" class="my-1" />
             </template>
           </div>
+
+          <AppPagination
+            v-model="companiesPage"
+            :total-items="companiesCount"
+            :page-size="PAGE_SIZE"
+          />
         </div>
         <div v-else class="empty-state">
           No companies stored.
