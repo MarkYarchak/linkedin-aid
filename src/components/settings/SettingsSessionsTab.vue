@@ -1,49 +1,154 @@
 <script lang="ts" setup>
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { browser } from 'wxt/browser';
 import { useDataStore } from '@/store/data-store';
 import AppCard from '@/components/ui/AppCard.vue';
-import AppDivider from '@/components/ui/AppDivider.vue';
+import AppSegmentedControl from '@/components/ui/AppSegmentedControl.vue';
+import IconCross from '@/components/icons/IconCross.vue';
 
-const { personasStorage, leadTitles } = useDataStore();
+const { personasStorage, leadTitles, leadsMap } = useDataStore();
+
+const activeSubTab = ref('personas');
+const subTabs = [
+  { label: 'Personas', value: 'personas' },
+  { label: 'Lead Titles', value: 'lead_titles' },
+];
 
 const personasCount = computed(() => {
   const general = personasStorage.value.general.length;
   const byCompany = Object.values(personasStorage.value.byCompany).reduce((acc, val) => acc + val.length, 0);
   return general + byCompany;
 });
+
 const leadTitlesCount = computed(() => Object.keys(leadTitles.value).length);
 
-const clearSessionData = async () => {
-  if (confirm('Are you sure you want to clear session data (personas and lead titles)?')) {
-    await browser.storage.session.remove(['personas', 'lead_titles']);
-    alert('Session data cleared.');
+const allPersonas = computed(() => {
+  const list: { name: string, urn: string, type: string }[] = [];
+
+  personasStorage.value.general.forEach(p => {
+    list.push({ name: p.personaName, urn: p.personaUrn, type: 'General' });
+  });
+
+  Object.entries(personasStorage.value.byCompany).forEach(([companyUrn, personas]) => {
+    personas.forEach(p => {
+      list.push({ name: p.personaName, urn: p.personaUrn, type: `Company ${companyUrn.split(':').pop()}` });
+    });
+  });
+
+  return list;
+});
+
+const leadTitlesList = computed(() => {
+  return Object.entries(leadTitles.value).map(([urn, title]) => {
+    const lead = leadsMap.value[urn];
+    return {
+      urn,
+      title,
+      name: lead ? `${lead.main?.fullName || lead.searchResult?.fullName}` : urn.split(':').pop() || urn,
+    };
+  });
+});
+
+const removePersona = async (urn: string) => {
+  const newStorage = JSON.parse(JSON.stringify(personasStorage.value));
+
+  // Remove from general
+  newStorage.general = newStorage.general.filter((p: any) => p.personaUrn !== urn);
+
+  // Remove from byCompany
+  Object.keys(newStorage.byCompany).forEach(companyUrn => {
+    newStorage.byCompany[companyUrn] = newStorage.byCompany[companyUrn].filter((p: any) => p.personaUrn !== urn);
+    if (newStorage.byCompany[companyUrn].length === 0) {
+      delete newStorage.byCompany[companyUrn];
+    }
+  });
+
+  await browser.storage.session.set({ personas: newStorage });
+};
+
+const removeLeadTitle = async (urn: string) => {
+  const newTitles = { ...leadTitles.value };
+  delete newTitles[urn];
+  await browser.storage.session.set({ lead_titles: newTitles });
+};
+
+const clearPersonas = async () => {
+  if (confirm('Are you sure you want to clear all stored personas?')) {
+    await browser.storage.session.remove(['personas']);
+  }
+};
+
+const clearLeadTitles = async () => {
+  if (confirm('Are you sure you want to clear all stored lead titles?')) {
+    await browser.storage.session.remove(['lead_titles']);
   }
 };
 </script>
 
 <template>
   <div class="tab-content">
-    <AppCard title="Session Management">
-      <div class="data-stats">
-        <div class="stat-item">
-          <span class="label">Stored Personas:</span>
-          <span class="value">{{ personasCount }}</span>
-        </div>
-        <div class="stat-item">
-          <span class="label">Stored Lead Titles:</span>
-          <span class="value">{{ leadTitlesCount }}</span>
-        </div>
-      </div>
+    <AppSegmentedControl
+      v-model="activeSubTab"
+      :options="subTabs"
+    />
 
-      <AppDivider />
+    <div v-if="activeSubTab === 'personas'" class="sub-tab-content">
+      <AppCard>
+        <template #header>
+          <div class="card-header-content">
+            <h3 class="card-title">Stored Personas ({{ personasCount }})</h3>
+            <button v-if="personasCount > 0" class="clear-btn" @click="clearPersonas">
+              Clear All
+            </button>
+          </div>
+        </template>
 
-      <div class="actions">
-        <button class="secondary-button" @click="clearSessionData">
-          Clear Session Data
-        </button>
-      </div>
-    </AppCard>
+        <div v-if="allPersonas.length === 0" class="empty-state">
+          No personas stored in current session.
+        </div>
+
+        <div v-else class="items-list">
+          <div v-for="persona in allPersonas" :key="persona.urn" class="item-row">
+            <div class="item-info">
+              <span class="item-name">{{ persona.name }}</span>
+              <span class="item-meta">{{ persona.type }}</span>
+            </div>
+            <button class="remove-item-btn" @click="removePersona(persona.urn)" title="Remove">
+              <IconCross size="14" />
+            </button>
+          </div>
+        </div>
+      </AppCard>
+    </div>
+
+    <div v-else-if="activeSubTab === 'lead_titles'" class="sub-tab-content">
+      <AppCard>
+        <template #header>
+          <div class="card-header-content">
+            <h3 class="card-title">Stored Lead Titles ({{ leadTitlesCount }})</h3>
+            <button v-if="leadTitlesCount > 0" class="clear-btn" @click="clearLeadTitles">
+              Clear All
+            </button>
+          </div>
+        </template>
+
+        <div v-if="leadTitlesList.length === 0" class="empty-state">
+          No lead titles stored in current session.
+        </div>
+
+        <div v-else class="items-list">
+          <div v-for="item in leadTitlesList" :key="item.urn" class="item-row">
+            <div class="item-info">
+              <span class="item-name">{{ item.name }}</span>
+              <span class="item-meta">{{ item.title }}</span>
+            </div>
+            <button class="remove-item-btn" @click="removeLeadTitle(item.urn)" title="Remove">
+              <IconCross size="14" />
+            </button>
+          </div>
+        </div>
+      </AppCard>
+    </div>
   </div>
 </template>
 
@@ -51,47 +156,90 @@ const clearSessionData = async () => {
 .tab-content {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
 }
 
-.data-stats {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-bottom: 12px;
-}
-
-.stat-item {
+.card-header-content {
   display: flex;
   justify-content: space-between;
+  align-items: center;
 }
 
-.label {
-  color: #666;
+.card-title {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #1e293b;
 }
 
-.value {
-  font-weight: bold;
+.clear-btn {
+  font-size: 0.75rem;
+  color: #ef4444;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
 }
 
-.actions {
+.clear-btn:hover {
+  background-color: #fee2e2;
+}
+
+.empty-state {
+  text-align: center;
+  color: #64748b;
+  font-size: 0.85rem;
+  padding: 12px 0;
+}
+
+.items-list {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  margin-top: 12px;
 }
 
-.secondary-button {
-  background-color: #f0f0f0;
-  color: #333;
-  border: 1px solid #ddd;
-  padding: 8px 16px;
-  border-radius: 4px;
+.item-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px;
+  background-color: #f8fafc;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+}
+
+.item-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.item-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #334155;
+}
+
+.item-meta {
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+.remove-item-btn {
+  background: none;
+  border: none;
   cursor: pointer;
-  width: 100%;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  color: #94a3b8;
 }
 
-.secondary-button:hover {
-  background-color: #e6e6e6;
+.remove-item-btn:hover {
+  background-color: #fee2e2;
+  color: #ef4444;
 }
 </style>
