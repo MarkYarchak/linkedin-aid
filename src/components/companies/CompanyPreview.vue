@@ -80,7 +80,6 @@ const revenueRangeString = computed(() => {
   <div
     class="company-info"
     :class="{ selected: selected, 'is-dense': isCurrentlyDense }"
-    @click="toggleExpand"
   >
     <div v-if="isCurrentlyDense" class="dense-view">
       <div v-if="selectable" class="selection-area">
@@ -110,7 +109,7 @@ const revenueRangeString = computed(() => {
         <strong>Location:</strong> {{ company.main?.location || 'N/A' }}
       </div>
       <div class="info-row" v-if="company.main?.website">
-        <strong>Website:</strong> <a :href="company.main.website" target="_blank" @click.stop>{{ company.main.website }}</a>
+        <strong>Website:</strong> <a :href="company.main.website" target="_blank">{{ company.main.website }}</a>
       </div>
       <div class="info-row" v-if="company.extra?.employeeDisplayCount">
         <strong>Headcount:</strong> {{ company.extra.employeeDisplayCount }} employees
@@ -129,7 +128,7 @@ const revenueRangeString = computed(() => {
         <button
           v-if="isTruncated || isExpanded"
           class="toggle-button"
-          @click.stop="toggleExpand"
+          @click="toggleExpand"
         >
           {{ isExpanded ? 'Show less' : 'Show more' }}
         </button>
@@ -143,7 +142,6 @@ const revenueRangeString = computed(() => {
   padding: 4px 4px 12px;
   transition: background-color 0.2s;
   border-radius: 8px;
-  cursor: pointer;
 }
 
 .company-info:hover {
@@ -159,7 +157,7 @@ const revenueRangeString = computed(() => {
 }
 
 .company-info.is-dense {
-  padding: 4px;
+  padding: 8px;
 }
 
 .dense-view {

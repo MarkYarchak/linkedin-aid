@@ -179,7 +179,7 @@ const clearSelectedCompanies = async () => {
 
         <div v-if="companies.length > 0" class="entity-list">
           <div class="company-list">
-            <div v-for="company in companies" :key="company.entityUrn" class="company-item">
+            <template v-for="company in companies" :key="company.entityUrn">
               <CompanyPreview
                 :company="company"
                 selectable
@@ -187,8 +187,8 @@ const clearSelectedCompanies = async () => {
                 :selected="selectedCompanyUrns.has(company.entityUrn)"
                 @update:selected="(val) => toggleCompanySelection(company.entityUrn, val)"
               />
-              <AppDivider v-if="company !== companies[companies.length - 1]" />
-            </div>
+              <AppDivider v-if="company !== companies[companies.length - 1]" class="my-1" />
+            </template>
           </div>
         </div>
         <div v-else class="empty-state">
@@ -281,10 +281,6 @@ const clearSelectedCompanies = async () => {
 .company-list {
   display: flex;
   flex-direction: column;
-}
-
-.company-item {
-  padding: 8px 0;
 }
 
 .empty-state {
