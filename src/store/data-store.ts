@@ -22,6 +22,7 @@ export type LocalData = {
     viewMode?: string;
     wrapText?: boolean;
   },
+  entitiesTTL?: number,
 };
 
 export type CustomStorageChange<T = unknown> = { oldValue: T, newValue: T };
@@ -33,6 +34,7 @@ const personasStorage = ref<PersonasStorage>({ general: [], byCompany: {} });
 const leadTitles = ref<Record<string, string>>({});
 const copyLeadSettings = ref<CopyLeadSettings | null>(null);
 const bulkCopyLeadSettings = ref<LocalData['bulkCopyLeadSettings'] | null>(null);
+const entitiesTTL = ref<number>(30);
 const isLoaded = ref(false);
 
 // Sync Dexie to Vue refs
@@ -55,23 +57,23 @@ liveQuery(() => db.searchSessions.toArray()).subscribe((sessions) => {
 });
 
 const cleanupOldData = async () => {
-  const threshold = Date.now() - ms('30d');
+  if (entitiesTTL.value === -1) return;
+
+  const threshold = Date.now() - ms(`${entitiesTTL.value}d`);
 
   const oldLeadsCount = await db.leads.where('updatedAt').below(threshold).delete();
   const oldCompaniesCount = await db.companies.where('updatedAt').below(threshold).delete();
   const oldSessionsCount = await db.searchSessions.where('updatedAt').below(threshold).delete();
 
   if (oldLeadsCount > 0 || oldCompaniesCount > 0 || oldSessionsCount > 0) {
-    console.log(`Cleaned up ${oldLeadsCount} leads, ${oldCompaniesCount} companies, and ${oldSessionsCount} sessions older than 30 days.`);
+    console.log(`Cleaned up ${oldLeadsCount} leads, ${oldCompaniesCount} companies, and ${oldSessionsCount} sessions older than ${entitiesTTL.value} days.`);
   }
 };
 
 const loadData = async () => {
-  await cleanupOldData();
-
   const [session, local] = await Promise.all([
     storageService.getSession(['personas', 'lead_titles']),
-    storageService.getLocal(['copyLeadSettings', 'bulkCopyLeadSettings']),
+    storageService.getLocal(['copyLeadSettings', 'bulkCopyLeadSettings', 'entitiesTTL']),
   ]);
 
   if (session.personas) personasStorage.value = session.personas;
@@ -79,6 +81,9 @@ const loadData = async () => {
 
   if (local.copyLeadSettings) copyLeadSettings.value = local.copyLeadSettings;
   if (local.bulkCopyLeadSettings) bulkCopyLeadSettings.value = local.bulkCopyLeadSettings;
+  if (local.entitiesTTL !== undefined) entitiesTTL.value = local.entitiesTTL;
+
+  await cleanupOldData();
 
   isLoaded.value = true;
 };
@@ -105,6 +110,10 @@ browser.storage.onChanged.addListener((changes, areaName) => {
       const { newValue } = changes.bulkCopyLeadSettings as CustomStorageChange<LocalData['bulkCopyLeadSettings']>;
       bulkCopyLeadSettings.value = newValue || null;
     }
+    if (changes.entitiesTTL) {
+      const { newValue } = changes.entitiesTTL as CustomStorageChange<LocalData['entitiesTTL']>;
+      entitiesTTL.value = newValue || 30;
+    }
   }
 });
 
@@ -117,6 +126,7 @@ export const useDataStore = () => {
     leadTitles: readonly(leadTitles),
     copyLeadSettings: readonly(copyLeadSettings),
     bulkCopyLeadSettings: readonly(bulkCopyLeadSettings),
+    entitiesTTL: readonly(entitiesTTL),
     isLoaded: readonly(isLoaded),
     loadData,
   };
