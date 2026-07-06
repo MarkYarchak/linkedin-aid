@@ -10,7 +10,6 @@ import type { SearchSession, PersonasStorage } from '@/types/search/search';
 import type { CopyLeadSettings } from '@/types/copy-lead-settings';
 
 export type SessionData = {
-  searchSessions: Record<string, SearchSession>,
   personas: PersonasStorage,
   lead_titles: Record<string, string>,
 };
@@ -49,14 +48,21 @@ liveQuery(() => db.companies.toArray()).subscribe((companies) => {
   companiesMap.value = map;
 });
 
+liveQuery(() => db.searchSessions.toArray()).subscribe((sessions) => {
+  const map: Record<string, SearchSession> = {};
+  sessions.forEach(s => map[s.id] = s);
+  sessionsMap.value = map;
+});
+
 const cleanupOldData = async () => {
   const threshold = Date.now() - ms('30d');
 
   const oldLeadsCount = await db.leads.where('updatedAt').below(threshold).delete();
   const oldCompaniesCount = await db.companies.where('updatedAt').below(threshold).delete();
+  const oldSessionsCount = await db.searchSessions.where('updatedAt').below(threshold).delete();
 
-  if (oldLeadsCount > 0 || oldCompaniesCount > 0) {
-    console.log(`Cleaned up ${oldLeadsCount} leads and ${oldCompaniesCount} companies older than 30 days.`);
+  if (oldLeadsCount > 0 || oldCompaniesCount > 0 || oldSessionsCount > 0) {
+    console.log(`Cleaned up ${oldLeadsCount} leads, ${oldCompaniesCount} companies, and ${oldSessionsCount} sessions older than 30 days.`);
   }
 };
 
@@ -64,11 +70,10 @@ const loadData = async () => {
   await cleanupOldData();
 
   const [session, local] = await Promise.all([
-    storageService.getSession(['searchSessions', 'personas', 'lead_titles']),
+    storageService.getSession(['personas', 'lead_titles']),
     storageService.getLocal(['copyLeadSettings', 'bulkCopyLeadSettings']),
   ]);
 
-  if (session.searchSessions) sessionsMap.value = session.searchSessions;
   if (session.personas) personasStorage.value = session.personas;
   if (session.lead_titles) leadTitles.value = session.lead_titles;
 
@@ -81,17 +86,6 @@ const loadData = async () => {
 // Listen for changes and update partially
 browser.storage.onChanged.addListener((changes, areaName) => {
   if (areaName === 'session') {
-    if (changes.searchSessions) {
-      const { oldValue, newValue } = changes.searchSessions as CustomStorageChange<SessionData['searchSessions']>;
-      if (newValue && oldValue && Object.keys(newValue).length === Object.keys(oldValue).length + 1) {
-        const newKeys = Object.keys(newValue).filter(k => !oldValue[k]);
-        if (newKeys.length === 1) {
-          sessionsMap.value[newKeys[0]] = newValue[newKeys[0]];
-          return;
-        }
-      }
-      sessionsMap.value = newValue || {};
-    }
     if (changes.personas) {
       const { newValue } = changes.personas as CustomStorageChange<SessionData['personas']>;
       personasStorage.value = newValue || { general: [], byCompany: {} };

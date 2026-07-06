@@ -1,6 +1,7 @@
 import { storageService } from '@/services/storage-service';
 import { MessageType } from '@/constants/message-types';
 import { BASE_URL } from '@/constants/urls';
+import { db } from '@/db/schema';
 import { companyService } from '@/services/company-service';
 import { leadService } from '@/services/lead-service';
 import { getLeadSearchTabSessionKey, getLeadSearchSessionKey } from '@/helpers/search-url-helpers';
@@ -73,10 +74,8 @@ export class LeadSearchService {
           personaId = personaMatch[1];
         }
 
-        const storage = await storageService.getSession('searchSessions');
-        const sessions: Record<string, SearchSession> = (storage.searchSessions || {}) as Record<string, SearchSession>;
-
-        const session = sessions[sessionKey] || {
+        const session = (await db.searchSessions.get(sessionKey)) || {
+          id: sessionKey,
           query: apiQuery,
           tabUrl,
           total: data.paging.total,
@@ -121,9 +120,7 @@ export class LeadSearchService {
           }
         }
 
-        sessions[sessionKey] = session;
-        const storageUpdate: any = { searchSessions: sessions };
-        await storageService.setSession(storageUpdate);
+        await db.searchSessions.put(session);
 
         if (Object.keys(companyUpdates).length > 0) {
           await companyService.updateCompaniesInStorage(companyUpdates);

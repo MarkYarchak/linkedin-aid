@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import { computed } from 'vue';
 import { browser } from 'wxt/browser';
+import { db } from '@/db/schema';
 import { useDataStore } from '@/store/data-store';
 import AppCard from '@/components/ui/AppCard.vue';
 import AppDivider from '@/components/ui/AppDivider.vue';
@@ -17,7 +18,10 @@ const leadTitlesCount = computed(() => Object.keys(leadTitles.value).length);
 
 const clearSessionData = async () => {
   if (confirm('Are you sure you want to clear session data (search sessions and personas)?')) {
-    await browser.storage.session.remove(['searchSessions', 'personas', 'lead_titles']);
+    await Promise.all([
+      db.searchSessions.clear(),
+      browser.storage.session.remove(['personas', 'lead_titles'])
+    ]);
     alert('Session data cleared.');
   }
 };

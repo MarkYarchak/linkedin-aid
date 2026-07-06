@@ -12,6 +12,7 @@ export enum SearchApiQueryType {
 }
 
 export interface SearchSession {
+  id: string;
   query: string;
   tabUrl?: string;
   total: number;
