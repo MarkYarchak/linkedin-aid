@@ -9,19 +9,23 @@ import AppCheckbox from '@/components/ui/AppCheckbox.vue';
 import AppPagination from '@/components/ui/AppPagination.vue';
 import LeadPreviewList from '@/components/leads/LeadPreviewList.vue';
 import CompanyPreview from '@/components/companies/CompanyPreview.vue';
+import SearchSessionPreview from '@/components/search-sessions/SearchSessionPreview.vue';
 
-const { leadsMap, companiesMap } = useDataStore();
+const { leadsMap, companiesMap, sessionsMap } = useDataStore();
 
 const PAGE_SIZE = 50;
 
 const leadsCount = computed(() => Object.keys(leadsMap.value).length);
 const companiesCount = computed(() => Object.keys(companiesMap.value).length);
+const sessionsCount = computed(() => Object.keys(sessionsMap.value).length);
 
 const leads = computed(() => Object.values(leadsMap.value).sort((a, b) => b.updatedAt - a.updatedAt));
 const companies = computed(() => Object.values(companiesMap.value).sort((a, b) => b.updatedAt - a.updatedAt));
+const sessions = computed(() => Object.values(sessionsMap.value).sort((a, b) => b.updatedAt - a.updatedAt));
 
 const leadsPage = ref(1);
 const companiesPage = ref(1);
+const sessionsPage = ref(1);
 
 const paginatedLeads = computed(() => {
   const start = (leadsPage.value - 1) * PAGE_SIZE;
@@ -31,6 +35,11 @@ const paginatedLeads = computed(() => {
 const paginatedCompanies = computed(() => {
   const start = (companiesPage.value - 1) * PAGE_SIZE;
   return companies.value.slice(start, start + PAGE_SIZE);
+});
+
+const paginatedSessions = computed(() => {
+  const start = (sessionsPage.value - 1) * PAGE_SIZE;
+  return sessions.value.slice(start, start + PAGE_SIZE);
 });
 
 watch(leadsCount, (newCount) => {
@@ -47,10 +56,18 @@ watch(companiesCount, (newCount) => {
   }
 });
 
+watch(sessionsCount, (newCount) => {
+  const maxPage = Math.max(1, Math.ceil(newCount / PAGE_SIZE));
+  if (sessionsPage.value > maxPage) {
+    sessionsPage.value = maxPage;
+  }
+});
+
 const activeTab = ref('leads');
 
 const selectedLeadUrns = ref(new Set<string>());
 const selectedCompanyUrns = ref(new Set<string>());
+const selectedSessionIds = ref(new Set<string>());
 
 const isCompaniesDense = ref(true);
 
@@ -79,6 +96,16 @@ const toggleCompanySelection = (urn: string, selected: boolean) => {
   selectedCompanyUrns.value = next;
 };
 
+const toggleSessionSelection = (id: string, selected: boolean) => {
+  const next = new Set(selectedSessionIds.value);
+  if (selected) {
+    next.add(id);
+  } else {
+    next.delete(id);
+  }
+  selectedSessionIds.value = next;
+};
+
 const allLeadsSelected = computed({
   get: () => leadsCount.value > 0 && selectedLeadUrns.value.size === leadsCount.value,
   set: (val) => {
@@ -97,6 +124,17 @@ const allCompaniesSelected = computed({
       selectedCompanyUrns.value = new Set(companies.value.map(c => c.entityUrn));
     } else {
       selectedCompanyUrns.value = new Set();
+    }
+  }
+});
+
+const allSessionsSelected = computed({
+  get: () => sessionsCount.value > 0 && selectedSessionIds.value.size === sessionsCount.value,
+  set: (val) => {
+    if (val) {
+      selectedSessionIds.value = new Set(sessions.value.map(s => s.id));
+    } else {
+      selectedSessionIds.value = new Set();
     }
   }
 });
@@ -136,6 +174,24 @@ const clearSelectedCompanies = async () => {
     alert('Selected companies cleared.');
   }
 };
+
+const clearSessions = async () => {
+  if (confirm('Are you sure you want to clear all stored search sessions?')) {
+    await db.searchSessions.clear();
+    selectedSessionIds.value = new Set();
+    alert('Sessions cleared.');
+  }
+};
+
+const clearSelectedSessions = async () => {
+  const ids = Array.from(selectedSessionIds.value);
+  if (ids.length === 0) return;
+  if (confirm(`Are you sure you want to clear ${ids.length} selected search sessions?`)) {
+    await db.searchSessions.bulkDelete(ids);
+    selectedSessionIds.value = new Set();
+    alert('Selected sessions cleared.');
+  }
+};
 </script>
 
 <template>
@@ -146,7 +202,8 @@ const clearSelectedCompanies = async () => {
           v-model="activeTab"
           :options="[
             { label: `Leads (${leadsCount})`, value: 'leads' },
-            { label: `Companies (${companiesCount})`, value: 'companies' }
+            { label: `Companies (${companiesCount})`, value: 'companies' },
+            { label: `Sessions (${sessionsCount})`, value: 'sessions' }
           ]"
         />
       </div>
@@ -237,6 +294,46 @@ const clearSelectedCompanies = async () => {
           No companies stored.
         </div>
       </div>
+
+      <div v-else-if="activeTab === 'sessions'" class="nested-tab-content">
+        <div class="actions mb-3">
+          <AppCheckbox v-model="allSessionsSelected" label="Select All" />
+          <div class="flex-spacer"></div>
+          <button
+            class="danger-button outline"
+            :disabled="selectedSessionIds.size === 0"
+            @click="clearSelectedSessions"
+          >
+            Clear Selected ({{ selectedSessionIds.size }})
+          </button>
+          <button class="danger-button" :disabled="sessionsCount === 0" @click="clearSessions">
+            Clear All
+          </button>
+        </div>
+
+        <div v-if="sessions.length > 0" class="entity-list">
+          <div class="session-list">
+            <template v-for="session in paginatedSessions" :key="session.id">
+              <SearchSessionPreview
+                :session="session"
+                selectable
+                :selected="selectedSessionIds.has(session.id)"
+                @update:selected="(val) => toggleSessionSelection(session.id, val)"
+              />
+              <AppDivider v-if="session !== paginatedSessions[paginatedSessions.length - 1]" class="my-1" />
+            </template>
+          </div>
+
+          <AppPagination
+            v-model="sessionsPage"
+            :total-items="sessionsCount"
+            :page-size="PAGE_SIZE"
+          />
+        </div>
+        <div v-else class="empty-state">
+          No search sessions stored.
+        </div>
+      </div>
     </AppCard>
   </div>
 </template>
@@ -320,7 +417,8 @@ const clearSelectedCompanies = async () => {
   border-color: #ffa39e;
 }
 
-.company-list {
+.company-list,
+.session-list {
   display: flex;
   flex-direction: column;
 }

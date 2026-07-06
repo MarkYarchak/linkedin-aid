@@ -1,14 +1,12 @@
 <script lang="ts" setup>
 import { computed } from 'vue';
 import { browser } from 'wxt/browser';
-import { db } from '@/db/schema';
 import { useDataStore } from '@/store/data-store';
 import AppCard from '@/components/ui/AppCard.vue';
 import AppDivider from '@/components/ui/AppDivider.vue';
 
-const { sessionsMap, personasStorage, leadTitles } = useDataStore();
+const { personasStorage, leadTitles } = useDataStore();
 
-const sessionsCount = computed(() => Object.keys(sessionsMap.value).length);
 const personasCount = computed(() => {
   const general = personasStorage.value.general.length;
   const byCompany = Object.values(personasStorage.value.byCompany).reduce((acc, val) => acc + val.length, 0);
@@ -17,11 +15,8 @@ const personasCount = computed(() => {
 const leadTitlesCount = computed(() => Object.keys(leadTitles.value).length);
 
 const clearSessionData = async () => {
-  if (confirm('Are you sure you want to clear session data (search sessions and personas)?')) {
-    await Promise.all([
-      db.searchSessions.clear(),
-      browser.storage.session.remove(['personas', 'lead_titles'])
-    ]);
+  if (confirm('Are you sure you want to clear session data (personas and lead titles)?')) {
+    await browser.storage.session.remove(['personas', 'lead_titles']);
     alert('Session data cleared.');
   }
 };
@@ -31,10 +26,6 @@ const clearSessionData = async () => {
   <div class="tab-content">
     <AppCard title="Session Management">
       <div class="data-stats">
-        <div class="stat-item">
-          <span class="label">Search Sessions:</span>
-          <span class="value">{{ sessionsCount }}</span>
-        </div>
         <div class="stat-item">
           <span class="label">Stored Personas:</span>
           <span class="value">{{ personasCount }}</span>
