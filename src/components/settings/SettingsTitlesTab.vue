@@ -3,7 +3,6 @@ import { ref, watch, nextTick, computed } from 'vue';
 import { useDataStore } from '@/store/data-store';
 import { storageService } from '@/services/storage-service';
 import { titleTargets, titleStates, generateLeadTitle } from '@/helpers/title-helper';
-import AppCard from '@/components/ui/AppCard.vue';
 import AppPreviewBox from '@/components/ui/AppPreviewBox.vue';
 import IconCross from '@/components/icons/IconCross.vue';
 import IconChevronUp from '@/components/icons/IconChevronUp.vue';
@@ -152,177 +151,220 @@ const resetToDefaults = () => {
 </script>
 
 <template>
-  <div class="tab-content">
-    <div class="intro-section">
-      <p class="tab-description">
+  <div>
+    <div class="intro-section mb-4">
+      <p class="text-body-2 text-medium-emphasis">
         Configure the format of lead titles used in the Copy Modal. These help you organize leads in your CRM or notes.
       </p>
     </div>
 
-    <AppCard title="Live Preview">
-      <div class="preview-wrapper">
-        <p class="section-desc">How the lead title looks with current defaults:</p>
+    <v-card title="Live Preview" class="mb-4">
+      <v-card-text>
+        <p class="text-caption text-medium-emphasis mb-2">How the lead title looks with current defaults:</p>
         <AppPreviewBox mini wrap-text>
           {{ previewTitle }}
         </AppPreviewBox>
-      </div>
-    </AppCard>
+      </v-card-text>
+    </v-card>
 
-    <AppCard title="Title Targets" ref="targetCard">
-      <p class="section-desc">Targets represent the type of lead's business (e.g. SaaS, Agency).</p>
-      <div class="editable-list">
-        <div class="list-header">
-          <span class="header-label">Default</span>
-          <span class="header-label">Emoji</span>
-          <span class="header-label">Label</span>
-          <span class="header-label actions-header">Actions</span>
-        </div>
-        <div
-          v-for="(target, index) in localSettings.titleTargets"
-          :key="target.value"
-          class="editable-row"
-          :class="{ 'is-default': localSettings.selectedTarget === target.value }"
-        >
-          <div class="radio-wrapper">
-            <input
-              type="radio"
-              :value="target.value"
-              v-model="localSettings.selectedTarget"
-              class="custom-radio"
-              title="Set as default"
-            />
+    <v-card ref="targetCard" title="Title Targets" class="mb-4">
+      <v-card-text>
+        <p class="text-caption text-medium-emphasis mb-4">Targets represent the type of lead's business (e.g. SaaS, Agency).</p>
+        <div class="editable-list">
+          <div class="list-header">
+            <span class="header-label">Default</span>
+            <span class="header-label">Emoji</span>
+            <span class="header-label">Label</span>
+            <span class="header-label actions-header">Actions</span>
           </div>
-          <input v-model="target.emoji" class="emoji-input" placeholder="Emoji" />
-          <input v-model="target.label" class="label-input" placeholder="Label" />
-
-          <div class="row-actions">
-            <div class="reorder-btns">
-              <button
-                class="reorder-btn"
-                title="Move Up"
-                @click="moveTargetUp(index)"
-                :disabled="index === 0"
-              >
-                <IconChevronUp size="16" />
-              </button>
-              <button
-                class="reorder-btn"
-                title="Move Down"
-                @click="moveTargetDown(index)"
-                :disabled="index === localSettings.titleTargets.length - 1"
-              >
-                <IconChevronDown size="16" />
-              </button>
-            </div>
-            <button
-              class="remove-btn"
-              title="Remove"
-              @click="removeTarget(index)"
-              :disabled="localSettings.titleTargets.length <= 1"
+          <v-radio-group v-model="localSettings.selectedTarget" hide-details>
+            <div
+              v-for="(target, index) in localSettings.titleTargets"
+              :key="target.value"
+              class="editable-row"
+              :class="{ 'is-default': localSettings.selectedTarget === target.value }"
             >
-              <IconCross size="16" color="#ef4444" />
-            </button>
-          </div>
-        </div>
-        <button class="add-btn" @click="addTarget">+ Add Target</button>
-      </div>
-    </AppCard>
+              <div class="radio-wrapper">
+                <v-radio
+                  :value="target.value"
+                  color="#0073b1"
+                  density="compact"
+                  hide-details
+                ></v-radio>
+              </div>
+              <v-text-field
+                v-model="target.emoji"
+                placeholder="Emoji"
+                density="compact"
+                hide-details
+                variant="outlined"
+                class="emoji-input-field"
+              ></v-text-field>
+              <v-text-field
+                v-model="target.label"
+                placeholder="Label"
+                density="compact"
+                hide-details
+                variant="outlined"
+                class="label-input-field"
+              ></v-text-field>
 
-    <AppCard title="Title States" ref="stateCard">
-      <p class="section-desc">States represent your current interaction status with the lead.</p>
-      <div class="editable-list">
-        <div class="list-header">
-          <span class="header-label">Default</span>
-          <span class="header-label">Emoji</span>
-          <span class="header-label">Label</span>
-          <span class="header-label actions-header">Actions</span>
-        </div>
-        <div
-          v-for="(state, index) in localSettings.titleStates"
-          :key="state.value"
-          class="editable-row"
-          :class="{ 'is-default': localSettings.selectedState === state.value }"
-        >
-          <div class="radio-wrapper">
-            <input
-              type="radio"
-              :value="state.value"
-              v-model="localSettings.selectedState"
-              class="custom-radio"
-              title="Set as default"
-            />
-          </div>
-          <input v-model="state.emoji" class="emoji-input" placeholder="Emoji" />
-          <input v-model="state.label" class="label-input" placeholder="Label" />
-
-          <div class="row-actions">
-            <div class="reorder-btns">
-              <button
-                class="reorder-btn"
-                title="Move Up"
-                @click="moveStateUp(index)"
-                :disabled="index === 0"
-              >
-                <IconChevronUp size="16" />
-              </button>
-              <button
-                class="reorder-btn"
-                title="Move Down"
-                @click="moveStateDown(index)"
-                :disabled="index === localSettings.titleStates.length - 1"
-              >
-                <IconChevronDown size="16" />
-              </button>
+              <div class="row-actions">
+                <div class="reorder-btns">
+                  <v-btn
+                    icon
+                    variant="text"
+                    size="x-small"
+                    title="Move Up"
+                    @click="moveTargetUp(index)"
+                    :disabled="index === 0"
+                  >
+                    <IconChevronUp size="16" />
+                  </v-btn>
+                  <v-btn
+                    icon
+                    variant="text"
+                    size="x-small"
+                    title="Move Down"
+                    @click="moveTargetDown(index)"
+                    :disabled="index === localSettings.titleTargets.length - 1"
+                  >
+                    <IconChevronDown size="16" />
+                  </v-btn>
+                </div>
+                <v-btn
+                  icon
+                  variant="text"
+                  size="x-small"
+                  color="error"
+                  title="Remove"
+                  @click="removeTarget(index)"
+                  :disabled="localSettings.titleTargets.length <= 1"
+                >
+                  <IconCross size="16" />
+                </v-btn>
+              </div>
             </div>
-            <button
-              class="remove-btn"
-              title="Remove"
-              @click="removeState(index)"
-              :disabled="localSettings.titleStates.length <= 1"
-            >
-              <IconCross size="16" color="#ef4444" />
-            </button>
-          </div>
+          </v-radio-group>
+          <v-btn
+            variant="tonal"
+            block
+            class="mt-4"
+            @click="addTarget"
+          >
+            + Add Target
+          </v-btn>
         </div>
-        <button class="add-btn" @click="addState">+ Add State</button>
-      </div>
-    </AppCard>
+      </v-card-text>
+    </v-card>
 
-    <div class="actions">
-      <button class="reset-btn" @click="resetToDefaults">
+    <v-card ref="stateCard" title="Title States" class="mb-4">
+      <v-card-text>
+        <p class="text-caption text-medium-emphasis mb-4">States represent your current interaction status with the lead.</p>
+        <div class="editable-list">
+          <div class="list-header">
+            <span class="header-label">Default</span>
+            <span class="header-label">Emoji</span>
+            <span class="header-label">Label</span>
+            <span class="header-label actions-header">Actions</span>
+          </div>
+          <v-radio-group v-model="localSettings.selectedState" hide-details>
+            <div
+              v-for="(state, index) in localSettings.titleStates"
+              :key="state.value"
+              class="editable-row"
+              :class="{ 'is-default': localSettings.selectedState === state.value }"
+            >
+              <div class="radio-wrapper">
+                <v-radio
+                  :value="state.value"
+                  color="#0073b1"
+                  density="compact"
+                  hide-details
+                ></v-radio>
+              </div>
+              <v-text-field
+                v-model="state.emoji"
+                placeholder="Emoji"
+                density="compact"
+                hide-details
+                variant="outlined"
+                class="emoji-input-field"
+              ></v-text-field>
+              <v-text-field
+                v-model="state.label"
+                placeholder="Label"
+                density="compact"
+                hide-details
+                variant="outlined"
+                class="label-input-field"
+              ></v-text-field>
+
+              <div class="row-actions">
+                <div class="reorder-btns">
+                  <v-btn
+                    icon
+                    variant="text"
+                    size="x-small"
+                    title="Move Up"
+                    @click="moveStateUp(index)"
+                    :disabled="index === 0"
+                  >
+                    <IconChevronUp size="16" />
+                  </v-btn>
+                  <v-btn
+                    icon
+                    variant="text"
+                    size="x-small"
+                    title="Move Down"
+                    @click="moveStateDown(index)"
+                    :disabled="index === localSettings.titleStates.length - 1"
+                  >
+                    <IconChevronDown size="16" />
+                  </v-btn>
+                </div>
+                <v-btn
+                  icon
+                  variant="text"
+                  size="x-small"
+                  color="error"
+                  title="Remove"
+                  @click="removeState(index)"
+                  :disabled="localSettings.titleStates.length <= 1"
+                >
+                  <IconCross size="16" />
+                </v-btn>
+              </div>
+            </div>
+          </v-radio-group>
+          <v-btn
+            variant="tonal"
+            block
+            class="mt-4"
+            @click="addState"
+          >
+            + Add State
+          </v-btn>
+        </div>
+      </v-card-text>
+    </v-card>
+
+    <div class="mt-3">
+      <v-btn
+        color="error"
+        variant="outlined"
+        block
+        @click="resetToDefaults"
+      >
         Reset Titles to Defaults
-      </button>
+      </v-btn>
     </div>
   </div>
 </template>
 
 <style scoped>
-.tab-content {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.intro-section {
-  padding: 0 4px;
-}
-
-.tab-description {
-  font-size: 0.9rem;
-  color: #475569;
-  line-height: 1.5;
-}
-
-.preview-wrapper {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.section-desc {
-  font-size: 0.85rem;
-  color: #64748b;
-  margin-bottom: 12px;
+.mb-4 {
+  margin-bottom: 16px;
 }
 
 .list-header {
@@ -354,7 +396,7 @@ const resetToDefaults = () => {
   display: flex;
   gap: 8px;
   align-items: center;
-  padding: 6px 8px;
+  padding: 4px 8px;
   transition: all 0.2s;
   border-radius: 8px;
   border: 1px solid transparent;
@@ -380,163 +422,28 @@ const resetToDefaults = () => {
   align-items: center;
 }
 
-.custom-radio {
-  appearance: none;
-  width: 18px;
-  height: 18px;
-  border: 2px solid #cbd5e1;
-  border-radius: 50%;
-  outline: none;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s;
-  background: white;
+.emoji-input-field {
+  max-width: 60px;
 }
 
-.custom-radio:checked {
-  border-color: #0a66c2;
-}
-
-.custom-radio:checked::after {
-  content: "";
-  width: 10px;
-  height: 10px;
-  background-color: #0a66c2;
-  border-radius: 50%;
-  display: block;
-}
-
-.custom-radio:hover:not(:checked) {
-  border-color: #94a3b8;
-}
-
-.emoji-input {
-  width: 44px;
-  padding: 6px;
-  border: 1px solid #cbd5e1;
-  border-radius: 4px;
+:deep(.emoji-input-field .v-field__input) {
   text-align: center;
-  font-size: 0.9rem;
 }
 
-.label-input {
+.label-input-field {
   flex: 1;
-  padding: 6px 10px;
-  border: 1px solid #cbd5e1;
-  border-radius: 4px;
-  font-size: 0.85rem;
-}
-
-.emoji-input:focus,
-.label-input:focus {
-  outline: none;
-  border-color: #0a66c2;
-  box-shadow: 0 0 0 2px rgba(10, 102, 194, 0.1);
-  background: white;
-}
-
-.remove-btn {
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 6px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 4px;
-  transition: all 0.2s;
-}
-
-.remove-btn:hover:not(:disabled) {
-  background-color: #fee2e2;
-}
-
-.remove-btn:disabled {
-  opacity: 0.3;
-  cursor: not-allowed;
 }
 
 .row-actions {
   display: flex;
   align-items: center;
+  padding-left: 8px;
   gap: 8px;
-  width: 110px;
   justify-content: flex-end;
 }
 
 .reorder-btns {
   display: flex;
   gap: 4px;
-}
-
-.reorder-btn {
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 6px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 4px;
-  color: #94a3b8;
-  transition: all 0.2s;
-}
-
-.reorder-btn:hover:not(:disabled) {
-  background-color: #f1f5f9;
-  color: #0a66c2;
-}
-
-.reorder-btn:disabled {
-  opacity: 0.2;
-  cursor: not-allowed;
-}
-
-.add-btn {
-  margin-top: 8px;
-  padding: 10px;
-  border: 1px dashed #cbd5e1;
-  border-radius: 8px;
-  background: #f8fafc;
-  color: #0a66c2;
-  font-size: 0.85rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-}
-
-.add-btn:hover {
-  background-color: #f0f7ff;
-  border-color: #0a66c2;
-  border-style: solid;
-}
-
-.actions {
-  margin-top: 8px;
-}
-
-.reset-btn {
-  width: 100%;
-  padding: 10px;
-  background-color: #f8fafc;
-  color: #64748b;
-  border: 1px solid #e2e8f0;
-  border-radius: 6px;
-  font-size: 0.85rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.reset-btn:hover {
-  background-color: #f1f5f9;
-  color: #ef4444;
-  border-color: #fca5a5;
 }
 </style>
