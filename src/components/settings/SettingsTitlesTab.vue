@@ -181,7 +181,7 @@ const resetToDefaults = () => {
               :key="target.value"
               no-gutters
               align="center"
-              :class="{ 'bg-blue-lighten-5': localSettings.selectedTarget === target.value }"
+              :class="{ [$vuetify.theme.current.dark ? 'bg-blue-grey-darken-4' : 'bg-blue-lighten-5']: localSettings.selectedTarget === target.value }"
               class="px-2 py-1 rounded-lg mb-1 transition-swing ga-2"
             >
               <v-col cols="auto" style="width: 52px" class="d-flex justify-center">
@@ -276,7 +276,7 @@ const resetToDefaults = () => {
               :key="state.value"
               align="center"
               density="compact"
-              :class="{ 'bg-blue-lighten-5': localSettings.selectedState === state.value }"
+              :class="{ [$vuetify.theme.current.dark ? 'bg-blue-grey-darken-4' : 'bg-blue-lighten-5']: localSettings.selectedState === state.value }"
               class="px-2 py-1 rounded-lg transition-swing ga-2"
             >
               <v-col cols="auto" style="width: 52px" class="d-flex justify-center">
