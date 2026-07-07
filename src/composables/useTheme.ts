@@ -1,9 +1,9 @@
 import { watch } from 'vue';
-import { useTheme as useVuetifyTheme } from 'vuetify';
+import { useTheme as useVuetifyTheme, type ThemeInstance } from 'vuetify';
 import { useDataStore } from '@/store/data-store';
 
 export const useAppTheme = () => {
-  let vuetifyTheme: any;
+  let vuetifyTheme: ThemeInstance;
   try {
     vuetifyTheme = useVuetifyTheme();
   } catch (e) {
@@ -21,7 +21,7 @@ export const useAppTheme = () => {
     }
 
     if (vuetifyTheme) {
-      vuetifyTheme.global.name.value = resolvedTheme;
+      vuetifyTheme.change(resolvedTheme);
     }
 
     if (resolvedTheme === 'dark') {
