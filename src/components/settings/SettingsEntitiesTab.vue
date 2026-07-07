@@ -237,7 +237,7 @@ const clearSelectedSessions = async () => {
         :key="tab.value"
         :value="tab.value"
         :variant="$vuetify.theme.current.dark ? undefined : 'outlined'"
-        class="flex-grow-1"
+        style="width: calc(100% / 3)"
       >
         {{ tab.title }}
       </v-btn>
@@ -250,7 +250,7 @@ const clearSelectedSessions = async () => {
           label="Search by name, title, company, etc."
           rounded
           flat
-          variant="outlined"
+          variant="solo-filled"
           autocomplete="none"
           clearable
           prepend-inner-icon="mdi-magnify"
