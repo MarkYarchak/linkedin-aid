@@ -2,11 +2,6 @@
 import { ref, watch } from 'vue';
 import { useDataStore } from '@/store/data-store';
 import { storageService } from '@/services/storage-service';
-import AppCard from '@/components/ui/AppCard.vue';
-import AppDivider from '@/components/ui/AppDivider.vue';
-import AppCheckbox from '@/components/ui/AppCheckbox.vue';
-import AppMultiSelect from '@/components/ui/AppMultiSelect.vue';
-import AppSegmentedControl from '@/components/ui/AppSegmentedControl.vue';
 
 const { copyLeadSettings, bulkCopyLeadSettings } = useDataStore();
 
@@ -68,14 +63,14 @@ const localBulkCopySettings = ref({
 });
 
 const insightSelectionOptions = [
-  { label: 'Posts', value: 'posts' },
-  { label: 'Reshared posts', value: 'posts_reshared' },
-  { label: 'Comments', value: 'comments' },
+  { title: 'Posts', value: 'posts' },
+  { title: 'Reshared posts', value: 'posts_reshared' },
+  { title: 'Comments', value: 'comments' },
 ];
 
 const viewOptions = [
-  { label: 'Text', value: 'text' },
-  { label: 'JSON', value: 'json' },
+  { title: 'Text', value: 'text' },
+  { title: 'JSON', value: 'json' },
 ];
 
 // Initialize local state from store
@@ -114,161 +109,167 @@ watch(localBulkCopySettings, async (newValue) => {
 </script>
 
 <template>
-  <div class="tab-content">
-    <AppCard title="Single Lead Copy Fields">
-      <div class="settings-grid">
-        <div class="settings-group">
-          <span class="group-title">Lead Info</span>
-          <AppCheckbox v-model="localCopySettings.leadFields.fullName" label="Full Name" size="sm" />
-          <AppCheckbox v-model="localCopySettings.leadFields.headline" label="Headline" size="sm" />
-          <AppCheckbox v-model="localCopySettings.leadFields.location" label="Location" size="sm" />
-          <AppCheckbox v-model="localCopySettings.leadFields.summary" label="Summary" size="sm" />
-          <AppCheckbox v-model="localCopySettings.leadFields.recentActivity" label="Recent Activity" size="sm" />
-          <AppCheckbox v-model="localCopySettings.leadFields.mutualConnections" label="Mutual Connections" size="sm" />
-        </div>
+  <div>
+    <v-card title="Single Lead Copy Fields" class="mb-4">
+      <v-card-text>
+        <v-row>
+          <v-col cols="12" sm="6">
+            <span class="group-title">Lead Info</span>
+            <v-checkbox v-model="localCopySettings.leadFields.fullName" label="Full Name" density="comfortable" hide-details color="#0073b1" />
+            <v-checkbox v-model="localCopySettings.leadFields.headline" label="Headline" density="comfortable" hide-details color="#0073b1" />
+            <v-checkbox v-model="localCopySettings.leadFields.location" label="Location" density="comfortable" hide-details color="#0073b1" />
+            <v-checkbox v-model="localCopySettings.leadFields.summary" label="Summary" density="comfortable" hide-details color="#0073b1" />
+            <v-checkbox v-model="localCopySettings.leadFields.recentActivity" label="Recent Activity" density="comfortable" hide-details color="#0073b1" />
+            <v-checkbox v-model="localCopySettings.leadFields.mutualConnections" label="Mutual Connections" density="comfortable" hide-details color="#0073b1" />
+          </v-col>
 
-        <div class="settings-group">
-          <span class="group-title">Position Info</span>
-          <AppCheckbox v-model="localCopySettings.leadFields.position.title" label="Title" size="sm" />
-          <AppCheckbox v-model="localCopySettings.leadFields.position.companyName" label="Company Name" size="sm" />
-          <AppCheckbox v-model="localCopySettings.leadFields.position.industry" label="Industry" size="sm" />
-          <AppCheckbox v-model="localCopySettings.leadFields.position.location" label="Location" size="sm" />
-          <AppCheckbox v-model="localCopySettings.leadFields.position.startedOn" label="Started On" size="sm" />
-          <AppCheckbox v-model="localCopySettings.leadFields.position.description" label="Description" size="sm" />
-        </div>
-      </div>
+          <v-col cols="12" sm="6">
+            <span class="group-title">Position Info</span>
+            <v-checkbox v-model="localCopySettings.leadFields.position.title" label="Title" density="comfortable" hide-details color="#0073b1" />
+            <v-checkbox v-model="localCopySettings.leadFields.position.companyName" label="Company Name" density="comfortable" hide-details color="#0073b1" />
+            <v-checkbox v-model="localCopySettings.leadFields.position.industry" label="Industry" density="comfortable" hide-details color="#0073b1" />
+            <v-checkbox v-model="localCopySettings.leadFields.position.location" label="Location" density="comfortable" hide-details color="#0073b1" />
+            <v-checkbox v-model="localCopySettings.leadFields.position.startedOn" label="Started On" density="comfortable" hide-details color="#0073b1" />
+            <v-checkbox v-model="localCopySettings.leadFields.position.description" label="Description" density="comfortable" hide-details color="#0073b1" />
+          </v-col>
+        </v-row>
 
-      <div class="settings-group">
-        <span class="group-title">Company Info</span>
-        <div class="settings-grid">
-          <div class="settings-group">
-            <AppCheckbox v-model="localCopySettings.companyFields.name" label="Name" size="sm" />
-            <AppCheckbox v-model="localCopySettings.companyFields.description" label="Description" size="sm" />
-            <AppCheckbox v-model="localCopySettings.companyFields.industry" label="Industry" size="sm" />
-            <AppCheckbox v-model="localCopySettings.companyFields.location" label="Location" size="sm" />
-            <AppCheckbox v-model="localCopySettings.companyFields.revenueRange" label="Revenue" size="sm" />
-          </div>
-          <div class="settings-group">
-            <AppCheckbox v-model="localCopySettings.companyFields.specialties" label="Specialties" size="sm" />
-            <AppCheckbox v-model="localCopySettings.companyFields.type" label="Type" size="sm" />
-            <AppCheckbox v-model="localCopySettings.companyFields.yearFounded" label="Founded" size="sm" />
-            <AppCheckbox v-model="localCopySettings.companyFields.employeeCount" label="Headcount" size="sm" />
-          </div>
-        </div>
-      </div>
+        <v-divider class="my-4"></v-divider>
 
-      <AppDivider />
+        <div class="group-title mb-2">Company Info</div>
+        <v-row>
+          <v-col cols="12" sm="6">
+            <v-checkbox v-model="localCopySettings.companyFields.name" label="Name" density="comfortable" hide-details color="#0073b1" />
+            <v-checkbox v-model="localCopySettings.companyFields.description" label="Description" density="comfortable" hide-details color="#0073b1" />
+            <v-checkbox v-model="localCopySettings.companyFields.industry" label="Industry" density="comfortable" hide-details color="#0073b1" />
+            <v-checkbox v-model="localCopySettings.companyFields.location" label="Location" density="comfortable" hide-details color="#0073b1" />
+            <v-checkbox v-model="localCopySettings.companyFields.revenueRange" label="Revenue" density="comfortable" hide-details color="#0073b1" />
+          </v-col>
+          <v-col cols="12" sm="6">
+            <v-checkbox v-model="localCopySettings.companyFields.specialties" label="Specialties" density="comfortable" hide-details color="#0073b1" />
+            <v-checkbox v-model="localCopySettings.companyFields.type" label="Type" density="comfortable" hide-details color="#0073b1" />
+            <v-checkbox v-model="localCopySettings.companyFields.yearFounded" label="Founded" density="comfortable" hide-details color="#0073b1" />
+            <v-checkbox v-model="localCopySettings.companyFields.employeeCount" label="Headcount" density="comfortable" hide-details color="#0073b1" />
+          </v-col>
+        </v-row>
 
-      <div class="settings-row">
-        <AppMultiSelect
+        <v-divider class="my-4"></v-divider>
+
+        <v-select
           v-model="localCopySettings.insightFilters"
-          :options="insightSelectionOptions"
+          :items="insightSelectionOptions"
           label="Default Insight Filters"
-          display-mode="labels"
+          multiple
+          chips
+          closable-chips
+          density="comfortable"
+          variant="outlined"
+          hide-details
         />
-      </div>
-    </AppCard>
+      </v-card-text>
+    </v-card>
 
-    <AppCard title="Bulk Copy Fields">
-      <div class="settings-grid">
-        <div class="settings-group">
-          <span class="group-title">Lead Info</span>
-          <AppCheckbox v-model="localBulkCopySettings.leadFields.fullName" label="Full Name" size="sm" />
-          <AppCheckbox v-model="localBulkCopySettings.leadFields.location" label="Location" size="sm" />
-          <AppCheckbox v-model="localBulkCopySettings.leadFields.summary" label="Summary" size="sm" />
-          <AppCheckbox v-model="localBulkCopySettings.leadFields.recentActivity" label="Recent Activity" size="sm" />
-          <AppCheckbox v-model="localBulkCopySettings.leadFields.mutualConnections" label="Mutual Connections" size="sm" />
-          <AppCheckbox v-model="localBulkCopySettings.leadFields.heroCard" label="Company Highlight" size="sm" />
-        </div>
+    <v-card title="Bulk Copy Fields" class="mb-4">
+      <v-card-text>
+        <v-row>
+          <v-col cols="12" sm="6">
+            <span class="group-title">Lead Info</span>
+            <v-checkbox v-model="localBulkCopySettings.leadFields.fullName" label="Full Name" density="comfortable" hide-details color="#0073b1" />
+            <v-checkbox v-model="localBulkCopySettings.leadFields.location" label="Location" density="comfortable" hide-details color="#0073b1" />
+            <v-checkbox v-model="localBulkCopySettings.leadFields.summary" label="Summary" density="comfortable" hide-details color="#0073b1" />
+            <v-checkbox v-model="localBulkCopySettings.leadFields.recentActivity" label="Recent Activity" density="comfortable" hide-details color="#0073b1" />
+            <v-checkbox v-model="localBulkCopySettings.leadFields.mutualConnections" label="Mutual Connections" density="comfortable" hide-details color="#0073b1" />
+            <v-checkbox v-model="localBulkCopySettings.leadFields.heroCard" label="Company Highlight" density="comfortable" hide-details color="#0073b1" />
+          </v-col>
 
-        <div class="settings-group">
-          <span class="group-title">Position Info</span>
-          <AppCheckbox v-model="localBulkCopySettings.leadFields.position.title" label="Title" size="sm" />
-          <AppCheckbox v-model="localBulkCopySettings.leadFields.position.companyName" label="Company Name" size="sm" />
-          <AppCheckbox v-model="localBulkCopySettings.leadFields.position.industry" label="Industry" size="sm" />
-          <AppCheckbox v-model="localBulkCopySettings.leadFields.position.location" label="Location" size="sm" />
-          <AppCheckbox v-model="localBulkCopySettings.leadFields.position.startedOn" label="Started On" size="sm" />
-          <AppCheckbox v-model="localBulkCopySettings.leadFields.position.description" label="Description" size="sm" />
-        </div>
-      </div>
-    </AppCard>
+          <v-col cols="12" sm="6">
+            <span class="group-title">Position Info</span>
+            <v-checkbox v-model="localBulkCopySettings.leadFields.position.title" label="Title" density="comfortable" hide-details color="#0073b1" />
+            <v-checkbox v-model="localBulkCopySettings.leadFields.position.companyName" label="Company Name" density="comfortable" hide-details color="#0073b1" />
+            <v-checkbox v-model="localBulkCopySettings.leadFields.position.industry" label="Industry" density="comfortable" hide-details color="#0073b1" />
+            <v-checkbox v-model="localBulkCopySettings.leadFields.position.location" label="Location" density="comfortable" hide-details color="#0073b1" />
+            <v-checkbox v-model="localBulkCopySettings.leadFields.position.startedOn" label="Started On" density="comfortable" hide-details color="#0073b1" />
+            <v-checkbox v-model="localBulkCopySettings.leadFields.position.description" label="Description" density="comfortable" hide-details color="#0073b1" />
+          </v-col>
+        </v-row>
+      </v-card-text>
+    </v-card>
 
-    <AppCard title="Single Copy Preferences">
-      <div class="settings-column">
-        <div class="form-item">
-          <label class="item-label">Default Prefix</label>
-          <textarea
-            v-model="localCopySettings.prefix"
-            class="app-textarea"
-            placeholder="Text to prepend to all copies..."
-            rows="2"
-          ></textarea>
-        </div>
+    <v-card title="Single Copy Preferences" class="mb-4">
+      <v-card-text>
+        <v-textarea
+          v-model="localCopySettings.prefix"
+          label="Default Prefix"
+          placeholder="Text to prepend to all copies..."
+          variant="outlined"
+          rows="2"
+          auto-grow
+          density="comfortable"
+          class="mb-4"
+        ></v-textarea>
 
-        <div class="form-row">
-          <div class="form-item">
-            <label class="item-label">View Mode</label>
-            <AppSegmentedControl
+        <v-row align="center">
+          <v-col cols="12" sm="8">
+            <div class="text-caption text-medium-emphasis mb-1">View Mode</div>
+            <v-btn-toggle
               v-model="localCopySettings.viewMode"
-              :options="viewOptions"
-            />
-          </div>
-          <div class="form-item align-end">
-            <AppCheckbox v-model="localCopySettings.wrapText" label="Wrap Text" />
-          </div>
-        </div>
-      </div>
-    </AppCard>
+              mandatory
+              divided
+              variant="outlined"
+              color="#0073b1"
+              density="comfortable"
+            >
+              <v-btn v-for="opt in viewOptions" :key="opt.value" :value="opt.value" size="small">
+                {{ opt.title }}
+              </v-btn>
+            </v-btn-toggle>
+          </v-col>
+          <v-col cols="12" sm="4">
+            <v-checkbox v-model="localCopySettings.wrapText" label="Wrap Text" density="comfortable" hide-details color="#0073b1" />
+          </v-col>
+        </v-row>
+      </v-card-text>
+    </v-card>
 
-    <AppCard title="Bulk Copy Preferences">
-      <div class="settings-column">
-        <div class="form-item">
-          <label class="item-label">Default Prefix</label>
-          <textarea
-            v-model="localBulkCopySettings.prefix"
-            class="app-textarea"
-            placeholder="Text to prepend to all bulk copies..."
-            rows="2"
-          ></textarea>
-        </div>
+    <v-card title="Bulk Copy Preferences">
+      <v-card-text>
+        <v-textarea
+          v-model="localBulkCopySettings.prefix"
+          label="Default Prefix"
+          placeholder="Text to prepend to all bulk copies..."
+          variant="outlined"
+          rows="2"
+          auto-grow
+          density="comfortable"
+          class="mb-4"
+        ></v-textarea>
 
-        <div class="form-row">
-          <div class="form-item">
-            <label class="item-label">View Mode</label>
-            <AppSegmentedControl
+        <v-row align="center">
+          <v-col cols="12" sm="8">
+            <div class="text-caption text-medium-emphasis mb-1">View Mode</div>
+            <v-btn-toggle
               v-model="localBulkCopySettings.viewMode"
-              :options="viewOptions"
-            />
-          </div>
-          <div class="form-item align-end">
-            <AppCheckbox v-model="localBulkCopySettings.wrapText" label="Wrap Text" />
-          </div>
-        </div>
-      </div>
-    </AppCard>
+              mandatory
+              divided
+              variant="outlined"
+              color="#0073b1"
+              density="comfortable"
+            >
+              <v-btn v-for="opt in viewOptions" :key="opt.value" :value="opt.value">
+                {{ opt.title }}
+              </v-btn>
+            </v-btn-toggle>
+          </v-col>
+          <v-col cols="12" sm="4">
+            <v-checkbox v-model="localBulkCopySettings.wrapText" label="Wrap Text" density="comfortable" hide-details color="#0073b1" />
+          </v-col>
+        </v-row>
+      </v-card-text>
+    </v-card>
   </div>
 </template>
 
 <style scoped>
-.tab-content {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.settings-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-  margin-bottom: 12px;
-}
-
-.settings-group {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
 .group-title {
   font-size: 0.75rem;
   font-weight: 600;
@@ -276,55 +277,5 @@ watch(localBulkCopySettings, async (newValue) => {
   text-transform: uppercase;
   letter-spacing: 0.025em;
   margin-bottom: 4px;
-  display: block;
-}
-
-.settings-column {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.settings-row {
-  margin-top: 8px;
-}
-
-.form-item {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.item-label {
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: #64748b;
-}
-
-.app-textarea {
-  width: 100%;
-  padding: 8px 12px;
-  border: 1px solid #cbd5e1;
-  border-radius: 6px;
-  font-size: 0.85rem;
-  font-family: inherit;
-  resize: vertical;
-  box-sizing: border-box;
-}
-
-.app-textarea:focus {
-  outline: none;
-  border-color: #0a66c2;
-  box-shadow: 0 0 0 2px rgba(10, 102, 194, 0.1);
-}
-
-.form-row {
-  display: flex;
-  gap: 16px;
-  align-items: center;
-}
-
-.align-end {
-  margin-top: auto;
 }
 </style>
