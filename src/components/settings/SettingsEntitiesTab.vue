@@ -5,18 +5,35 @@ import { db } from '@/db/schema';
 import LeadPreviewList from '@/components/leads/LeadPreviewList.vue';
 import CompanyPreview from '@/components/companies/CompanyPreview.vue';
 import SearchSessionPreview from '@/components/search-sessions/SearchSessionPreview.vue';
+import { matchesLead, matchesCompany, matchesSession } from '@/helpers/entity-search-helper';
+import type { Lead } from '@/types/lead/lead';
+import type { Company } from '@/types/company/company';
+import type { SearchSession } from '@/types/search/search';
 
 const { leadsMap, companiesMap, sessionsMap } = useDataStore();
 
 const PAGE_SIZE = 50;
 
-const leadsCount = computed(() => Object.keys(leadsMap.value).length);
-const companiesCount = computed(() => Object.keys(companiesMap.value).length);
-const sessionsCount = computed(() => Object.keys(sessionsMap.value).length);
+const searchQuery = ref('');
 
-const leads = computed(() => Object.values(leadsMap.value).sort((a, b) => b.updatedAt - a.updatedAt));
-const companies = computed(() => Object.values(companiesMap.value).sort((a, b) => b.updatedAt - a.updatedAt));
-const sessions = computed(() => Object.values(sessionsMap.value).sort((a, b) => b.updatedAt - a.updatedAt));
+const leads = computed(() => {
+  const all = Object.values(leadsMap.value).sort((a, b) => b.updatedAt - a.updatedAt);
+  return all.filter(lead => matchesLead(lead as Lead, searchQuery.value));
+});
+
+const companies = computed(() => {
+  const all = Object.values(companiesMap.value).sort((a, b) => b.updatedAt - a.updatedAt);
+  return all.filter(company => matchesCompany(company as Company, searchQuery.value));
+});
+
+const sessions = computed(() => {
+  const all = Object.values(sessionsMap.value).sort((a, b) => b.updatedAt - a.updatedAt);
+  return all.filter(session => matchesSession(session as SearchSession, searchQuery.value));
+});
+
+const leadsCount = computed(() => leads.value.length);
+const companiesCount = computed(() => companies.value.length);
+const sessionsCount = computed(() => sessions.value.length);
 
 const leadsPage = ref(1);
 const companiesPage = ref(1);
@@ -56,6 +73,12 @@ watch(sessionsCount, (newCount) => {
   if (sessionsPage.value > maxPage) {
     sessionsPage.value = maxPage;
   }
+});
+
+watch(searchQuery, () => {
+  leadsPage.value = 1;
+  companiesPage.value = 1;
+  sessionsPage.value = 1;
 });
 
 const activeTab = ref('leads');
@@ -107,35 +130,41 @@ const toggleSessionSelection = (id: string, selected: boolean) => {
 };
 
 const allLeadsSelected = computed({
-  get: () => leadsCount.value > 0 && selectedLeadUrns.value.size === leadsCount.value,
+  get: () => leadsCount.value > 0 && leads.value.every(l => selectedLeadUrns.value.has(l.entityUrn)),
   set: (val) => {
+    const next = new Set(selectedLeadUrns.value);
     if (val) {
-      selectedLeadUrns.value = new Set(leads.value.map(l => l.entityUrn));
+      leads.value.forEach(l => next.add(l.entityUrn));
     } else {
-      selectedLeadUrns.value = new Set();
+      leads.value.forEach(l => next.delete(l.entityUrn));
     }
+    selectedLeadUrns.value = next;
   }
 });
 
 const allCompaniesSelected = computed({
-  get: () => companiesCount.value > 0 && selectedCompanyUrns.value.size === companiesCount.value,
+  get: () => companiesCount.value > 0 && companies.value.every(c => selectedCompanyUrns.value.has(c.entityUrn)),
   set: (val) => {
+    const next = new Set(selectedCompanyUrns.value);
     if (val) {
-      selectedCompanyUrns.value = new Set(companies.value.map(c => c.entityUrn));
+      companies.value.forEach(c => next.add(c.entityUrn));
     } else {
-      selectedCompanyUrns.value = new Set();
+      companies.value.forEach(c => next.delete(c.entityUrn));
     }
+    selectedCompanyUrns.value = next;
   }
 });
 
 const allSessionsSelected = computed({
-  get: () => sessionsCount.value > 0 && selectedSessionIds.value.size === sessionsCount.value,
+  get: () => sessionsCount.value > 0 && sessions.value.every(s => selectedSessionIds.value.has(s.id)),
   set: (val) => {
+    const next = new Set(selectedSessionIds.value);
     if (val) {
-      selectedSessionIds.value = new Set(sessions.value.map(s => s.id));
+      sessions.value.forEach(s => next.add(s.id));
     } else {
-      selectedSessionIds.value = new Set();
+      sessions.value.forEach(s => next.delete(s.id));
     }
+    selectedSessionIds.value = next;
   }
 });
 
@@ -215,11 +244,19 @@ const clearSelectedSessions = async () => {
     </v-btn-toggle>
 
     <v-card>
-      <v-card-item>
-        <v-card-title class="text-subtitle-2 font-weight-bold">
-          Manage {{ tabs.find(t => t.value === activeTab)?.value }}
-        </v-card-title>
-      </v-card-item>
+      <div class="px-4 py-3">
+        <v-text-field
+          v-model="searchQuery"
+          label="Search by name, title, company, etc."
+          rounded
+          flat
+          variant="outlined"
+          autocomplete="none"
+          clearable
+          prepend-inner-icon="mdi-magnify"
+          hide-details
+        />
+      </div>
 
       <v-divider></v-divider>
 
