@@ -2,9 +2,6 @@
 import { computed, ref } from 'vue';
 import { browser } from 'wxt/browser';
 import { useDataStore } from '@/store/data-store';
-import AppCard from '@/components/ui/AppCard.vue';
-import AppSegmentedControl from '@/components/ui/AppSegmentedControl.vue';
-import IconCross from '@/components/icons/IconCross.vue';
 
 const { personasStorage, leadTitles, leadsMap } = useDataStore();
 
@@ -86,104 +83,125 @@ const clearLeadTitles = async () => {
 </script>
 
 <template>
-  <div class="tab-content">
-    <AppSegmentedControl
+  <div>
+    <v-btn-toggle
       v-model="activeSubTab"
-      :options="subTabs"
-    />
+      mandatory
+      divided
+      color="#0073b1"
+      class="mb-4 d-flex"
+    >
+      <v-btn
+        v-for="tab in subTabs"
+        :key="tab.value"
+        :value="tab.value"
+        class="flex-grow-1"
+      >
+        {{ tab.label }}
+      </v-btn>
+    </v-btn-toggle>
 
     <div v-if="activeSubTab === 'personas'" class="sub-tab-content">
-      <AppCard>
-        <template #header>
-          <div class="card-header-content">
-            <h3 class="card-title">Stored Personas ({{ personasCount }})</h3>
-            <button v-if="personasCount > 0" class="clear-btn" @click="clearPersonas">
+      <v-card>
+        <v-card-item>
+          <template #append>
+            <v-btn
+              v-if="personasCount > 0"
+              color="error"
+              variant="text"
+              size="x-small"
+              @click="clearPersonas"
+            >
               Clear All
-            </button>
+            </v-btn>
+          </template>
+          <v-card-title class="text-subtitle-2 font-weight-bold">
+            Stored Personas ({{ personasCount }})
+          </v-card-title>
+        </v-card-item>
+
+        <v-divider></v-divider>
+
+        <v-card-text>
+          <div v-if="allPersonas.length === 0" class="empty-state">
+            No personas stored in current session.
           </div>
-        </template>
 
-        <div v-if="allPersonas.length === 0" class="empty-state">
-          No personas stored in current session.
-        </div>
-
-        <div v-else class="items-list">
-          <div v-for="persona in allPersonas" :key="persona.urn" class="item-row">
-            <div class="item-info">
-              <span class="item-name">{{ persona.name }}</span>
-              <span class="item-meta">{{ persona.type }}</span>
+          <div v-else class="items-list">
+            <div v-for="persona in allPersonas" :key="persona.urn" class="item-row">
+              <div class="item-info">
+                <span class="item-name">{{ persona.name }}</span>
+                <span class="item-meta">{{ persona.type }}</span>
+              </div>
+              <v-btn
+                icon
+                variant="text"
+                size="x-small"
+                color="error"
+                @click="removePersona(persona.urn)"
+                title="Remove"
+              >
+                <v-icon size="16">mdi-close</v-icon>
+              </v-btn>
             </div>
-            <button class="remove-item-btn" @click="removePersona(persona.urn)" title="Remove">
-              <IconCross size="14" />
-            </button>
           </div>
-        </div>
-      </AppCard>
+        </v-card-text>
+      </v-card>
     </div>
 
     <div v-else-if="activeSubTab === 'lead_titles'" class="sub-tab-content">
-      <AppCard>
-        <template #header>
-          <div class="card-header-content">
-            <h3 class="card-title">Stored Lead Titles ({{ leadTitlesCount }})</h3>
-            <button v-if="leadTitlesCount > 0" class="clear-btn" @click="clearLeadTitles">
+      <v-card>
+        <v-card-item>
+          <template #append>
+            <v-btn
+              v-if="leadTitlesCount > 0"
+              color="error"
+              variant="text"
+              size="x-small"
+              @click="clearLeadTitles"
+            >
               Clear All
-            </button>
+            </v-btn>
+          </template>
+          <v-card-title class="text-subtitle-2 font-weight-bold">
+            Stored Lead Titles ({{ leadTitlesCount }})
+          </v-card-title>
+        </v-card-item>
+
+        <v-divider></v-divider>
+
+        <v-card-text>
+          <div v-if="leadTitlesList.length === 0" class="empty-state">
+            No lead titles stored in current session.
           </div>
-        </template>
 
-        <div v-if="leadTitlesList.length === 0" class="empty-state">
-          No lead titles stored in current session.
-        </div>
-
-        <div v-else class="items-list">
-          <div v-for="item in leadTitlesList" :key="item.urn" class="item-row">
-            <div class="item-info">
-              <span class="item-name">{{ item.name }}</span>
-              <span class="item-meta">{{ item.title }}</span>
+          <div v-else class="items-list">
+            <div v-for="item in leadTitlesList" :key="item.urn" class="item-row">
+              <div class="item-info">
+                <span class="item-name">{{ item.name }}</span>
+                <span class="item-meta">{{ item.title }}</span>
+              </div>
+              <v-btn
+                icon
+                variant="text"
+                size="x-small"
+                color="error"
+                @click="removeLeadTitle(item.urn)"
+                title="Remove"
+              >
+                <v-icon size="16">mdi-close</v-icon>
+              </v-btn>
             </div>
-            <button class="remove-item-btn" @click="removeLeadTitle(item.urn)" title="Remove">
-              <IconCross size="14" />
-            </button>
           </div>
-        </div>
-      </AppCard>
+        </v-card-text>
+      </v-card>
     </div>
   </div>
 </template>
 
 <style scoped>
-.tab-content {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.card-header-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.card-title {
-  margin: 0;
-  font-size: 0.9rem;
-  font-weight: 700;
-  color: #1e293b;
-}
-
-.clear-btn {
-  font-size: 0.75rem;
-  color: #ef4444;
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 4px 8px;
-  border-radius: 4px;
-}
-
-.clear-btn:hover {
-  background-color: #fee2e2;
+.mb-4 {
+  margin-bottom: 16px;
 }
 
 .empty-state {
@@ -203,7 +221,7 @@ const clearLeadTitles = async () => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 8px;
+  padding: 8px 12px;
   background-color: #f8fafc;
   border-radius: 6px;
   border: 1px solid #e2e8f0;
@@ -224,22 +242,5 @@ const clearLeadTitles = async () => {
 .item-meta {
   font-size: 0.75rem;
   color: #64748b;
-}
-
-.remove-item-btn {
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 4px;
-  color: #94a3b8;
-}
-
-.remove-item-btn:hover {
-  background-color: #fee2e2;
-  color: #ef4444;
 }
 </style>
