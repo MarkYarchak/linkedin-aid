@@ -2,11 +2,6 @@
 import { computed, ref, watch } from 'vue';
 import { useDataStore } from '@/store/data-store';
 import { db } from '@/db/schema';
-import AppCard from '@/components/ui/AppCard.vue';
-import AppDivider from '@/components/ui/AppDivider.vue';
-import AppSegmentedControl from '@/components/ui/AppSegmentedControl.vue';
-import AppCheckbox from '@/components/ui/AppCheckbox.vue';
-import AppPagination from '@/components/ui/AppPagination.vue';
 import LeadPreviewList from '@/components/leads/LeadPreviewList.vue';
 import CompanyPreview from '@/components/companies/CompanyPreview.vue';
 import SearchSessionPreview from '@/components/search-sessions/SearchSessionPreview.vue';
@@ -64,6 +59,11 @@ watch(sessionsCount, (newCount) => {
 });
 
 const activeTab = ref('leads');
+const tabs = computed(() => [
+  { value: 'leads', title: `Leads (${ leadsCount.value })` },
+  { value: 'companies', title: `Companies (${ companiesCount.value })` },
+  { value: 'sessions', title: `Sessions (${ sessionsCount.value })` },
+]);
 
 const selectedLeadUrns = ref(new Set<string>());
 const selectedCompanyUrns = ref(new Set<string>());
@@ -195,167 +195,203 @@ const clearSelectedSessions = async () => {
 </script>
 
 <template>
-  <div class="tab-content">
-    <AppCard title="Entities Management">
-      <div class="mb-4">
-        <AppSegmentedControl
-          v-model="activeTab"
-          :options="[
-            { label: `Leads (${leadsCount})`, value: 'leads' },
-            { label: `Companies (${companiesCount})`, value: 'companies' },
-            { label: `Search sessions (${sessionsCount})`, value: 'sessions' }
-          ]"
-        />
-      </div>
+  <div>
+    <v-btn-toggle
+      v-model="activeTab"
+      mandatory
+      divided
+      color="#0073b1"
+      class="mb-4 d-flex"
+    >
+      <v-btn
+        v-for="tab in tabs"
+        :key="tab.value"
+        :value="tab.value"
+        :variant="$vuetify.theme.current.dark ? undefined : 'outlined'"
+        class="flex-grow-1"
+      >
+        {{ tab.title }}
+      </v-btn>
+    </v-btn-toggle>
 
-      <div v-if="activeTab === 'leads'" class="nested-tab-content">
-        <div class="actions mb-3">
-          <AppCheckbox v-model="allLeadsSelected" label="Select All" />
-          <div class="flex-spacer"></div>
-          <button
-            class="danger-button outline"
-            :disabled="selectedLeadUrns.size === 0"
-            @click="clearSelectedLeads"
-          >
-            Clear Selected ({{ selectedLeadUrns.size }})
-          </button>
-          <button class="danger-button" :disabled="leadsCount === 0" @click="clearLeads">
-            Clear All
-          </button>
-        </div>
+    <v-card>
+      <v-card-item>
+        <v-card-title class="text-subtitle-2 font-weight-bold">
+          Manage {{ tabs.find(t => t.value === activeTab)?.value }}
+        </v-card-title>
+      </v-card-item>
 
-        <div v-if="leads.length > 0" class="entity-list">
-          <LeadPreviewList
-            :leads="paginatedLeads"
-            :selected-urns="selectedLeadUrns"
-            @update:selected="toggleLeadSelection"
-          />
+      <v-divider></v-divider>
 
-          <AppPagination
-            v-model="leadsPage"
-            :total-items="leadsCount"
-            :page-size="PAGE_SIZE"
-          />
-        </div>
-        <div v-else class="empty-state">
-          No leads stored.
-        </div>
-      </div>
+      <v-card-text>
+        <div v-if="activeTab === 'leads'" class="nested-tab-content">
+          <div class="actions mb-3">
+            <v-checkbox v-model="allLeadsSelected" label="Select All" hide-details density="compact" color="#0073b1" />
+            <div class="flex-spacer"></div>
+            <v-btn
+              color="error"
+              variant="outlined"
+              size="small"
+              class="mr-2"
+              :disabled="selectedLeadUrns.size === 0"
+              @click="clearSelectedLeads"
+            >
+              Clear Selected ({{ selectedLeadUrns.size }})
+            </v-btn>
+            <v-btn
+              color="error"
+              size="small"
+              :disabled="leadsCount === 0"
+              @click="clearLeads"
+            >
+              Clear All
+            </v-btn>
+          </div>
 
-      <div v-else-if="activeTab === 'companies'" class="nested-tab-content">
-        <div class="actions mb-3">
-          <AppCheckbox v-model="allCompaniesSelected" label="Select All" />
-
-          <div class="view-options">
-            <span class="view-label">View:</span>
-            <AppSegmentedControl
-              v-model="companyViewMode"
-              :options="[
-                { label: 'Compact', value: 'dense' },
-                { label: 'Detailed', value: 'detailed' }
-              ]"
+          <div v-if="leads.length > 0" class="entity-list">
+            <LeadPreviewList
+              :leads="paginatedLeads"
+              :selected-urns="selectedLeadUrns"
+              @update:selected="toggleLeadSelection"
             />
+
+            <v-pagination
+              v-model="leadsPage"
+              :length="Math.ceil(leadsCount / PAGE_SIZE)"
+              :total-visible="5"
+              density="compact"
+              class="mt-4"
+            ></v-pagination>
+          </div>
+          <div v-else class="empty-state">
+            No leads stored.
+          </div>
+        </div>
+
+        <div v-else-if="activeTab === 'companies'" class="nested-tab-content">
+          <div class="actions mb-3">
+            <v-checkbox v-model="allCompaniesSelected" label="Select All" hide-details density="compact" color="#0073b1" />
+
+            <div class="view-options">
+              <span class="view-label mr-2">View:</span>
+              <v-btn-toggle
+                v-model="companyViewMode"
+                mandatory
+                density="compact"
+                variant="outlined"
+                color="#0073b1"
+              >
+                <v-btn value="dense" size="x-small">Compact</v-btn>
+                <v-btn value="detailed" size="x-small">Detailed</v-btn>
+              </v-btn-toggle>
+            </div>
+
+            <div class="flex-spacer"></div>
+            <v-btn
+              color="error"
+              variant="outlined"
+              size="small"
+              class="mr-2"
+              :disabled="selectedCompanyUrns.size === 0"
+              @click="clearSelectedCompanies"
+            >
+              Clear Selected ({{ selectedCompanyUrns.size }})
+            </v-btn>
+            <v-btn
+              color="error"
+              size="small"
+              :disabled="companiesCount === 0"
+              @click="clearCompanies"
+            >
+              Clear All
+            </v-btn>
           </div>
 
-          <div class="flex-spacer"></div>
-          <button
-            class="danger-button outline"
-            :disabled="selectedCompanyUrns.size === 0"
-            @click="clearSelectedCompanies"
-          >
-            Clear Selected ({{ selectedCompanyUrns.size }})
-          </button>
-          <button class="danger-button" :disabled="companiesCount === 0" @click="clearCompanies">
-            Clear All
-          </button>
+          <div v-if="companies.length > 0" class="entity-list">
+            <div class="company-list">
+              <template v-for="(company, index) in paginatedCompanies" :key="company.entityUrn">
+                <CompanyPreview
+                  :company="company"
+                  selectable
+                  :dense="isCompaniesDense"
+                  :selected="selectedCompanyUrns.has(company.entityUrn)"
+                  @update:selected="(val) => toggleCompanySelection(company.entityUrn, val)"
+                />
+                <v-divider v-if="index < paginatedCompanies.length - 1" class="my-1" />
+              </template>
+            </div>
+
+            <v-pagination
+              v-model="companiesPage"
+              :length="Math.ceil(companiesCount / PAGE_SIZE)"
+              :total-visible="5"
+              density="compact"
+              class="mt-4"
+            ></v-pagination>
+          </div>
+          <div v-else class="empty-state">
+            No companies stored.
+          </div>
         </div>
 
-        <div v-if="companies.length > 0" class="entity-list">
-          <div class="company-list">
-            <template v-for="company in paginatedCompanies" :key="company.entityUrn">
-              <CompanyPreview
-                :company="company"
-                selectable
-                :dense="isCompaniesDense"
-                :selected="selectedCompanyUrns.has(company.entityUrn)"
-                @update:selected="(val) => toggleCompanySelection(company.entityUrn, val)"
-              />
-              <AppDivider v-if="company !== paginatedCompanies[paginatedCompanies.length - 1]" class="my-1" />
-            </template>
+        <div v-else-if="activeTab === 'sessions'" class="nested-tab-content">
+          <div class="actions mb-3">
+            <v-checkbox v-model="allSessionsSelected" label="Select All" hide-details density="compact" color="#0073b1" />
+            <div class="flex-spacer"></div>
+            <v-btn
+              color="error"
+              variant="outlined"
+              size="small"
+              class="mr-2"
+              :disabled="selectedSessionIds.size === 0"
+              @click="clearSelectedSessions"
+            >
+              Clear Selected ({{ selectedSessionIds.size }})
+            </v-btn>
+            <v-btn
+              color="error"
+              size="small"
+              :disabled="sessionsCount === 0"
+              @click="clearSessions"
+            >
+              Clear All
+            </v-btn>
           </div>
 
-          <AppPagination
-            v-model="companiesPage"
-            :total-items="companiesCount"
-            :page-size="PAGE_SIZE"
-          />
-        </div>
-        <div v-else class="empty-state">
-          No companies stored.
-        </div>
-      </div>
+          <div v-if="sessions.length > 0" class="entity-list">
+            <div class="session-list">
+              <template v-for="(session, index) in paginatedSessions" :key="session.id">
+                <SearchSessionPreview
+                  :session="session"
+                  selectable
+                  :selected="selectedSessionIds.has(session.id)"
+                  @update:selected="(val) => toggleSessionSelection(session.id, val)"
+                />
+                <v-divider v-if="index < paginatedSessions.length - 1" class="my-1" />
+              </template>
+            </div>
 
-      <div v-else-if="activeTab === 'sessions'" class="nested-tab-content">
-        <div class="actions mb-3">
-          <AppCheckbox v-model="allSessionsSelected" label="Select All" />
-          <div class="flex-spacer"></div>
-          <button
-            class="danger-button outline"
-            :disabled="selectedSessionIds.size === 0"
-            @click="clearSelectedSessions"
-          >
-            Clear Selected ({{ selectedSessionIds.size }})
-          </button>
-          <button class="danger-button" :disabled="sessionsCount === 0" @click="clearSessions">
-            Clear All
-          </button>
-        </div>
-
-        <div v-if="sessions.length > 0" class="entity-list">
-          <div class="session-list">
-            <template v-for="session in paginatedSessions" :key="session.id">
-              <SearchSessionPreview
-                :session="session"
-                selectable
-                :selected="selectedSessionIds.has(session.id)"
-                @update:selected="(val) => toggleSessionSelection(session.id, val)"
-              />
-              <AppDivider v-if="session !== paginatedSessions[paginatedSessions.length - 1]" class="my-1" />
-            </template>
+            <v-pagination
+              v-model="sessionsPage"
+              :length="Math.ceil(sessionsCount / PAGE_SIZE)"
+              :total-visible="5"
+              density="compact"
+              class="mt-4"
+            ></v-pagination>
           </div>
-
-          <AppPagination
-            v-model="sessionsPage"
-            :total-items="sessionsCount"
-            :page-size="PAGE_SIZE"
-          />
+          <div v-else class="empty-state">
+            No search sessions stored.
+          </div>
         </div>
-        <div v-else class="empty-state">
-          No search sessions stored.
-        </div>
-      </div>
-    </AppCard>
+      </v-card-text>
+    </v-card>
   </div>
 </template>
 
 <style scoped>
-.tab-content {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
 .nested-tab-content {
   display: flex;
   flex-direction: column;
-}
-
-.mb-4 {
-  margin-bottom: 16px;
-}
-
-.mb-3 {
-  margin-bottom: 12px;
 }
 
 .actions {
@@ -371,8 +407,8 @@ const clearSelectedSessions = async () => {
 .view-options {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding-left: 8px;
+  gap: 4px;
+  padding-left: 12px;
   border-left: 1px solid #eee;
 }
 
@@ -380,41 +416,6 @@ const clearSelectedSessions = async () => {
   font-size: 0.75rem;
   font-weight: 600;
   color: #64748b;
-}
-
-.danger-button {
-  background-color: #ff4d4f;
-  color: white;
-  border: 1px solid #ff4d4f;
-  padding: 6px 12px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-weight: 600;
-  font-size: 0.9em;
-  transition: all 0.2s;
-}
-
-.danger-button.outline {
-  background-color: transparent;
-  color: #ff4d4f;
-}
-
-.danger-button:hover:not(:disabled) {
-  background-color: #ff7875;
-  border-color: #ff7875;
-  color: white;
-}
-
-.danger-button:disabled {
-  background-color: #ffa39e;
-  border-color: #ffa39e;
-  cursor: not-allowed;
-}
-
-.danger-button.outline:disabled {
-  background-color: transparent;
-  color: #ffa39e;
-  border-color: #ffa39e;
 }
 
 .company-list,
