@@ -3,8 +3,6 @@ import { ref, watch } from 'vue';
 import { browser } from 'wxt/browser';
 import { useDataStore } from '@/store/data-store';
 import { storageService } from '@/services/storage-service';
-import AppCard from '@/components/ui/AppCard.vue';
-import AppRadio from '@/components/ui/AppRadio.vue';
 
 const { entitiesTTL } = useDataStore();
 const localTTL = ref(30);
@@ -35,95 +33,64 @@ const resetSettings = async () => {
 </script>
 
 <template>
-  <div class="tab-content">
-    <AppCard title="Profile">
-      <div class="placeholder-content">
-        Profile settings will be available here soon.
-      </div>
-    </AppCard>
-
-    <AppCard title="Subscription">
-      <div class="placeholder-content">
-        Subscription management will be available here soon.
-      </div>
-    </AppCard>
-
-    <AppCard title="Data Retention">
-      <div class="settings-group">
-        <span class="group-description">
-          Choose how long to keep leads, companies, and sessions before they are automatically deleted.
-        </span>
-        <div class="radio-grid">
-          <AppRadio
-            v-for="option in ttlOptions"
-            :key="option.value"
-            v-model="localTTL"
-            :value="option.value"
-            :label="option.label"
-          />
+  <div>
+    <v-card title="Profile" class="mb-4">
+      <v-card-text>
+        <div class="placeholder-content">
+          Profile settings will be available here soon.
         </div>
-      </div>
-    </AppCard>
+      </v-card-text>
+    </v-card>
 
-    <AppCard title="Maintenance">
-      <div class="actions">
-        <button class="secondary-button" @click="resetSettings">
+    <v-card title="Subscription" class="mb-4">
+      <v-card-text>
+        <div class="placeholder-content">
+          Subscription management will be available here soon.
+        </div>
+      </v-card-text>
+    </v-card>
+
+    <v-card title="Data Retention" class="mb-4">
+      <v-card-text>
+        <div class="text-body-2 text-medium-emphasis mb-4">
+          Choose how long to keep leads, companies, and sessions before they are automatically deleted.
+        </div>
+        <v-radio-group v-model="localTTL" hide-details>
+          <v-row no-gutters>
+            <v-col
+              v-for="option in ttlOptions"
+              :key="option.value"
+              cols="6"
+            >
+              <v-radio
+                :value="option.value"
+                :label="option.label"
+                color="#0073b1"
+                density="comfortable"
+              />
+            </v-col>
+          </v-row>
+        </v-radio-group>
+      </v-card-text>
+    </v-card>
+
+    <v-card title="Maintenance">
+      <v-card-text>
+        <v-btn
+          color="error"
+          @click="resetSettings"
+        >
           Reset All Settings
-        </button>
-      </div>
-    </AppCard>
+        </v-btn>
+      </v-card-text>
+    </v-card>
   </div>
 </template>
 
 <style scoped>
-.tab-content {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
 .placeholder-content {
-  padding: 8px 0;
   color: #64748b;
   font-size: 0.85rem;
   font-style: italic;
-}
-
-.settings-group {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.group-description {
-  color: #64748b;
-  font-size: 0.85rem;
-  line-height: 1.4;
-}
-
-.radio-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-  gap: 8px;
-}
-
-.actions {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.secondary-button {
-  background-color: #f0f0f0;
-  color: #333;
-  border: 1px solid #ddd;
-  padding: 8px 16px;
-  border-radius: 4px;
-  cursor: pointer;
-  width: 100%;
-}
-
-.secondary-button:hover {
-  background-color: #e6e6e6;
 }
 </style>
