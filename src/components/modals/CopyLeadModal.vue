@@ -259,6 +259,14 @@ watch(currentStep, () => {
               <p class="collect-hint">Opening the page will automatically collect the missing data.</p>
             </div>
           </div>
+
+          <!-- No Companies Selected -->
+          <div v-if="Object.keys(selectedCompanies).length === 0 && missingCompanies.length === 0" class="no-company-data">
+            <p>No companies available or selected.</p>
+            <p v-if="currentPositions.length > 0" class="collect-hint mt-2">
+              Please go back and select at least one position to see company information.
+            </p>
+          </div>
         </div>
       </div>
 
