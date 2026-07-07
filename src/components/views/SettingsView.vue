@@ -1,47 +1,54 @@
 <script lang="ts" setup>
 import { ref } from 'vue';
-import AppSegmentedControl from '@/components/ui/AppSegmentedControl.vue';
-import SettingsEntitiesTab from '@/components/settings/SettingsEntitiesTab.vue';
-import SettingsSessionsTab from '@/components/settings/SettingsSessionsTab.vue';
-import SettingsTitlesTab from '@/components/settings/SettingsTitlesTab.vue';
-import SettingsCopyTab from '@/components/settings/SettingsCopyTab.vue';
-import SettingsGeneralTab from '@/components/settings/SettingsGeneralTab.vue';
+const SettingsEntitiesTab = defineAsyncComponent(() => import('@/components/settings/SettingsEntitiesTab.vue'));
+const SettingsSessionsTab = defineAsyncComponent(() => import('@/components/settings/SettingsSessionsTab.vue'));
+const SettingsTitlesTab = defineAsyncComponent(() => import('@/components/settings/SettingsTitlesTab.vue'));
+const SettingsCopyTab = defineAsyncComponent(() => import('@/components/settings/SettingsCopyTab.vue'));
+const SettingsGeneralTab = defineAsyncComponent(() => import('@/components/settings/SettingsGeneralTab.vue'));
 
 const tabs = ref([
-  { label: 'General', value: 'general' },
-  { label: 'Entities', value: 'entities' },
-  { label: 'Sessions', value: 'sessions' },
-  { label: 'Titles', value: 'titles' },
-  { label: 'Copy', value: 'copy' },
+  { title: 'General', value: 'general', getComponent: () => SettingsGeneralTab },
+  { title: 'Entities', value: 'entities', getComponent: () => SettingsEntitiesTab },
+  { title: 'Sessions', value: 'sessions', getComponent: () => SettingsSessionsTab },
+  { title: 'Titles', value: 'titles', getComponent: () => SettingsTitlesTab },
+  { title: 'Copy', value: 'copy', getComponent: () => SettingsCopyTab },
 ]);
-const activeTab = ref('general');
+const activeTab = ref(0);
 </script>
 
 <template>
-  <v-container class="settings-view">
-    <div class="tabs-container">
-      <AppSegmentedControl
+  <v-container>
+    <v-navigation-drawer permanent>
+      <v-item-group
         v-model="activeTab"
-        :options="tabs"
-      />
-    </div>
+        mandatory
+      >
+        <v-list nav active-color="#0073b1">
+          <v-item
+            v-for="tab in tabs"
+            :key="tab.value"
+            v-slot="{ isSelected, selectedClass, toggle }"
+          >
+            <v-list-item
+              :active="isSelected"
+              :value="tab.value"
+              :title="tab.title"
+              :class="selectedClass"
+              @click="toggle"
+            ></v-list-item>
+          </v-item>
+        </v-list>
+      </v-item-group>
+    </v-navigation-drawer>
 
-    <SettingsGeneralTab v-if="activeTab === 'general'" />
-    <SettingsEntitiesTab v-else-if="activeTab === 'entities'" />
-    <SettingsSessionsTab v-else-if="activeTab === 'sessions'" />
-    <SettingsTitlesTab v-else-if="activeTab === 'titles'" />
-    <SettingsCopyTab v-else-if="activeTab === 'copy'" />
+    <v-item-group v-model="activeTab" mandatory>
+      <v-item
+        v-for="tab in tabs"
+        :key="tab.value"
+        v-slot="{ isSelected }"
+      >
+        <component v-if="isSelected" :is="tab.getComponent()"></component>
+      </v-item>
+    </v-item-group>
   </v-container>
 </template>
-
-<style scoped>
-.settings-view {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.tabs-container {
-  margin-bottom: 4px;
-}
-</style>

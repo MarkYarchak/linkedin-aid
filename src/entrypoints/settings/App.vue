@@ -15,8 +15,13 @@ const version = browser.runtime.getManifest().version;
     <div v-if="!isLoaded" class="loading">
       Loading Settings...
     </div>
-    <v-layout v-else>
+    <template v-else>
       <v-app-bar>
+        <v-avatar :rounded="false" size="32" class="ml-5">
+          <v-img
+            src="/logo.svg"
+          />
+        </v-avatar>
         <v-app-bar-title tag="h1" class="app-bar-title-text">LinkedIn AID Settings</v-app-bar-title>
       </v-app-bar>
 
@@ -27,7 +32,7 @@ const version = browser.runtime.getManifest().version;
       <v-footer app name="app-footer" border>
         LinkedIn AID v{{ version }}
       </v-footer>
-    </v-layout>
+    </template>
   </v-app>
 </template>
 
