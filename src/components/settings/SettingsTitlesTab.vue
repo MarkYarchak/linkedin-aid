@@ -4,9 +4,6 @@ import { useDataStore } from '@/store/data-store';
 import { storageService } from '@/services/storage-service';
 import { titleTargets, titleStates, generateLeadTitle } from '@/helpers/title-helper';
 import AppPreviewBox from '@/components/ui/AppPreviewBox.vue';
-import IconCross from '@/components/icons/IconCross.vue';
-import IconChevronUp from '@/components/icons/IconChevronUp.vue';
-import IconChevronDown from '@/components/icons/IconChevronDown.vue';
 import type { TitleTarget, TitleState } from '@/helpers/title-helper';
 
 const { copyLeadSettings } = useDataStore();
@@ -219,7 +216,7 @@ const resetToDefaults = () => {
                     @click="moveTargetUp(index)"
                     :disabled="index === 0"
                   >
-                    <IconChevronUp size="16" />
+                    <v-icon size="20">mdi-chevron-up</v-icon>
                   </v-btn>
                   <v-btn
                     icon
@@ -229,7 +226,7 @@ const resetToDefaults = () => {
                     @click="moveTargetDown(index)"
                     :disabled="index === localSettings.titleTargets.length - 1"
                   >
-                    <IconChevronDown size="16" />
+                    <v-icon size="20">mdi-chevron-down</v-icon>
                   </v-btn>
                 </div>
                 <v-btn
@@ -241,7 +238,7 @@ const resetToDefaults = () => {
                   @click="removeTarget(index)"
                   :disabled="localSettings.titleTargets.length <= 1"
                 >
-                  <IconCross size="16" />
+                  <v-icon size="18">mdi-close</v-icon>
                 </v-btn>
               </div>
             </div>
@@ -310,7 +307,7 @@ const resetToDefaults = () => {
                     @click="moveStateUp(index)"
                     :disabled="index === 0"
                   >
-                    <IconChevronUp size="16" />
+                    <v-icon size="20">mdi-chevron-up</v-icon>
                   </v-btn>
                   <v-btn
                     icon
@@ -320,7 +317,7 @@ const resetToDefaults = () => {
                     @click="moveStateDown(index)"
                     :disabled="index === localSettings.titleStates.length - 1"
                   >
-                    <IconChevronDown size="16" />
+                    <v-icon size="20">mdi-chevron-down</v-icon>
                   </v-btn>
                 </div>
                 <v-btn
@@ -332,7 +329,7 @@ const resetToDefaults = () => {
                   @click="removeState(index)"
                   :disabled="localSettings.titleStates.length <= 1"
                 >
-                  <IconCross size="16" />
+                  <v-icon size="18">mdi-close</v-icon>
                 </v-btn>
               </div>
             </div>
