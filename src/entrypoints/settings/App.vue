@@ -1,5 +1,4 @@
 <script lang="ts" setup>
-import { browser } from 'wxt/browser';
 import { useDataStore } from '@/store/data-store';
 import { useAppTheme } from '@/composables/useTheme';
 import SettingsView from '@/components/views/SettingsView.vue';
@@ -9,8 +8,6 @@ const { initTheme } = useAppTheme();
 
 loadData();
 initTheme();
-
-const version = browser.runtime.getManifest().version;
 </script>
 
 <template>
@@ -31,10 +28,6 @@ const version = browser.runtime.getManifest().version;
       <v-main>
         <SettingsView />
       </v-main>
-
-      <v-footer app name="app-footer" border>
-        LinkedIn AID v{{ version }}
-      </v-footer>
     </template>
   </v-app>
 </template>

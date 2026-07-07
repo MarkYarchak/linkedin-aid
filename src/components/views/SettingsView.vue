@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import { ref } from 'vue';
+import { browser } from 'wxt/browser';
 const SettingsEntitiesTab = defineAsyncComponent(() => import('@/components/settings/SettingsEntitiesTab.vue'));
 const SettingsSessionsTab = defineAsyncComponent(() => import('@/components/settings/SettingsSessionsTab.vue'));
 const SettingsTitlesTab = defineAsyncComponent(() => import('@/components/settings/SettingsTitlesTab.vue'));
@@ -14,6 +15,8 @@ const tabs = ref([
   { title: 'Copy', value: 'copy', getComponent: () => SettingsCopyTab },
 ]);
 const activeTab = ref(0);
+
+const version = browser.runtime.getManifest().version;
 </script>
 
 <template>
@@ -39,6 +42,13 @@ const activeTab = ref(0);
           </v-item>
         </v-list>
       </v-item-group>
+
+      <template #append>
+        <v-divider />
+        <v-footer>
+          LinkedIn AID v{{ version }}
+        </v-footer>
+      </template>
     </v-navigation-drawer>
 
     <v-item-group v-model="activeTab" mandatory>
