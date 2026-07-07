@@ -157,7 +157,7 @@ const resetToDefaults = () => {
 
     <v-card title="Live Preview" class="mb-4">
       <v-card-text>
-        <p class="text-caption text-medium-emphasis mb-2">How the lead title looks with current defaults:</p>
+        <div class="text-caption text-medium-emphasis mb-2">How the lead title looks with current defaults:</div>
         <AppPreviewBox mini wrap-text>
           {{ previewTitle }}
         </AppPreviewBox>
@@ -166,69 +166,73 @@ const resetToDefaults = () => {
 
     <v-card ref="targetCard" title="Title Targets" class="mb-4">
       <v-card-text>
-        <p class="text-caption text-medium-emphasis mb-4">Targets represent the type of lead's business (e.g. SaaS, Agency).</p>
+        <div class="text-caption text-medium-emphasis mb-4">Targets represent the type of lead's business (e.g. SaaS, Agency).</div>
         <div class="editable-list">
-          <div class="list-header">
-            <span class="header-label">Default</span>
-            <span class="header-label">Emoji</span>
-            <span class="header-label">Label</span>
-            <span class="header-label actions-header">Actions</span>
-          </div>
+          <v-row no-gutters class="px-2 mb-2 ga-2">
+            <v-col cols="auto" style="width: 52px" class="text-center text-caption font-weight-bold text-medium-emphasis text-uppercase">Default</v-col>
+            <v-col cols="auto" style="width: 60px" class="text-center text-caption font-weight-bold text-medium-emphasis text-uppercase">Emoji</v-col>
+            <v-col class="text-caption font-weight-bold text-medium-emphasis text-uppercase">Label</v-col>
+            <v-col cols="auto" style="width: 110px" class="text-right text-caption font-weight-bold text-medium-emphasis text-uppercase pr-1">Actions</v-col>
+          </v-row>
+
           <v-radio-group v-model="localSettings.selectedTarget" hide-details>
-            <div
+            <v-row
               v-for="(target, index) in localSettings.titleTargets"
               :key="target.value"
-              class="editable-row"
-              :class="{ 'is-default': localSettings.selectedTarget === target.value }"
+              no-gutters
+              align="center"
+              :class="{ 'bg-blue-lighten-5': localSettings.selectedTarget === target.value }"
+              class="px-2 py-1 rounded-lg mb-1 transition-swing ga-2"
             >
-              <div class="radio-wrapper">
+              <v-col cols="auto" style="width: 52px" class="d-flex justify-center">
                 <v-radio
                   :value="target.value"
                   color="#0073b1"
                   density="compact"
                   hide-details
                 ></v-radio>
-              </div>
-              <v-text-field
-                v-model="target.emoji"
-                placeholder="Emoji"
-                density="compact"
-                hide-details
-                variant="outlined"
-                class="emoji-input-field"
-              ></v-text-field>
-              <v-text-field
-                v-model="target.label"
-                placeholder="Label"
-                density="compact"
-                hide-details
-                variant="outlined"
-                class="label-input-field"
-              ></v-text-field>
+              </v-col>
+              <v-col cols="auto" style="width: 60px">
+                <v-text-field
+                  v-model="target.emoji"
+                  placeholder="Emoji"
+                  density="compact"
+                  hide-details
+                  variant="outlined"
+                  class="emoji-input-field"
+                ></v-text-field>
+              </v-col>
+              <v-col>
+                <v-text-field
+                  v-model="target.label"
+                  placeholder="Label"
+                  density="compact"
+                  hide-details
+                  variant="outlined"
+                ></v-text-field>
+              </v-col>
 
-              <div class="row-actions">
-                <div class="reorder-btns">
-                  <v-btn
-                    icon
-                    variant="text"
-                    size="x-small"
-                    title="Move Up"
-                    @click="moveTargetUp(index)"
-                    :disabled="index === 0"
-                  >
-                    <v-icon size="20">mdi-chevron-up</v-icon>
-                  </v-btn>
-                  <v-btn
-                    icon
-                    variant="text"
-                    size="x-small"
-                    title="Move Down"
-                    @click="moveTargetDown(index)"
-                    :disabled="index === localSettings.titleTargets.length - 1"
-                  >
-                    <v-icon size="20">mdi-chevron-down</v-icon>
-                  </v-btn>
-                </div>
+              <v-col cols="auto" style="width: 110px" class="d-flex justify-end ga-1">
+                <v-btn
+                  icon
+                  variant="text"
+                  size="x-small"
+                  title="Move Up"
+                  @click="moveTargetUp(index)"
+                  :disabled="index === 0"
+                >
+                  <v-icon size="20">mdi-chevron-up</v-icon>
+                </v-btn>
+                <v-btn
+                  icon
+                  variant="text"
+                  size="x-small"
+                  title="Move Down"
+                  @click="moveTargetDown(index)"
+                  :disabled="index === localSettings.titleTargets.length - 1"
+                >
+                  <v-icon size="20">mdi-chevron-down</v-icon>
+                </v-btn>
                 <v-btn
                   icon
                   variant="text"
@@ -240,8 +244,8 @@ const resetToDefaults = () => {
                 >
                   <v-icon size="18">mdi-close</v-icon>
                 </v-btn>
-              </div>
-            </div>
+              </v-col>
+            </v-row>
           </v-radio-group>
           <v-btn
             variant="tonal"
@@ -257,69 +261,73 @@ const resetToDefaults = () => {
 
     <v-card ref="stateCard" title="Title States" class="mb-4">
       <v-card-text>
-        <p class="text-caption text-medium-emphasis mb-4">States represent your current interaction status with the lead.</p>
+        <div class="text-caption text-medium-emphasis mb-4">States represent your current interaction status with the lead.</div>
         <div class="editable-list">
-          <div class="list-header">
-            <span class="header-label">Default</span>
-            <span class="header-label">Emoji</span>
-            <span class="header-label">Label</span>
-            <span class="header-label actions-header">Actions</span>
-          </div>
+          <v-row no-gutters class="px-2 mb-2 ga-2">
+            <v-col cols="auto" style="width: 52px" class="text-center text-caption font-weight-bold text-medium-emphasis text-uppercase">Default</v-col>
+            <v-col cols="auto" style="width: 60px" class="text-center text-caption font-weight-bold text-medium-emphasis text-uppercase">Emoji</v-col>
+            <v-col class="text-caption font-weight-bold text-medium-emphasis text-uppercase">Label</v-col>
+            <v-col cols="auto" style="width: 110px" class="text-right text-caption font-weight-bold text-medium-emphasis text-uppercase pr-1">Actions</v-col>
+          </v-row>
+
           <v-radio-group v-model="localSettings.selectedState" hide-details>
-            <div
+            <v-row
               v-for="(state, index) in localSettings.titleStates"
               :key="state.value"
-              class="editable-row"
-              :class="{ 'is-default': localSettings.selectedState === state.value }"
+              align="center"
+              density="compact"
+              :class="{ 'bg-blue-lighten-5': localSettings.selectedState === state.value }"
+              class="px-2 py-1 rounded-lg transition-swing ga-2"
             >
-              <div class="radio-wrapper">
+              <v-col cols="auto" style="width: 52px" class="d-flex justify-center">
                 <v-radio
                   :value="state.value"
                   color="#0073b1"
                   density="compact"
                   hide-details
                 ></v-radio>
-              </div>
-              <v-text-field
-                v-model="state.emoji"
-                placeholder="Emoji"
-                density="compact"
-                hide-details
-                variant="outlined"
-                class="emoji-input-field"
-              ></v-text-field>
-              <v-text-field
-                v-model="state.label"
-                placeholder="Label"
-                density="compact"
-                hide-details
-                variant="outlined"
-                class="label-input-field"
-              ></v-text-field>
+              </v-col>
+              <v-col cols="auto" style="width: 60px">
+                <v-text-field
+                  v-model="state.emoji"
+                  placeholder="Emoji"
+                  density="compact"
+                  hide-details
+                  variant="outlined"
+                  class="emoji-input-field"
+                ></v-text-field>
+              </v-col>
+              <v-col>
+                <v-text-field
+                  v-model="state.label"
+                  placeholder="Label"
+                  density="compact"
+                  hide-details
+                  variant="outlined"
+                ></v-text-field>
+              </v-col>
 
-              <div class="row-actions">
-                <div class="reorder-btns">
-                  <v-btn
-                    icon
-                    variant="text"
-                    size="x-small"
-                    title="Move Up"
-                    @click="moveStateUp(index)"
-                    :disabled="index === 0"
-                  >
-                    <v-icon size="20">mdi-chevron-up</v-icon>
-                  </v-btn>
-                  <v-btn
-                    icon
-                    variant="text"
-                    size="x-small"
-                    title="Move Down"
-                    @click="moveStateDown(index)"
-                    :disabled="index === localSettings.titleStates.length - 1"
-                  >
-                    <v-icon size="20">mdi-chevron-down</v-icon>
-                  </v-btn>
-                </div>
+              <v-col cols="auto" style="width: 110px" class="d-flex justify-end ga-1">
+                <v-btn
+                  icon
+                  variant="text"
+                  size="x-small"
+                  title="Move Up"
+                  @click="moveStateUp(index)"
+                  :disabled="index === 0"
+                >
+                  <v-icon size="20">mdi-chevron-up</v-icon>
+                </v-btn>
+                <v-btn
+                  icon
+                  variant="text"
+                  size="x-small"
+                  title="Move Down"
+                  @click="moveStateDown(index)"
+                  :disabled="index === localSettings.titleStates.length - 1"
+                >
+                  <v-icon size="20">mdi-chevron-down</v-icon>
+                </v-btn>
                 <v-btn
                   icon
                   variant="text"
@@ -331,8 +339,8 @@ const resetToDefaults = () => {
                 >
                   <v-icon size="18">mdi-close</v-icon>
                 </v-btn>
-              </div>
-            </div>
+              </v-col>
+            </v-row>
           </v-radio-group>
           <v-btn
             variant="tonal"
@@ -360,87 +368,11 @@ const resetToDefaults = () => {
 </template>
 
 <style scoped>
-.mb-4 {
-  margin-bottom: 16px;
-}
-
-.list-header {
-  display: flex;
-  gap: 8px;
-  padding: 0 4px;
-  margin-bottom: 4px;
-}
-
-.header-label {
-  font-size: 0.7rem;
-  font-weight: 600;
-  color: #94a3b8;
-  text-transform: uppercase;
-}
-
-.header-label:nth-child(1) { width: 56px; text-align: center; }
-.header-label:nth-child(2) { width: 60px; text-align: center; }
-.header-label:nth-child(3) { flex: 1; padding-left: 2px; }
-.header-label.actions-header { width: 110px; text-align: right; padding-right: 4px; }
-
-.editable-list {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.editable-row {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  padding: 4px 8px;
-  transition: all 0.2s;
-  border-radius: 8px;
-  border: 1px solid transparent;
-}
-
-.editable-row.is-default {
-  background-color: #f0f9ff;
-  border: 1px solid #bae6fd;
-}
-
-.editable-row:hover {
-  background-color: #f8fafc;
-}
-
-.editable-row.is-default:hover {
-  background-color: #e0f2fe;
-}
-
-.radio-wrapper {
-  width: 52px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
 .emoji-input-field {
   max-width: 60px;
 }
 
 :deep(.emoji-input-field .v-field__input) {
   text-align: center;
-}
-
-.label-input-field {
-  flex: 1;
-}
-
-.row-actions {
-  display: flex;
-  align-items: center;
-  padding-left: 8px;
-  gap: 8px;
-  justify-content: flex-end;
-}
-
-.reorder-btns {
-  display: flex;
-  gap: 4px;
 }
 </style>

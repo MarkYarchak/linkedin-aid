@@ -23,7 +23,7 @@ const activeTab = ref(0);
         v-model="activeTab"
         mandatory
       >
-        <v-list nav active-color="#0073b1">
+        <v-list nav color="#0073b1">
           <v-item
             v-for="tab in tabs"
             :key="tab.value"

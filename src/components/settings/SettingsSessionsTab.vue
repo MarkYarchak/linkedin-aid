@@ -95,6 +95,7 @@ const clearLeadTitles = async () => {
         v-for="tab in subTabs"
         :key="tab.value"
         :value="tab.value"
+        :variant="$vuetify.theme.current.dark ? undefined : 'outlined'"
         class="flex-grow-1"
       >
         {{ tab.label }}
@@ -200,10 +201,6 @@ const clearLeadTitles = async () => {
 </template>
 
 <style scoped>
-.mb-4 {
-  margin-bottom: 16px;
-}
-
 .empty-state {
   text-align: center;
   color: #64748b;
