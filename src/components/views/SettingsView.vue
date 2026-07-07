@@ -1,6 +1,5 @@
 <script lang="ts" setup>
 import { ref } from 'vue';
-import { browser } from 'wxt/browser';
 import AppSegmentedControl from '@/components/ui/AppSegmentedControl.vue';
 import SettingsEntitiesTab from '@/components/settings/SettingsEntitiesTab.vue';
 import SettingsSessionsTab from '@/components/settings/SettingsSessionsTab.vue';
@@ -16,12 +15,10 @@ const tabs = ref([
   { label: 'Copy', value: 'copy' },
 ]);
 const activeTab = ref('general');
-
-const version = browser.runtime.getManifest().version;
 </script>
 
 <template>
-  <div class="settings-view">
+  <v-container class="settings-view">
     <div class="tabs-container">
       <AppSegmentedControl
         v-model="activeTab"
@@ -34,33 +31,17 @@ const version = browser.runtime.getManifest().version;
     <SettingsSessionsTab v-else-if="activeTab === 'sessions'" />
     <SettingsTitlesTab v-else-if="activeTab === 'titles'" />
     <SettingsCopyTab v-else-if="activeTab === 'copy'" />
-
-    <div class="footer">
-      <p>LinkedIn AID v{{ version }}</p>
-    </div>
-  </div>
+  </v-container>
 </template>
 
 <style scoped>
 .settings-view {
-  padding: 16px;
   display: flex;
   flex-direction: column;
   gap: 16px;
-  min-width: 350px;
-  height: 100%;
-  overflow-y: auto;
-  box-sizing: border-box;
 }
 
 .tabs-container {
   margin-bottom: 4px;
-}
-
-.footer {
-  margin-top: auto;
-  text-align: center;
-  color: #999;
-  font-size: 0.8rem;
 }
 </style>
