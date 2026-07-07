@@ -1,11 +1,14 @@
 <script lang="ts" setup>
 import { browser } from 'wxt/browser';
 import { useDataStore } from '@/store/data-store';
+import { useAppTheme } from '@/composables/useTheme';
 import SettingsView from '@/components/views/SettingsView.vue';
 
 const { isLoaded, loadData } = useDataStore();
+const { initTheme } = useAppTheme();
 
 loadData();
+initTheme();
 
 const version = browser.runtime.getManifest().version;
 </script>

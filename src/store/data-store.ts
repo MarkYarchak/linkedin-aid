@@ -15,6 +15,7 @@ export type SessionData = {
 };
 
 export type LocalData = {
+  theme: 'light' | 'dark' | 'system',
   copyLeadSettings: CopyLeadSettings,
   bulkCopyLeadSettings: {
     leadFields?: any;
@@ -35,6 +36,7 @@ const leadTitles = ref<Record<string, string>>({});
 const copyLeadSettings = ref<CopyLeadSettings | null>(null);
 const bulkCopyLeadSettings = ref<LocalData['bulkCopyLeadSettings'] | null>(null);
 const entitiesTTL = ref<number>(30);
+const theme = ref<LocalData['theme']>('system');
 const isLoaded = ref(false);
 
 // Sync Dexie to Vue refs
@@ -73,7 +75,7 @@ const cleanupOldData = async () => {
 const loadData = async () => {
   const [session, local] = await Promise.all([
     storageService.getSession(['personas', 'lead_titles']),
-    storageService.getLocal(['copyLeadSettings', 'bulkCopyLeadSettings', 'entitiesTTL']),
+    storageService.getLocal(['copyLeadSettings', 'bulkCopyLeadSettings', 'entitiesTTL', 'theme']),
   ]);
 
   if (session.personas) personasStorage.value = session.personas;
@@ -82,6 +84,7 @@ const loadData = async () => {
   if (local.copyLeadSettings) copyLeadSettings.value = local.copyLeadSettings;
   if (local.bulkCopyLeadSettings) bulkCopyLeadSettings.value = local.bulkCopyLeadSettings;
   if (local.entitiesTTL !== undefined) entitiesTTL.value = local.entitiesTTL;
+  if (local.theme) theme.value = local.theme;
 
   await cleanupOldData();
 
@@ -114,6 +117,10 @@ browser.storage.onChanged.addListener((changes, areaName) => {
       const { newValue } = changes.entitiesTTL as CustomStorageChange<LocalData['entitiesTTL']>;
       entitiesTTL.value = newValue || 30;
     }
+    if (changes.theme) {
+      const { newValue } = changes.theme as CustomStorageChange<LocalData['theme']>;
+      theme.value = newValue || 'system';
+    }
   }
 });
 
@@ -127,6 +134,7 @@ export const useDataStore = () => {
     copyLeadSettings: readonly(copyLeadSettings),
     bulkCopyLeadSettings: readonly(bulkCopyLeadSettings),
     entitiesTTL: readonly(entitiesTTL),
+    theme: readonly(theme),
     isLoaded: readonly(isLoaded),
     loadData,
   };
