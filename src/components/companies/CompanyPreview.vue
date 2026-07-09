@@ -85,7 +85,11 @@ const revenueRangeString = computed(() => {
       <div v-if="selectable" class="selection-area">
         <AppCheckbox v-model="selected" @click.stop />
       </div>
-      <CompanyPreviewDense :company="company" />
+      <CompanyPreviewDense :company="company">
+        <template #actions>
+          <slot name="actions" :company="company" />
+        </template>
+      </CompanyPreviewDense>
     </div>
 
     <template v-else>
@@ -100,6 +104,7 @@ const revenueRangeString = computed(() => {
           size="md"
         />
         <h3>{{ company.main?.name }}</h3>
+        <slot name="actions" :company="company" />
       </div>
 
       <div class="info-row">

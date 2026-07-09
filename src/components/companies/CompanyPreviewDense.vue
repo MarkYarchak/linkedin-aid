@@ -37,6 +37,7 @@ const logoUrl = computed(() => {
         <span v-if="company.main?.location" class="location">{{ company.main.location }}</span>
       </div>
     </div>
+    <slot name="actions"></slot>
   </div>
 </template>
 

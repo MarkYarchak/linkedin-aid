@@ -22,7 +22,11 @@ const emit = defineEmits<{
       :lead="lead"
       :selected="selectedUrns?.has(lead.entityUrn)"
       @update:selected="(selected) => emit('update:selected', lead.entityUrn, selected)"
-    />
+    >
+      <template #actions="{ lead: slotLead }">
+        <slot name="actions" :lead="slotLead" />
+      </template>
+    </LeadSearchPreview>
   </div>
 </template>
 

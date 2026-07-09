@@ -5,6 +5,7 @@ import { db } from '@/db/schema';
 import LeadPreviewList from '@/components/leads/LeadPreviewList.vue';
 import CompanyPreview from '@/components/companies/CompanyPreview.vue';
 import SearchSessionPreview from '@/components/search-sessions/SearchSessionPreview.vue';
+import EntityDetailModal from '@/components/settings/dialogs/EntityDetailModal.vue';
 import { matchesLead, matchesCompany, matchesSession } from '@/helpers/entity-search-helper';
 import type { Lead } from '@/types/lead/lead';
 import type { Company } from '@/types/company/company';
@@ -221,6 +222,14 @@ const clearSelectedSessions = async () => {
     alert('Selected search sessions cleared.');
   }
 };
+
+const showDetailModal = ref(false);
+const selectedEntity = ref<Lead | Company | SearchSession | null>(null);
+
+const openDetail = (entity: Lead | Company | SearchSession) => {
+  selectedEntity.value = entity;
+  showDetailModal.value = true;
+};
 </script>
 
 <template>
@@ -290,7 +299,17 @@ const clearSelectedSessions = async () => {
               :leads="paginatedLeads"
               :selected-urns="selectedLeadUrns"
               @update:selected="toggleLeadSelection"
-            />
+            >
+              <template #actions="{ lead }">
+                <v-btn
+                  icon="mdi-note-text-outline"
+                  density="comfortable"
+                  variant="text"
+                  title="View full info"
+                  @click.stop="openDetail(lead as Lead)"
+                />
+              </template>
+            </LeadPreviewList>
 
             <v-pagination
               v-model="leadsPage"
@@ -353,7 +372,18 @@ const clearSelectedSessions = async () => {
                   :dense="isCompaniesDense"
                   :selected="selectedCompanyUrns.has(company.entityUrn)"
                   @update:selected="(val) => toggleCompanySelection(company.entityUrn, val)"
-                />
+                >
+                  <template #actions="{ company: slotCompany }">
+                    <v-btn
+                      :class="{ 'ml-auto': !isCompaniesDense }"
+                      :density="isCompaniesDense ? 'compact' : 'comfortable'"
+                      icon="mdi-note-text-outline"
+                      variant="text"
+                      title="View full info"
+                      @click.stop="openDetail(slotCompany as Company)"
+                    />
+                  </template>
+                </CompanyPreview>
                 <v-divider v-if="index < paginatedCompanies.length - 1" class="my-1" />
               </template>
             </div>
@@ -403,7 +433,17 @@ const clearSelectedSessions = async () => {
                   selectable
                   :selected="selectedSessionIds.has(session.id)"
                   @update:selected="(val) => toggleSessionSelection(session.id, val)"
-                />
+                >
+                  <template #actions="{ session: slotSession }">
+                    <v-btn
+                      density="compact"
+                      icon="mdi-note-text-outline"
+                      variant="text"
+                      title="View full info"
+                      @click.stop="openDetail(slotSession as SearchSession)"
+                    />
+                  </template>
+                </SearchSessionPreview>
                 <v-divider v-if="index < paginatedSessions.length - 1" class="my-1" />
               </template>
             </div>
@@ -422,6 +462,11 @@ const clearSelectedSessions = async () => {
         </div>
       </v-card-text>
     </v-card>
+
+    <EntityDetailModal
+      v-model="showDetailModal"
+      :entity="selectedEntity"
+    />
   </div>
 </template>
 

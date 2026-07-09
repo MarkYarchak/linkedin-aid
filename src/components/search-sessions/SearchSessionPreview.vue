@@ -43,6 +43,7 @@ const title = computed(() => props.session.searchTitle || props.session.id);
         {{ session.query }}
       </div>
     </div>
+    <slot name="actions" :session="session" />
   </div>
 </template>
 

@@ -127,6 +127,7 @@ const secondDegreeBadge = computed(() => {
           <p v-else class="summary">{{ summary }}</p>
         </template>
       </div>
+      <slot name="actions" :lead="lead" />
     </div>
   </div>
 </template>
