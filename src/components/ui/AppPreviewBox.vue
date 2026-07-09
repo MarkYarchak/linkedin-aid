@@ -9,6 +9,7 @@ interface Props {
   editablePrefix?: boolean;
   deep?: number;
   isCopied?: boolean;
+  contentMaxHeight?: string;
 }
 
 withDefaults(defineProps<Props>(), {
@@ -18,6 +19,7 @@ withDefaults(defineProps<Props>(), {
   editablePrefix: false,
   deep: 3,
   isCopied: false,
+  contentMaxHeight: '320px',
 });
 
 const prefix = defineModel('prefix', { default: ''});
@@ -31,7 +33,7 @@ const prefix = defineModel('prefix', { default: ''});
     <div v-if="$slots.prepend" class="preview-prepend">
       <slot name="prepend" />
     </div>
-    <div class="content-container">
+    <div :style="{ maxHeight: contentMaxHeight }" class="content-container">
       <div v-if="$slots.header || editablePrefix" class="content-header">
         <slot name="header"></slot>
 
@@ -95,7 +97,6 @@ const prefix = defineModel('prefix', { default: ''});
 }
 
 .content-container {
-  max-height: 320px;
   overflow: hidden;
   flex: 1;
   display: flex;

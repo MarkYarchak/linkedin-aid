@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import { computed, ref } from 'vue';
+import AppPreviewBox from '@/components/ui/AppPreviewBox.vue';
 import type { Lead } from '@/types/lead/lead';
 import type { Company } from '@/types/company/company';
 import type { SearchSession } from '@/types/search/search';
@@ -60,16 +61,18 @@ const entityName = computed(() => {
   }
 });
 
-const formattedJson = computed(() => {
-  if (!props.entity) return '';
-  return JSON.stringify(props.entity, null, 2);
+const jsonData = computed(() => {
+  if (!props.entity) return {};
+  return props.entity;
 });
 
+const wrapJsonData = ref(false);
 const isCopied = ref(false);
 
 const copyJson = async () => {
   try {
-    await navigator.clipboard.writeText(formattedJson.value);
+    const formatterJson = JSON.stringify(jsonData.value, null, 2);
+    await navigator.clipboard.writeText(formatterJson);
     isCopied.value = true;
     setTimeout(() => {
       isCopied.value = false;
@@ -190,20 +193,29 @@ const close = () => {
           </v-window-item>
 
           <v-window-item value="raw">
-            <div class="d-flex justify-end mb-2">
-              <v-btn
-                size="small"
-                variant="tonal"
-                :color="isCopied ? 'success' : 'primary'"
-                :prepend-icon="isCopied ? 'mdi-check' : 'mdi-content-copy'"
-                @click="copyJson"
-              >
-                {{ isCopied ? 'Copied!' : 'Copy JSON' }}
-              </v-btn>
-            </div>
-            <div class="json-container">
-              <pre class="json-content">{{ formattedJson }}</pre>
-            </div>
+            <AppPreviewBox
+              :json="jsonData"
+              :wrap-text="wrapJsonData"
+              :is-copied="isCopied"
+              :deep="5"
+              content-max-height="544px"
+            >
+              <template #header>
+                <v-btn
+                  size="small"
+                  variant="tonal"
+                  :color="isCopied ? 'success' : 'primary'"
+                  :prepend-icon="isCopied ? 'mdi-check' : 'mdi-content-copy'"
+                  @click="copyJson"
+                >
+                  {{ isCopied ? 'Copied!' : 'Copy JSON' }}
+                </v-btn>
+                <v-checkbox-btn
+                  v-model="wrapJsonData"
+                  label="Wrap text"
+                />
+              </template>
+            </AppPreviewBox>
           </v-window-item>
         </v-window>
       </v-card-text>
@@ -225,23 +237,6 @@ const close = () => {
 </template>
 
 <style scoped>
-.json-container {
-  background-color: #1e293b;
-  color: #e2e8f0;
-  padding: 16px;
-  border-radius: 8px;
-  overflow: auto;
-  font-family: 'Fira Code', 'Cascadia Code', 'Source Code Pro', monospace;
-  font-size: 0.85rem;
-  line-height: 1.5;
-}
-
-.json-content {
-  margin: 0;
-  white-space: pre-wrap;
-  word-break: break-all;
-}
-
 :deep(.v-list-item-subtitle) {
   opacity: 1;
 }
