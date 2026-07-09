@@ -301,13 +301,35 @@ const openDetail = (entity: Lead | Company | SearchSession) => {
               @update:selected="toggleLeadSelection"
             >
               <template #actions="{ lead }">
-                <v-btn
-                  icon="mdi-note-text-outline"
-                  density="comfortable"
-                  variant="text"
-                  title="View full info"
-                  @click.stop="openDetail(lead as Lead)"
-                />
+                <v-menu
+                  transition="scale-transition"
+                  origin="top right"
+                  contained
+                  @click.stop
+                >
+                  <template #activator="{ props }">
+                    <v-btn
+                      icon="mdi-dots-vertical"
+                      density="comfortable"
+                      v-bind="props"
+                      variant="text"
+                    />
+                  </template>
+
+                  <v-list density="comfortable">
+                    <v-list-item
+                      prepend-icon="mdi-note-text-outline"
+                      @click.stop="openDetail(lead as Lead)"
+                    >
+                      <v-list-item-title>View full info</v-list-item-title>
+                    </v-list-item>
+                    <v-list-item
+                      prepend-icon="mdi-link-edit"
+                    >
+                      <v-list-item-title>Edit relations</v-list-item-title>
+                    </v-list-item>
+                  </v-list>
+                </v-menu>
               </template>
             </LeadPreviewList>
 
