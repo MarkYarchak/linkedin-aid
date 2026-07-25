@@ -6,6 +6,7 @@ import LeadPreviewList from '@/components/leads/LeadPreviewList.vue';
 import CompanyPreview from '@/components/companies/CompanyPreview.vue';
 import SearchSessionPreview from '@/components/search-sessions/SearchSessionPreview.vue';
 import EntityDetailModal from '@/components/settings/dialogs/EntityDetailModal.vue';
+import LeadPositionRelationModal from '@/components/settings/dialogs/LeadPositionRelationModal.vue';
 import { matchesLead, matchesCompany, matchesSession } from '@/helpers/entity-search-helper';
 import type { Lead } from '@/types/lead/lead';
 import type { Company } from '@/types/company/company';
@@ -171,7 +172,10 @@ const allSessionsSelected = computed({
 
 const clearLeads = async () => {
   if (confirm('Are you sure you want to clear all stored leads?')) {
-    await db.leads.clear();
+    await db.transaction('rw', db.leads, db.leadPositionRelations, async () => {
+      await db.leads.clear();
+      await db.leadPositionRelations.clear();
+    });
     selectedLeadUrns.value = new Set();
     alert('Leads cleared.');
   }
@@ -181,7 +185,10 @@ const clearSelectedLeads = async () => {
   const urns = Array.from(selectedLeadUrns.value);
   if (urns.length === 0) return;
   if (confirm(`Are you sure you want to clear ${urns.length} selected leads?`)) {
-    await db.leads.bulkDelete(urns);
+    await db.transaction('rw', db.leads, db.leadPositionRelations, async () => {
+      await db.leads.bulkDelete(urns);
+      await db.leadPositionRelations.where('leadUrn').anyOf(urns).delete();
+    });
     selectedLeadUrns.value = new Set();
     alert('Selected leads cleared.');
   }
@@ -229,6 +236,14 @@ const selectedEntity = ref<Lead | Company | SearchSession | null>(null);
 const openDetail = (entity: Lead | Company | SearchSession) => {
   selectedEntity.value = entity;
   showDetailModal.value = true;
+};
+
+const showRelationModal = ref(false);
+const selectedLeadForRelation = ref<Lead | null>(null);
+
+const openRelationModal = (lead: Lead) => {
+  selectedLeadForRelation.value = lead;
+  showRelationModal.value = true;
 };
 </script>
 
@@ -325,6 +340,7 @@ const openDetail = (entity: Lead | Company | SearchSession) => {
                     </v-list-item>
                     <v-list-item
                       prepend-icon="mdi-link-edit"
+                      @click.stop="openRelationModal(lead as Lead)"
                     >
                       <v-list-item-title>Edit relations</v-list-item-title>
                     </v-list-item>
@@ -488,6 +504,11 @@ const openDetail = (entity: Lead | Company | SearchSession) => {
     <EntityDetailModal
       v-model="showDetailModal"
       :entity="selectedEntity"
+    />
+
+    <LeadPositionRelationModal
+      v-model="showRelationModal"
+      :lead="selectedLeadForRelation"
     />
   </div>
 </template>

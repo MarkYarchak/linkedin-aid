@@ -1,4 +1,4 @@
-import { ref, readonly } from 'vue';
+import { ref, readonly, computed } from 'vue';
 import { browser } from 'wxt/browser';
 import { liveQuery } from 'dexie';
 import ms from 'ms';
@@ -7,6 +7,7 @@ import { storageService } from '@/services/storage-service';
 import type { Lead } from '@/types/lead/lead';
 import type { Company } from '@/types/company/company';
 import type { SearchSession, PersonasStorage } from '@/types/search/search';
+import type { LeadPositionRelation } from '@/types/lead/lead-position-relation';
 import type { CopyLeadSettings } from '@/types/copy-lead-settings';
 
 export type SessionData = {
@@ -31,6 +32,7 @@ export type CustomStorageChange<T = unknown> = { oldValue: T, newValue: T };
 const leadsMap = ref<Record<string, Lead>>({});
 const companiesMap = ref<Record<string, Company>>({});
 const sessionsMap = ref<Record<string, SearchSession>>({});
+const leadPositionRelations = ref<LeadPositionRelation[]>([]);
 const personasStorage = ref<PersonasStorage>({ general: [], byCompany: {} });
 const leadTitles = ref<Record<string, string>>({});
 const copyLeadSettings = ref<CopyLeadSettings | null>(null);
@@ -58,17 +60,28 @@ liveQuery(() => db.searchSessions.toArray()).subscribe((sessions) => {
   sessionsMap.value = map;
 });
 
+liveQuery(() => db.leadPositionRelations.toArray()).subscribe((relations) => {
+  leadPositionRelations.value = relations;
+});
+
 const cleanupOldData = async () => {
   if (entitiesTTL.value === -1) return;
 
   const threshold = Date.now() - ms(`${entitiesTTL.value}d`);
 
-  const oldLeadsCount = await db.leads.where('updatedAt').below(threshold).delete();
+  const oldLeadUrns = await db.leads.where('updatedAt').below(threshold).primaryKeys();
   const oldCompaniesCount = await db.companies.where('updatedAt').below(threshold).delete();
   const oldSessionsCount = await db.searchSessions.where('updatedAt').below(threshold).delete();
 
-  if (oldLeadsCount > 0 || oldCompaniesCount > 0 || oldSessionsCount > 0) {
-    console.log(`Cleaned up ${oldLeadsCount} leads, ${oldCompaniesCount} companies, and ${oldSessionsCount} sessions older than ${entitiesTTL.value} days.`);
+  if (oldLeadUrns.length > 0) {
+    await db.transaction('rw', db.leads, db.leadPositionRelations, async () => {
+      await db.leads.bulkDelete(oldLeadUrns);
+      await db.leadPositionRelations.where('leadUrn').anyOf(oldLeadUrns).delete();
+    });
+  }
+
+  if (oldLeadUrns.length > 0 || oldCompaniesCount > 0 || oldSessionsCount > 0) {
+    console.log(`Cleaned up ${oldLeadUrns.length} leads (and their relations), ${oldCompaniesCount} companies, and ${oldSessionsCount} sessions older than ${entitiesTTL.value} days.`);
   }
 };
 
@@ -125,10 +138,19 @@ browser.storage.onChanged.addListener((changes, areaName) => {
 });
 
 export const useDataStore = () => {
+  const leadPositionRelationsMap = computed(() => {
+    const map: Record<string, Record<number, string>> = {};
+    leadPositionRelations.value.forEach(r => {
+      map[r.leadUrn] = r.relations;
+    });
+    return map;
+  });
+
   return {
     leadsMap: readonly(leadsMap),
     companiesMap: readonly(companiesMap),
     sessionsMap: readonly(sessionsMap),
+    leadPositionRelationsMap,
     personasStorage: readonly(personasStorage),
     leadTitles: readonly(leadTitles),
     copyLeadSettings: readonly(copyLeadSettings),

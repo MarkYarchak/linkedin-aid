@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import { computed, ref } from 'vue';
+import { useDataStore } from '@/store/data-store';
 import AppPreviewBox from '@/components/ui/AppPreviewBox.vue';
 import type { Lead } from '@/types/lead/lead';
 import type { Company } from '@/types/company/company';
@@ -14,6 +15,21 @@ interface Props {
 
 const props = defineProps<Props>();
 const emit = defineEmits(['update:modelValue', 'close']);
+
+const { leadPositionRelationsMap, companiesMap } = useDataStore();
+
+const customRelations = computed(() => {
+  if (!props.entity || !isLead(props.entity)) return [];
+  const relations = leadPositionRelationsMap.value[props.entity.entityUrn] || {};
+  return Object.entries(relations).map(([posId, companyUrn]) => {
+    const company = companiesMap.value[companyUrn];
+    return {
+      posId: parseInt(posId),
+      companyUrn,
+      name: company?.main?.name || 'Linked Company'
+    };
+  });
+});
 
 const show = computed({
   get: () => props.modelValue,
@@ -98,11 +114,11 @@ const close = () => {
       <v-toolbar
         color="primary"
         density="compact"
+        class="ga-2"
       >
-        <v-toolbar-title class="text-subtitle-1">
+        <v-toolbar-title>
           {{ entityType }} Details: {{ entityName }}
         </v-toolbar-title>
-        <v-spacer></v-spacer>
         <v-btn icon="mdi-close" variant="text" @click="close"></v-btn>
       </v-toolbar>
 
@@ -156,6 +172,13 @@ const close = () => {
                   <v-list-item-title class="font-weight-bold">Location</v-list-item-title>
                   <v-list-item-subtitle>
                     {{ entity.main?.location || entity.searchResult?.geoRegion || 'N/A' }}
+                  </v-list-item-subtitle>
+                </v-list-item>
+                <v-list-item v-if="customRelations.length > 0">
+                  <v-list-item-title class="font-weight-bold">Manually Linked Companies</v-list-item-title>
+                  <v-list-item-subtitle v-for="rel in customRelations" :key="rel.posId" class="text-primary font-weight-bold">
+                    <v-icon icon="mdi-link" size="small" class="mr-1" />
+                    Pos {{ rel.posId }}: {{ rel.name }}
                   </v-list-item-subtitle>
                 </v-list-item>
               </template>

@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import { computed, ref } from 'vue';
+import { useDataStore } from '@/store/data-store';
 import AppAvatar from '@/components/ui/AppAvatar.vue';
 import AppCheckbox from '@/components/ui/AppCheckbox.vue';
 import IconLocation from '@/components/icons/IconLocation.vue';
@@ -14,6 +15,8 @@ interface Props {
 const props = defineProps<Props>();
 
 const selected = defineModel<boolean>('selected', { default: false });
+
+const { leadPositionRelationsMap, companiesMap } = useDataStore();
 
 const avatarUrl = computed(() => {
   const { searchResult } = props.lead;
@@ -40,7 +43,34 @@ const currentPositions = computed(() => {
   return props.lead.searchResult?.currentPositions || props.lead.main?.positions.filter(p => p.current) || [];
 });
 
-const primaryPosition = computed(() => currentPositions.value[0]);
+const primaryPosition = computed(() => {
+  const relations = leadPositionRelationsMap.value[props.lead.entityUrn] || {};
+  const current = currentPositions.value;
+
+  for (const pos of current) {
+    if (relations[pos.posId]) {
+      const companyUrn = relations[pos.posId];
+      const company = companiesMap.value[companyUrn];
+      return {
+        ...pos,
+        companyUrn,
+        companyName: company?.main?.name || pos.companyName,
+        isManuallyLinked: true
+      };
+    }
+  }
+
+  return current[0];
+});
+
+const customRelations = computed(() => {
+  const relations = leadPositionRelationsMap.value[props.lead.entityUrn] || {};
+  return Object.entries(relations).map(([posId, companyUrn]) => ({
+    posId: parseInt(posId),
+    companyUrn,
+    name: companiesMap.value[companyUrn]?.main?.name || 'Linked Company'
+  }));
+});
 
 const tenure = computed(() => {
   const pos = primaryPosition.value;
@@ -91,6 +121,15 @@ const secondDegreeBadge = computed(() => {
           <span v-if="isPremium" class="premium-icon" title="Premium">in</span>
           <span v-if="isSaved" class="saved-badge">Saved</span>
           <span v-if="secondDegreeBadge" class="connection-badge">{{ secondDegreeBadge.displayValue }}</span>
+          <span
+            v-for="rel in customRelations"
+            :key="rel.posId"
+            class="custom-company-badge"
+            :title="`Manually linked to ${rel.name}`"
+          >
+            <v-icon icon="mdi-link" size="10" class="mr-1" />
+            {{ rel.name }}
+          </span>
         </div>
 
         <div class="location-row">
@@ -213,6 +252,16 @@ const secondDegreeBadge = computed(() => {
   background-color: #f3f3f3;
   padding: 1px 4px;
   border-radius: 4px;
+}
+
+.custom-company-badge {
+  font-size: 10px;
+  color: white;
+  background-color: #0073b1;
+  padding: 1px 4px;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
 }
 
 .company-row {
