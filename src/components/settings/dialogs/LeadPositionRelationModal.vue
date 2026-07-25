@@ -2,6 +2,7 @@
 import { computed, ref, watch } from 'vue';
 import { useDataStore } from '@/store/data-store';
 import { db } from '@/db/schema';
+import { deepToRaw } from '@/helpers/vue-helper';
 import CompanyPreview from '@/components/companies/CompanyPreview.vue';
 import type { Lead } from '@/types/lead/lead';
 import type { Company } from '@/types/company/company';
@@ -90,7 +91,7 @@ const saveRelations = async () => {
     const existing = await db.leadPositionRelations.get(leadUrn);
     await db.leadPositionRelations.put({
       leadUrn,
-      relations: selectedRelations.value,
+      relations: deepToRaw(selectedRelations.value),
       createdAt: existing?.createdAt || now,
       updatedAt: now
     });
