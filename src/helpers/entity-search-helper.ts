@@ -2,13 +2,18 @@ import type { Lead } from '@/types/lead/lead';
 import type { Company } from '@/types/company/company';
 import type { SearchSession } from '@/types/search/search';
 
-export function matchesLead(lead: Lead, query: string): boolean {
+export function matchesLead(
+  lead: Lead,
+  query: string,
+  relationsMap?: Record<string, Record<number, string>>,
+  companiesMap?: Record<string, Company>
+): boolean {
   if (!query) return true;
   const q = query.toLowerCase();
   const main = lead.main;
   const sr = lead.searchResult;
 
-  return (
+  const matchesBase = (
     main?.fullName?.toLowerCase().includes(q) ||
     main?.headline?.toLowerCase().includes(q) ||
     main?.location?.toLowerCase().includes(q) ||
@@ -18,6 +23,21 @@ export function matchesLead(lead: Lead, query: string): boolean {
     sr?.summary?.toLowerCase().includes(q) ||
     sr?.currentPositions?.some(p => p.title?.toLowerCase().includes(q) || p.companyName?.toLowerCase().includes(q))
   ) ?? false;
+
+  if (matchesBase) return true;
+
+  // Check manual relations
+  if (relationsMap && companiesMap) {
+    const relations = relationsMap[lead.entityUrn];
+    if (relations) {
+      return Object.values(relations).some(companyUrn => {
+        const company = companiesMap[companyUrn];
+        return company?.main?.name?.toLowerCase().includes(q);
+      });
+    }
+  }
+
+  return false;
 }
 
 export function matchesCompany(company: Company, query: string): boolean {

@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import { computed, ref } from 'vue';
 import { useDataStore } from '@/store/data-store';
+import { getEffectivePositions } from '@/helpers/lead-helper';
 import AppAvatar from '@/components/ui/AppAvatar.vue';
 import AppCheckbox from '@/components/ui/AppCheckbox.vue';
 import IconLocation from '@/components/icons/IconLocation.vue';
@@ -40,36 +41,14 @@ const summary = computed(() => {
 });
 
 const currentPositions = computed(() => {
-  return props.lead.searchResult?.currentPositions || props.lead.main?.positions.filter(p => p.current) || [];
+  const positions = props.lead.searchResult?.currentPositions || props.lead.main?.positions.filter(p => p.current) || [];
+  return getEffectivePositions(props.lead.entityUrn, positions as any[], leadPositionRelationsMap.value, companiesMap.value);
 });
 
 const primaryPosition = computed(() => {
-  const relations = leadPositionRelationsMap.value[props.lead.entityUrn] || {};
   const current = currentPositions.value;
-
-  for (const pos of current) {
-    if (relations[pos.posId]) {
-      const companyUrn = relations[pos.posId];
-      const company = companiesMap.value[companyUrn];
-      return {
-        ...pos,
-        companyUrn,
-        companyName: company?.main?.name || pos.companyName,
-        isManuallyLinked: true
-      };
-    }
-  }
-
-  return current[0];
-});
-
-const customRelations = computed(() => {
-  const relations = leadPositionRelationsMap.value[props.lead.entityUrn] || {};
-  return Object.entries(relations).map(([posId, companyUrn]) => ({
-    posId: parseInt(posId),
-    companyUrn,
-    name: companiesMap.value[companyUrn]?.main?.name || 'Linked Company'
-  }));
+  const manual = current.find(p => (p as any).isManuallyLinked);
+  return manual || current[0];
 });
 
 const tenure = computed(() => {
@@ -121,15 +100,6 @@ const secondDegreeBadge = computed(() => {
           <span v-if="isPremium" class="premium-icon" title="Premium">in</span>
           <span v-if="isSaved" class="saved-badge">Saved</span>
           <span v-if="secondDegreeBadge" class="connection-badge">{{ secondDegreeBadge.displayValue }}</span>
-          <span
-            v-for="rel in customRelations"
-            :key="rel.posId"
-            class="custom-company-badge"
-            :title="`Manually linked to ${rel.name}`"
-          >
-            <v-icon icon="mdi-link" size="10" class="mr-1" />
-            {{ rel.name }}
-          </span>
         </div>
 
         <div class="location-row">
@@ -141,7 +111,10 @@ const secondDegreeBadge = computed(() => {
           <div class="company-row">
             <span class="title">{{ primaryPosition.title }}</span>
             <span>&middot;</span>
-            <span class="company-name">{{ primaryPosition.companyName }}</span>
+            <span class="company-name" :class="{ 'manually-linked': (primaryPosition as any).isManuallyLinked }">
+              <v-icon v-if="(primaryPosition as any).isManuallyLinked" icon="mdi-link" size="12" class="mr-1" />
+              {{ primaryPosition.companyName }}
+            </span>
             <span v-if="tenure" class="tenure">({{ tenure }})</span>
           </div>
           <div v-if="industry" class="industry">
@@ -262,6 +235,11 @@ const secondDegreeBadge = computed(() => {
   border-radius: 4px;
   display: inline-flex;
   align-items: center;
+}
+
+.company-name.manually-linked {
+  color: #0a66c2;
+  font-weight: 500;
 }
 
 .company-row {

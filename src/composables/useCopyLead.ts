@@ -1,5 +1,6 @@
 import { ref, computed, onMounted, watch } from 'vue';
 import { useDataStore } from '@/store/data-store';
+import { getEffectivePositions } from '@/helpers/lead-helper';
 import { companyService } from '@/services/company-service';
 import { storageService } from '@/services/storage-service';
 import { sanitizeText } from '@/helpers/text-helper';
@@ -43,12 +44,12 @@ export function useCopyLead(lead: OptionalDeepReadonly<Lead>) {
   const primaryPositionId = ref<number | null>(null);
 
   const currentPositions = computed(() => {
-    return lead.main?.positions?.filter(p => p.current) || [];
+    return effectivePositions.value.filter(p => p.current) || [];
   });
 
   const selectedPositionUrns = computed(() => {
     return selectedPositionIds.value
-      .map(id => lead.main?.positions.find(p => p.posId === id)?.companyUrn)
+      .map(id => effectivePositions.value.find(p => p.posId === id)?.companyUrn)
       .filter((urn): urn is string => !!urn);
   });
 
@@ -112,7 +113,12 @@ export function useCopyLead(lead: OptionalDeepReadonly<Lead>) {
   const isTitleCopied = ref(false);
   const copyTimeout = ref<ReturnType<typeof setTimeout> | null>(null);
 
-  const { copyLeadSettings, leadTitles } = useDataStore();
+  const { copyLeadSettings, leadTitles, leadPositionRelationsMap, companiesMap } = useDataStore();
+
+  const effectivePositions = computed(() => {
+    const positions = lead.main?.positions || lead.searchResult?.currentPositions || [];
+    return getEffectivePositions(lead.entityUrn, positions as any[], leadPositionRelationsMap.value, companiesMap.value);
+  });
 
   const titleCopyTimeout = ref<ReturnType<typeof setTimeout> | null>(null);
   const sessionTitle = ref<string | null>(null);
@@ -158,7 +164,7 @@ export function useCopyLead(lead: OptionalDeepReadonly<Lead>) {
     // Set default position
     if (lead.main?.defaultPosition) {
       const defPos = lead.main.defaultPosition;
-      const found = lead.main.positions.find(p => p.posId === defPos.posId);
+      const found = effectivePositions.value.find(p => p.posId === defPos.posId);
       if (found) {
         selectedPositionIds.value = [found.posId];
       }
@@ -227,7 +233,7 @@ export function useCopyLead(lead: OptionalDeepReadonly<Lead>) {
 
     if (selectedPositionIds.value.length > 0) {
       selectedPositionIds.value.forEach((posId, index) => {
-        const pos = main?.positions.find(p => p.posId === posId);
+        const pos = effectivePositions.value.find(p => p.posId === posId);
         if (pos) {
           const isPrimary = posId === primaryPositionId.value;
           const num = selectedPositionIds.value.length > 1 ? `${index + 1}. ` : '';
@@ -296,7 +302,7 @@ export function useCopyLead(lead: OptionalDeepReadonly<Lead>) {
       const cMain = company.main;
       const cExtra = company.extra;
       const isPrimary = cMain?.entityUrn && primaryPositionId.value !== null &&
-                        main?.positions.find(p => p.posId === primaryPositionId.value)?.companyUrn === cMain.entityUrn;
+                        effectivePositions.value.find(p => p.posId === primaryPositionId.value)?.companyUrn === cMain.entityUrn;
 
       const num = selectedCompaniesList.length > 1 ? `${index + 1}. ` : '';
       let companyInfo = isPrimary ? `### ${num}COMPANY INFO (PRIMARY)\n` : `### ${num}COMPANY INFO\n`;
@@ -347,7 +353,7 @@ export function useCopyLead(lead: OptionalDeepReadonly<Lead>) {
 
     if (selectedPositionIds.value.length > 0) {
       data.positions = selectedPositionIds.value.map(posId => {
-        const pos = main?.positions.find(p => p.posId === posId);
+        const pos = effectivePositions.value.find(p => p.posId === posId);
         const posData: any = {};
         if (pos) {
           const isPrimary = posId === primaryPositionId.value;
@@ -409,7 +415,7 @@ export function useCopyLead(lead: OptionalDeepReadonly<Lead>) {
         const cExtra = company.extra;
         const companyData: any = {};
         const isPrimary = cMain?.entityUrn && primaryPositionId.value !== null &&
-                          main?.positions.find(p => p.posId === primaryPositionId.value)?.companyUrn === cMain.entityUrn;
+                          effectivePositions.value.find(p => p.posId === primaryPositionId.value)?.companyUrn === cMain.entityUrn;
 
         if (isPrimary) companyData.primary = true;
         companyData.name = cMain?.name;
@@ -435,7 +441,7 @@ export function useCopyLead(lead: OptionalDeepReadonly<Lead>) {
 
   const generateTitle = () => {
     const main = lead.main;
-    const pos = main?.positions.find(p => p.posId === (primaryPositionId.value || selectedPositionIds.value[0]));
+    const pos = effectivePositions.value.find(p => p.posId === (primaryPositionId.value || selectedPositionIds.value[0]));
 
     return generateLeadTitle({
       fullName: main?.fullName,

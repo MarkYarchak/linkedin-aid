@@ -1,10 +1,12 @@
 <script lang="ts" setup>
 import { computed, ref } from 'vue';
 import { useDataStore } from '@/store/data-store';
+import { getEffectiveLeadPositions } from '@/helpers/lead-helper';
 import AppPreviewBox from '@/components/ui/AppPreviewBox.vue';
 import type { Lead } from '@/types/lead/lead';
 import type { Company } from '@/types/company/company';
 import type { SearchSession } from '@/types/search/search';
+import type { CompaniesMap } from '@/store/data-store';
 
 type Entity = Lead | Company | SearchSession | null;
 
@@ -17,6 +19,27 @@ const props = defineProps<Props>();
 const emit = defineEmits(['update:modelValue', 'close']);
 
 const { leadPositionRelationsMap, companiesMap } = useDataStore();
+
+const effectivePositions = computed(() => {
+  if (!props.entity || !isLead(props.entity)) return null;
+  return getEffectiveLeadPositions(props.entity, leadPositionRelationsMap.value, companiesMap.value as CompaniesMap);
+});
+
+const primaryPosition = computed(() => {
+  const positions = effectivePositions.value;
+  if (!positions) return null;
+  const current = positions.mainPositions.filter(p => p.current);
+  if (current.length > 0) {
+    const manual = current.find(p => (p as any).isManuallyLinked);
+    return manual || current[0];
+  }
+  const searchCurrent = positions.searchPositions.filter(p => p.current);
+  if (searchCurrent.length > 0) {
+    const manual = searchCurrent.find(p => (p as any).isManuallyLinked);
+    return manual || searchCurrent[0];
+  }
+  return positions.mainPositions[0] || positions.searchPositions[0] || null;
+});
 
 const customRelations = computed(() => {
   if (!props.entity || !isLead(props.entity)) return [];
@@ -165,7 +188,14 @@ const close = () => {
                 <v-list-item>
                   <v-list-item-title class="font-weight-bold">Title</v-list-item-title>
                   <v-list-item-subtitle>
-                    {{ entity.main?.defaultPosition?.title || entity.searchResult?.currentPositions?.[0]?.title || 'N/A' }}
+                    {{ primaryPosition?.title || 'N/A' }}
+                  </v-list-item-subtitle>
+                </v-list-item>
+                <v-list-item>
+                  <v-list-item-title class="font-weight-bold">Company</v-list-item-title>
+                  <v-list-item-subtitle :class="{ 'text-primary font-weight-bold': (primaryPosition as any)?.isManuallyLinked }">
+                    <v-icon v-if="(primaryPosition as any)?.isManuallyLinked" icon="mdi-link" size="small" class="mr-1" />
+                    {{ primaryPosition?.companyName || 'N/A' }}
                   </v-list-item-subtitle>
                 </v-list-item>
                 <v-list-item>

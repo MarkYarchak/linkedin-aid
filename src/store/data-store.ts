@@ -28,9 +28,11 @@ export type LocalData = {
 };
 
 export type CustomStorageChange<T = unknown> = { oldValue: T, newValue: T };
+export type LeadsMap = Record<string, Lead>;
+export type CompaniesMap = Record<string, Company>;
 
-const leadsMap = ref<Record<string, Lead>>({});
-const companiesMap = ref<Record<string, Company>>({});
+const leadsMap = ref<LeadsMap>({});
+const companiesMap = ref<CompaniesMap>({});
 const sessionsMap = ref<Record<string, SearchSession>>({});
 const leadPositionRelations = ref<LeadPositionRelation[]>([]);
 const personasStorage = ref<PersonasStorage>({ general: [], byCompany: {} });

@@ -1,5 +1,7 @@
 <script lang="ts" setup>
 import { ref, computed } from 'vue';
+import { useDataStore } from '@/store/data-store';
+import { getEffectivePositions } from '@/helpers/lead-helper';
 import { useCopyLead } from '@/composables/useCopyLead';
 import { sanitizeText } from '@/helpers/text-helper';
 import { getRelativeTime } from '@/helpers/date-helper';
@@ -13,8 +15,21 @@ interface Props {
   lead: OptionalDeepReadonly<Lead>;
 }
 const props = defineProps<Props>();
+const { leadPositionRelationsMap, companiesMap } = useDataStore();
 
 const { sessionTitle, isTitleCopied, copySessionTitle } = useCopyLead(props.lead);
+
+const effectivePositions = computed(() => {
+  const positions = props.lead.main?.positions || props.lead.searchResult?.currentPositions || [];
+  return getEffectivePositions(props.lead.entityUrn, positions as any[], leadPositionRelationsMap.value, companiesMap.value);
+});
+
+const primaryPosition = computed(() => {
+  const current = effectivePositions.value.filter(p => p.current);
+  if (current.length === 0) return effectivePositions.value[0];
+  const manual = current.find(p => (p as any).isManuallyLinked);
+  return manual || current[0];
+});
 
 const showCopyModal = ref(false);
 
@@ -78,10 +93,7 @@ function copyLeadInfo() {
       />
       <div class="header-info">
         <h3>{{ lead.main?.firstName || lead.searchResult?.firstName }} {{ lead.main?.lastName || lead.searchResult?.lastName }}</h3>
-        <div v-if="lead.main?.defaultPosition?.title" class="header-position">{{ lead.main.defaultPosition.title }}</div>
-        <div v-else-if="lead.searchResult?.currentPositions?.[0]?.title" class="header-position">
-          {{ lead.searchResult.currentPositions[0].title }}
-        </div>
+        <div v-if="primaryPosition?.title" class="header-position">{{ primaryPosition.title }}</div>
         <div v-else class="header-position no-role">No current role listed</div>
       </div>
       <div class="header-actions">
@@ -98,7 +110,7 @@ function copyLeadInfo() {
       <strong>Headline:</strong> {{ lead.main?.headline }}
     </div>
     <div class="info-row">
-      <strong>Company:</strong> {{ lead.main?.defaultPosition?.companyName || lead.searchResult?.currentPositions?.[0]?.companyName || 'N/A' }}
+      <strong>Company:</strong> {{ primaryPosition?.companyName || 'N/A' }}
     </div>
     <div class="info-row">
       <strong>Location:</strong> {{ lead.main?.location || lead.searchResult?.geoRegion }}

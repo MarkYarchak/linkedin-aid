@@ -11,8 +11,9 @@ import { matchesLead, matchesCompany, matchesSession } from '@/helpers/entity-se
 import type { Lead } from '@/types/lead/lead';
 import type { Company } from '@/types/company/company';
 import type { SearchSession } from '@/types/search/search';
+import type { CompaniesMap } from '@/store/data-store';
 
-const { leadsMap, companiesMap, sessionsMap } = useDataStore();
+const { leadsMap, companiesMap, sessionsMap, leadPositionRelationsMap } = useDataStore();
 
 const PAGE_SIZE = 50;
 
@@ -20,7 +21,7 @@ const searchQuery = ref('');
 
 const leads = computed(() => {
   const all = Object.values(leadsMap.value).sort((a, b) => b.updatedAt - a.updatedAt);
-  return all.filter(lead => matchesLead(lead as Lead, searchQuery.value));
+  return all.filter(lead => matchesLead(lead as Lead, searchQuery.value, leadPositionRelationsMap.value, companiesMap.value as CompaniesMap));
 });
 
 const companies = computed(() => {
