@@ -1,8 +1,10 @@
 <script lang="ts" setup>
 import { computed } from 'vue';
+import { getDisplayImageUrl } from '@/helpers/image-helper';
 import AppAvatar from '@/components/ui/AppAvatar.vue';
 import type { OptionalDeepReadonly } from '@/types/common';
 import type { Company } from '@/types/company/company';
+import type { DisplayImage } from '@/types/linkedin-common';
 
 interface Props {
   company: OptionalDeepReadonly<Company>;
@@ -10,14 +12,7 @@ interface Props {
 const props = defineProps<Props>();
 
 const logoUrl = computed(() => {
-  const company = props.company;
-  if (company.main?.companyPictureDisplayImage) {
-    const img = company.main.companyPictureDisplayImage;
-    if (img.artifacts && img.artifacts.length > 0) {
-      return img.rootUrl + img.artifacts[0].fileIdentifyingUrlPathSegment;
-    }
-  }
-  return null;
+  return getDisplayImageUrl(props.company.main?.companyPictureDisplayImage as DisplayImage);
 });
 </script>
 

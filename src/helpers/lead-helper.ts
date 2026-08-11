@@ -1,3 +1,4 @@
+import { getDisplayImageUrl, isImageExpired } from './image-helper';
 import type { Lead } from '@/types/lead/lead';
 import type { Company } from '@/types/company/company';
 import type { Position } from '@/types/lead/salesApiProfiles';
@@ -49,4 +50,18 @@ export function getEffectiveLeadPositions(
     mainPositions: getEffectivePositions(lead.entityUrn, mainPositions, relationsMap, companiesMap),
     searchPositions: searchPositions
   };
+}
+
+export function getLeadAvatarUrl(lead: OptionalDeepReadonly<Lead>): string | null {
+  const extraUrl = getDisplayImageUrl(lead.extra?.profilePictureDisplayImage as any);
+  const searchUrl = getDisplayImageUrl(lead.searchResult?.profilePictureDisplayImage as any);
+
+  const extraExpired = isImageExpired(extraUrl);
+  const searchExpired = isImageExpired(searchUrl);
+
+  if (extraUrl && !extraExpired) return extraUrl;
+  if (searchUrl && !searchExpired) return searchUrl;
+
+  // Fallback to whichever is available if both are expired or one is missing
+  return extraUrl || searchUrl || null;
 }

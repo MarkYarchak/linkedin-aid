@@ -1,11 +1,13 @@
 <script lang="ts" setup>
 import { computed, ref, onMounted, nextTick, watch } from 'vue';
 import { sanitizeText } from '@/helpers/text-helper';
+import { getDisplayImageUrl } from '@/helpers/image-helper';
 import AppAvatar from '@/components/ui/AppAvatar.vue';
 import AppCheckbox from '@/components/ui/AppCheckbox.vue';
 import CompanyPreviewDense from './CompanyPreviewDense.vue';
 import type { OptionalDeepReadonly } from '@/types/common';
 import type { Company } from '@/types/company/company';
+import type { DisplayImage } from '@/types/linkedin-common';
 
 interface Props {
   company: OptionalDeepReadonly<Company>;
@@ -57,14 +59,7 @@ watch(() => props.company.main?.description, async () => {
 });
 
 const logoUrl = computed(() => {
-  const company = props.company;
-  if (company.main?.companyPictureDisplayImage) {
-    const img = company.main.companyPictureDisplayImage;
-    if (img.artifacts && img.artifacts.length > 0) {
-      return img.rootUrl + img.artifacts[0].fileIdentifyingUrlPathSegment;
-    }
-  }
-  return null;
+  return getDisplayImageUrl(props.company.main?.companyPictureDisplayImage as DisplayImage);
 });
 
 const revenueRangeString = computed(() => {

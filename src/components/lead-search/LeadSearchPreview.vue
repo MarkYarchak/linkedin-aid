@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { computed, ref } from 'vue';
 import { useDataStore } from '@/store/data-store';
-import { getEffectivePositions } from '@/helpers/lead-helper';
+import { getEffectivePositions, getLeadAvatarUrl } from '@/helpers/lead-helper';
 import AppAvatar from '@/components/ui/AppAvatar.vue';
 import AppCheckbox from '@/components/ui/AppCheckbox.vue';
 import IconLocation from '@/components/icons/IconLocation.vue';
@@ -19,14 +19,7 @@ const selected = defineModel<boolean>('selected', { default: false });
 
 const { leadPositionRelationsMap, companiesMap } = useDataStore();
 
-const avatarUrl = computed(() => {
-  const { searchResult } = props.lead;
-  if (searchResult?.profilePictureDisplayImage) {
-    const img = searchResult.profilePictureDisplayImage;
-    return img.rootUrl + img.artifacts[0].fileIdentifyingUrlPathSegment;
-  }
-  return null;
-});
+const avatarUrl = computed(() => getLeadAvatarUrl(props.lead));
 
 const isSaved = computed(() => {
   return props.lead.searchResult?.saved || props.lead.main?.savedLead || false;

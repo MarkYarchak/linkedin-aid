@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { ref, computed } from 'vue';
 import { useDataStore } from '@/store/data-store';
-import { getEffectivePositions } from '@/helpers/lead-helper';
+import { getEffectivePositions, getLeadAvatarUrl } from '@/helpers/lead-helper';
 import { useCopyLead } from '@/composables/useCopyLead';
 import { sanitizeText } from '@/helpers/text-helper';
 import { getRelativeTime } from '@/helpers/date-helper';
@@ -35,19 +35,7 @@ const primaryPosition = computed(() => {
 
 const showCopyModal = ref(false);
 
-const avatarUrl = computed(() => {
-  const lead = props.lead;
-
-  if (lead.extra?.profilePictureDisplayImage) {
-    const img = lead.extra.profilePictureDisplayImage;
-    return img.rootUrl + img.artifacts[0].fileIdentifyingUrlPathSegment;
-  }
-  if (lead.searchResult?.profilePictureDisplayImage) {
-    const img = lead.searchResult.profilePictureDisplayImage;
-    return img.rootUrl + img.artifacts[0].fileIdentifyingUrlPathSegment;
-  }
-  return null;
-});
+const avatarUrl = computed(() => getLeadAvatarUrl(props.lead));
 
 const getInsightContent = (insight: any) => {
   const activity = insight.activityUnion;
