@@ -28,3 +28,30 @@ export function getRelativeTime(timestamp: number): string {
     return 'just now';
   }
 }
+
+export function getEntityExpirationInfo(updatedAt: number, ttlDays: number): string {
+  if (ttlDays === -1) {
+    return `Updated ${getRelativeTime(updatedAt)}`;
+  }
+
+  const expirationTime = updatedAt + ttlDays * 24 * 60 * 60 * 1000;
+  const now = Date.now();
+  const diff = expirationTime - now;
+
+  if (diff <= 0) {
+    return 'Expired';
+  }
+
+  const daysLeft = Math.floor(diff / (1000 * 60 * 60 * 24));
+  if (daysLeft > 0) {
+    return `Expires in ${daysLeft}d`;
+  }
+
+  const hoursLeft = Math.floor(diff / (1000 * 60 * 60));
+  if (hoursLeft > 0) {
+    return `Expires in ${hoursLeft}h`;
+  }
+
+  const minutesLeft = Math.floor(diff / (1000 * 60));
+  return `Expires in ${minutesLeft}m`;
+}
