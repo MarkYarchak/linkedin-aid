@@ -6,8 +6,11 @@ import type { Lead } from '@/types/lead/lead';
 interface Props {
   leads: OptionalDeepReadonly<Lead[]>;
   selectedUrns?: Set<string>;
+  showExpiration?: boolean;
 }
-defineProps<Props>();
+const props = withDefaults(defineProps<Props>(), {
+  showExpiration: false,
+});
 
 const emit = defineEmits<{
   (e: 'update:selected', urn: string, selected: boolean): void;
@@ -21,6 +24,7 @@ const emit = defineEmits<{
       :key="lead.entityUrn"
       :lead="lead"
       :selected="selectedUrns?.has(lead.entityUrn)"
+      :show-expiration="showExpiration"
       @update:selected="(selected) => emit('update:selected', lead.entityUrn, selected)"
     >
       <template #actions="{ lead: slotLead }">

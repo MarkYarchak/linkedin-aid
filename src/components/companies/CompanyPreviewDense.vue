@@ -1,6 +1,8 @@
 <script lang="ts" setup>
 import { computed } from 'vue';
+import { useDataStore } from '@/store/data-store';
 import { getDisplayImageUrl } from '@/helpers/image-helper';
+import { getEntityExpirationInfo } from '@/helpers/date-helper';
 import AppAvatar from '@/components/ui/AppAvatar.vue';
 import type { OptionalDeepReadonly } from '@/types/common';
 import type { Company } from '@/types/company/company';
@@ -8,12 +10,18 @@ import type { DisplayImage } from '@/types/linkedin-common';
 
 interface Props {
   company: OptionalDeepReadonly<Company>;
+  showExpiration?: boolean;
 }
-const props = defineProps<Props>();
+const props = withDefaults(defineProps<Props>(), {
+  showExpiration: false,
+});
 
 const logoUrl = computed(() => {
   return getDisplayImageUrl(props.company.main?.companyPictureDisplayImage as DisplayImage);
 });
+
+const { entitiesTTL } = useDataStore();
+const expirationInfo = computed(() => getEntityExpirationInfo(props.company.updatedAt, entitiesTTL.value));
 </script>
 
 <template>
@@ -32,6 +40,7 @@ const logoUrl = computed(() => {
         <span v-if="company.main?.location" class="location">{{ company.main.location }}</span>
       </div>
     </div>
+    <span v-if="showExpiration && expirationInfo" class="expiration">{{ expirationInfo }}</span>
     <slot name="actions"></slot>
   </div>
 </template>
@@ -74,5 +83,11 @@ const logoUrl = computed(() => {
 
 .separator {
   margin: 0 2px;
+}
+
+.expiration {
+  color: #94a3b8;
+  font-weight: 500;
+  font-size: 0.7rem;
 }
 </style>

@@ -2,6 +2,7 @@
 import { computed, ref } from 'vue';
 import { useDataStore } from '@/store/data-store';
 import { getEffectivePositions, getLeadAvatarUrl } from '@/helpers/lead-helper';
+import { getEntityExpirationInfo } from '@/helpers/date-helper';
 import AppAvatar from '@/components/ui/AppAvatar.vue';
 import AppCheckbox from '@/components/ui/AppCheckbox.vue';
 import IconLocation from '@/components/icons/IconLocation.vue';
@@ -12,14 +13,19 @@ import type { Lead } from '@/types/lead/lead';
 
 interface Props {
   lead: OptionalDeepReadonly<Lead>;
+  showExpiration?: boolean;
 }
-const props = defineProps<Props>();
+const props = withDefaults(defineProps<Props>(), {
+  showExpiration: false,
+});
 
 const selected = defineModel<boolean>('selected', { default: false });
 
-const { leadPositionRelationsMap, companiesMap } = useDataStore();
+const { leadPositionRelationsMap, companiesMap, entitiesTTL } = useDataStore();
 
 const avatarUrl = computed(() => getLeadAvatarUrl(props.lead));
+
+const expirationInfo = computed(() => getEntityExpirationInfo(props.lead.updatedAt, entitiesTTL.value));
 
 const isSaved = computed(() => {
   return props.lead.searchResult?.saved || props.lead.main?.savedLead || false;
@@ -96,6 +102,7 @@ const secondDegreeBadge = computed(() => {
           <span v-if="isPremium" class="premium-icon" title="Premium">in</span>
           <span v-if="isSaved" class="saved-badge">Saved</span>
           <span v-if="secondDegreeBadge" class="connection-badge">{{ secondDegreeBadge.displayValue }}</span>
+          <span v-if="showExpiration && expirationInfo" class="expiration ml-auto">{{ expirationInfo }}</span>
         </div>
 
         <div class="location-row">
@@ -223,14 +230,10 @@ const secondDegreeBadge = computed(() => {
   border-radius: 4px;
 }
 
-.custom-company-badge {
-  font-size: 10px;
-  color: white;
-  background-color: #0073b1;
-  padding: 1px 4px;
-  border-radius: 4px;
-  display: inline-flex;
-  align-items: center;
+.expiration {
+  color: #94a3b8;
+  font-weight: 500;
+  font-size: 0.75rem;
 }
 
 .company-name.manually-linked {

@@ -323,6 +323,7 @@ function getCompanyUrl(company: Company) {
             <LeadPreviewList
               :leads="paginatedLeads"
               :selected-urns="selectedLeadUrns"
+              show-expiration
               @update:selected="toggleLeadSelection"
             >
               <template #actions="{ lead }">
@@ -427,6 +428,7 @@ function getCompanyUrl(company: Company) {
                   selectable
                   :dense="isCompaniesDense"
                   :selected="selectedCompanyUrns.has(company.entityUrn)"
+                  show-expiration
                   @update:selected="(val) => toggleCompanySelection(company.entityUrn, val)"
                 >
                   <template #actions="{ company: slotCompany }">
@@ -439,7 +441,6 @@ function getCompanyUrl(company: Company) {
                       <template #activator="{ props }">
                         <v-btn
                           icon="mdi-dots-vertical"
-                          :class="{ 'ml-auto': !isCompaniesDense }"
                           density="comfortable"
                           v-bind="props"
                           variant="text"
@@ -513,11 +514,12 @@ function getCompanyUrl(company: Company) {
                   :session="session"
                   selectable
                   :selected="selectedSessionIds.has(session.id)"
+                  show-expiration
                   @update:selected="(val) => toggleSessionSelection(session.id, val)"
                 >
                   <template #actions="{ session: slotSession }">
                     <v-btn
-                      density="compact"
+                      density="comfortable"
                       icon="mdi-note-text-outline"
                       variant="text"
                       title="View full info"
@@ -547,6 +549,7 @@ function getCompanyUrl(company: Company) {
     <EntityDetailModal
       v-model="showDetailModal"
       :entity="selectedEntity"
+      show-expiration
     />
 
     <LeadPositionRelationModal

@@ -1,7 +1,9 @@
 <script lang="ts" setup>
 import { computed, ref, onMounted, nextTick, watch } from 'vue';
+import { useDataStore } from '@/store/data-store';
 import { sanitizeText } from '@/helpers/text-helper';
 import { getDisplayImageUrl } from '@/helpers/image-helper';
+import { getEntityExpirationInfo } from '@/helpers/date-helper';
 import AppAvatar from '@/components/ui/AppAvatar.vue';
 import AppCheckbox from '@/components/ui/AppCheckbox.vue';
 import CompanyPreviewDense from './CompanyPreviewDense.vue';
@@ -13,10 +15,12 @@ interface Props {
   company: OptionalDeepReadonly<Company>;
   selectable?: boolean;
   dense?: boolean;
+  showExpiration?: boolean;
 }
 const props = withDefaults(defineProps<Props>(), {
   selectable: false,
   dense: false,
+  showExpiration: false,
 });
 
 const selected = defineModel<boolean>('selected', { default: false });
@@ -62,6 +66,9 @@ const logoUrl = computed(() => {
   return getDisplayImageUrl(props.company.main?.companyPictureDisplayImage as DisplayImage);
 });
 
+const { entitiesTTL } = useDataStore();
+const expirationInfo = computed(() => getEntityExpirationInfo(props.company.updatedAt, entitiesTTL.value));
+
 const revenueRangeString = computed(() => {
   if (props.company.main?.revenueRange) {
     const { estimatedMinRevenue, estimatedMaxRevenue } = props.company.main.revenueRange;
@@ -80,7 +87,7 @@ const revenueRangeString = computed(() => {
       <div v-if="selectable" class="selection-area">
         <AppCheckbox v-model="selected" @click.stop />
       </div>
-      <CompanyPreviewDense :company="company">
+      <CompanyPreviewDense :company="company" :show-expiration="showExpiration">
         <template #actions>
           <slot name="actions" :company="company" />
         </template>
@@ -99,6 +106,10 @@ const revenueRangeString = computed(() => {
           size="md"
         />
         <h3>{{ company.main?.name }}</h3>
+
+        <div v-if="showExpiration" class="expiration ml-auto">
+          {{ expirationInfo }}
+        </div>
         <slot name="actions" :company="company" />
       </div>
 
@@ -200,6 +211,12 @@ const revenueRangeString = computed(() => {
   margin-bottom: 6px;
   font-size: 0.9em;
   line-height: 1.4;
+}
+
+.expiration {
+  color: #94a3b8;
+  font-weight: 500;
+  font-size: 0.75rem;
 }
 
 .description {

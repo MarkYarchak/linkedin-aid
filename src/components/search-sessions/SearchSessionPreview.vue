@@ -1,5 +1,7 @@
 <script lang="ts" setup>
 import { computed } from 'vue';
+import { useDataStore } from '@/store/data-store';
+import { getEntityExpirationInfo } from '@/helpers/date-helper';
 import AppCheckbox from '@/components/ui/AppCheckbox.vue';
 import type { SearchSession } from '@/types/search/search';
 import type { OptionalDeepReadonly } from '@/types/common';
@@ -7,9 +9,11 @@ import type { OptionalDeepReadonly } from '@/types/common';
 interface Props {
   session: OptionalDeepReadonly<SearchSession>;
   selectable?: boolean;
+  showExpiration?: boolean;
 }
 const props = withDefaults(defineProps<Props>(), {
   selectable: false,
+  showExpiration: false,
 });
 
 const selected = defineModel<boolean>('selected', { default: false });
@@ -22,6 +26,9 @@ const totalResults = computed(() => props.session.total || 0);
 const pagesCaptured = computed(() => Object.keys(props.session.leadUrnsByPage).length);
 
 const title = computed(() => props.session.searchTitle || props.session.id);
+
+const { entitiesTTL } = useDataStore();
+const expirationInfo = computed(() => getEntityExpirationInfo(props.session.updatedAt, entitiesTTL.value));
 </script>
 
 <template>
@@ -32,7 +39,9 @@ const title = computed(() => props.session.searchTitle || props.session.id);
     <div class="content">
       <div class="header">
         <h3 class="title">{{ title }}</h3>
-        <span class="date">{{ formattedDate }}</span>
+        <span class="date" :title="showExpiration ? formattedDate : undefined">
+          {{ showExpiration ? expirationInfo : formattedDate }}
+        </span>
       </div>
       <div class="stats">
         <span class="stat"><strong>Results:</strong> {{ totalResults }}</span>
@@ -96,8 +105,9 @@ const title = computed(() => props.session.searchTitle || props.session.id);
 
 .date {
   font-size: 0.75rem;
-  color: #64748b;
+  color: #94a3b8;
   white-space: nowrap;
+  font-weight: 500;
 }
 
 .stats {

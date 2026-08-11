@@ -244,7 +244,7 @@ const getCompanyFromMap = (urn: string): OptionalDeepReadonly<Company> | null =>
 
                 <div v-if="selectedRelations[pos.posId]" class="mt-2 ml-4">
                   <div v-if="getCompanyFromMap(selectedRelations[pos.posId])" class="preview-box">
-                    <CompanyPreview :company="getCompanyFromMap(selectedRelations[pos.posId])!" dense />
+                    <CompanyPreview :company="getCompanyFromMap(selectedRelations[pos.posId])!" dense show-expiration />
                   </div>
                   <div v-else class="text-caption text-grey italic">
                     <v-icon icon="mdi-information-outline" size="14" class="mr-1" />

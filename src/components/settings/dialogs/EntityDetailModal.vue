@@ -3,6 +3,7 @@ import { computed, ref } from 'vue';
 import { useDataStore } from '@/store/data-store';
 import { getEffectiveLeadPositions } from '@/helpers/lead-helper';
 import { getSalesNavigatorLeadUrl, getSalesNavigatorCompanyUrl } from '@/helpers/url-helpers';
+import { getEntityExpirationInfo } from '@/helpers/date-helper';
 import AppPreviewBox from '@/components/ui/AppPreviewBox.vue';
 import type { Lead } from '@/types/lead/lead';
 import type { Company } from '@/types/company/company';
@@ -14,12 +15,20 @@ type Entity = Lead | Company | SearchSession | null;
 interface Props {
   modelValue: boolean;
   entity: Entity;
+  showExpiration?: boolean;
 }
 
-const props = defineProps<Props>();
+const props = withDefaults(defineProps<Props>(), {
+  showExpiration: false,
+});
 const emit = defineEmits(['update:modelValue', 'close']);
 
-const { leadPositionRelationsMap, companiesMap } = useDataStore();
+const { leadPositionRelationsMap, companiesMap, entitiesTTL } = useDataStore();
+
+const expirationInfo = computed(() => {
+  if (!props.entity) return '';
+  return getEntityExpirationInfo(props.entity.updatedAt, entitiesTTL.value);
+});
 
 const effectivePositions = computed(() => {
   if (!props.entity || !isLead(props.entity)) return null;
@@ -202,6 +211,14 @@ const close = () => {
                 </template>
                 <v-list-item-title class="font-weight-bold">Last Updated</v-list-item-title>
                 <v-list-item-subtitle>{{ new Date(entity.updatedAt).toLocaleString() }}</v-list-item-subtitle>
+              </v-list-item>
+
+              <v-list-item v-if="showExpiration">
+                <template v-slot:prepend>
+                  <v-icon icon="mdi-delete-clock-outline" class="mr-2"></v-icon>
+                </template>
+                <v-list-item-title class="font-weight-bold">Expiration / TTL</v-list-item-title>
+                <v-list-item-subtitle>{{ expirationInfo }}</v-list-item-subtitle>
               </v-list-item>
 
               <template v-if="isLead(entity)">
