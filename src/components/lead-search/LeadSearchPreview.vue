@@ -41,8 +41,11 @@ const summary = computed(() => {
 });
 
 const currentPositions = computed(() => {
-  const positions = props.lead.searchResult?.currentPositions || props.lead.main?.positions.filter(p => p.current) || [];
-  return getEffectivePositions(props.lead.entityUrn, positions as any[], leadPositionRelationsMap.value, companiesMap.value);
+  const mainPositions = props.lead.main?.positions.filter(p => p.current);
+  if (mainPositions?.length) {
+    return getEffectivePositions(props.lead.entityUrn, mainPositions as any[], leadPositionRelationsMap.value, companiesMap.value);
+  }
+  return props.lead.searchResult?.currentPositions || [];
 });
 
 const primaryPosition = computed(() => {

@@ -47,6 +47,6 @@ export function getEffectiveLeadPositions(
 
   return {
     mainPositions: getEffectivePositions(lead.entityUrn, mainPositions, relationsMap, companiesMap),
-    searchPositions: getEffectivePositions(lead.entityUrn, searchPositions, relationsMap, companiesMap)
+    searchPositions: searchPositions
   };
 }

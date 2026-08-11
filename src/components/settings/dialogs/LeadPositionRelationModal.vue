@@ -16,7 +16,7 @@ interface Props {
 const props = defineProps<Props>();
 const emit = defineEmits(['update:modelValue', 'saved']);
 
-const { companiesMap, leadPositionRelationsMap } = useDataStore();
+const { companiesMap, sessionsMap, leadPositionRelationsMap } = useDataStore();
 
 const show = computed({
   get: () => props.modelValue,
@@ -24,7 +24,7 @@ const show = computed({
 });
 
 // All companies extracted from the lead's profile/search result
-const availableCompanies = computed(() => {
+const profileCompanies = computed(() => {
   if (!props.lead) return [];
   const lead = props.lead;
   const urns = new Set<string>();
@@ -54,10 +54,78 @@ const availableCompanies = computed(() => {
   return result;
 });
 
+const leadSessionCompanyUrns = computed(() => {
+  if (!props.lead) return new Set<string>();
+  const leadUrn = props.lead.entityUrn;
+  const urns = new Set<string>();
+  Object.values(sessionsMap.value).forEach(session => {
+    const pages = Object.values(session.leadUrnsByPage || {});
+    if (pages.some(page => page.includes(leadUrn)) && session.companyUrn) {
+      urns.add(session.companyUrn);
+    }
+  });
+  return urns;
+});
+
+const getPositionItems = (pos: any) => {
+  const sessionUrns = leadSessionCompanyUrns.value;
+  const posCompanyName = pos.companyName?.toLowerCase();
+
+  const allInDb = Object.values(companiesMap.value);
+  const profile = profileCompanies.value;
+
+  const urns = new Set<string>();
+  const items: any[] = [];
+
+  const addItem = (urn: string, name: string, type: string, score: number) => {
+    if (urn && !urns.has(urn)) {
+      urns.add(urn);
+      items.push({
+        urn,
+        name,
+        type,
+        score,
+        inDb: !!companiesMap.value[urn],
+        props: {
+          subtitle: type
+        }
+      });
+    }
+  };
+
+  // 1. Session related (Top priority)
+  sessionUrns.forEach(urn => {
+    const company = companiesMap.value[urn];
+    if (company) addItem(urn, company.main?.name || 'Unknown', 'Search Session Relation', 100);
+  });
+
+  // 2. Name matches in DB
+  if (posCompanyName) {
+    allInDb.forEach(c => {
+      if (c.main?.name?.toLowerCase() === posCompanyName) {
+        addItem(c.entityUrn, c.main!.name!, 'Common Name Match', 80);
+      }
+    });
+  }
+
+  // 3. Profile companies
+  profile.forEach(c => {
+    addItem(c.urn, c.name, 'Lead Profile', 60);
+  });
+
+  // 4. All other companies in DB
+  allInDb.forEach(c => {
+    addItem(c.entityUrn, c.main?.name || 'Unknown', 'In Database', 0);
+  });
+
+  return items.sort((a, b) => {
+    if (b.score !== a.score) return b.score - a.score;
+    return a.name.localeCompare(b.name);
+  });
+};
+
 const positions = computed(() => {
-  const mainPos = props.lead?.main?.positions || [];
-  if (mainPos.length > 0) return mainPos;
-  return props.lead?.searchResult?.currentPositions || [];
+  return props.lead?.main?.positions?.filter(p => p.current) || [];
 });
 
 const selectedRelations = ref<Record<number, string>>({});
@@ -126,7 +194,8 @@ const getCompanyFromMap = (urn: string): OptionalDeepReadonly<Company> | null =>
       <v-card-text>
         <div class="mb-4">
           <p class="text-body-2 mb-2">
-            Assign companies from the lead's profile to specific positions to override their primary company.
+            Assign companies to specific positions to override their primary company.
+            Suggestions are prioritized by search session relations and common names.
           </p>
         </div>
 
@@ -141,9 +210,9 @@ const getCompanyFromMap = (urn: string): OptionalDeepReadonly<Company> | null =>
                 </v-list-item-subtitle>
 
                 <div class="mt-2">
-                  <v-select
+                  <v-autocomplete
                     :model-value="selectedRelations[pos.posId] || null"
-                    :items="availableCompanies"
+                    :items="getPositionItems(pos)"
                     item-title="name"
                     item-value="urn"
                     label="Assign Primary Company"
@@ -156,13 +225,21 @@ const getCompanyFromMap = (urn: string): OptionalDeepReadonly<Company> | null =>
                   >
                     <template #item="{ props: itemProps, item }">
                       <v-list-item v-bind="itemProps">
+                        <template #title>
+                          <div class="d-flex align-center">
+                            {{ item.name }}
+                            <v-chip v-if="item.inDb" size="x-small" color="success" variant="flat" class="ml-2">In DB</v-chip>
+                          </div>
+                        </template>
                         <template #subtitle>
-                          {{ item.name }}
-                          <v-chip v-if="getCompanyFromMap(item.urn)" size="x-small" color="success" class="ml-2">In DB</v-chip>
+                          <span :class="{'text-primary font-weight-bold': item.score > 0}">
+                            {{ item.type }}
+                          </span>
+                          <span class="text-caption ml-2">({{ item.urn }})</span>
                         </template>
                       </v-list-item>
                     </template>
-                  </v-select>
+                  </v-autocomplete>
                 </div>
 
                 <div v-if="selectedRelations[pos.posId]" class="mt-2 ml-4">
@@ -181,7 +258,8 @@ const getCompanyFromMap = (urn: string): OptionalDeepReadonly<Company> | null =>
 
           <div v-if="positions.length === 0" class="text-center py-8 text-grey">
             <v-icon icon="mdi-briefcase-off-outline" size="large" class="mb-2" />
-            <p>No positions found in lead's profile.</p>
+            <p v-if="!lead.main">Please open the lead's full profile first to load all positions.</p>
+            <p v-else>No current positions found in lead's profile.</p>
           </div>
         </div>
       </v-card-text>

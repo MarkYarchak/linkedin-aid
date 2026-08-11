@@ -116,8 +116,10 @@ export function useCopyLead(lead: OptionalDeepReadonly<Lead>) {
   const { copyLeadSettings, leadTitles, leadPositionRelationsMap, companiesMap } = useDataStore();
 
   const effectivePositions = computed(() => {
-    const positions = lead.main?.positions || lead.searchResult?.currentPositions || [];
-    return getEffectivePositions(lead.entityUrn, positions as any[], leadPositionRelationsMap.value, companiesMap.value);
+    if (lead.main?.positions) {
+      return getEffectivePositions(lead.entityUrn, lead.main.positions as any[], leadPositionRelationsMap.value, companiesMap.value);
+    }
+    return lead.searchResult?.currentPositions || [];
   });
 
   const titleCopyTimeout = ref<ReturnType<typeof setTimeout> | null>(null);

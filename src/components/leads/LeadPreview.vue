@@ -20,8 +20,10 @@ const { leadPositionRelationsMap, companiesMap } = useDataStore();
 const { sessionTitle, isTitleCopied, copySessionTitle } = useCopyLead(props.lead);
 
 const effectivePositions = computed(() => {
-  const positions = props.lead.main?.positions || props.lead.searchResult?.currentPositions || [];
-  return getEffectivePositions(props.lead.entityUrn, positions as any[], leadPositionRelationsMap.value, companiesMap.value);
+  if (props.lead.main?.positions) {
+    return getEffectivePositions(props.lead.entityUrn, props.lead.main.positions as any[], leadPositionRelationsMap.value, companiesMap.value);
+  }
+  return props.lead.searchResult?.currentPositions || [];
 });
 
 const primaryPosition = computed(() => {
