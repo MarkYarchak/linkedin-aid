@@ -8,6 +8,7 @@ import SearchSessionPreview from '@/components/search-sessions/SearchSessionPrev
 import EntityDetailModal from '@/components/settings/dialogs/EntityDetailModal.vue';
 import LeadPositionRelationModal from '@/components/settings/dialogs/LeadPositionRelationModal.vue';
 import { matchesLead, matchesCompany, matchesSession } from '@/helpers/entity-search-helper';
+import { getSalesNavigatorCompanyUrl, getSalesNavigatorLeadUrl } from '@/helpers/url-helpers';
 import type { Lead } from '@/types/lead/lead';
 import type { Company } from '@/types/company/company';
 import type { SearchSession } from '@/types/search/search';
@@ -246,6 +247,14 @@ const openRelationModal = (lead: Lead) => {
   selectedLeadForRelation.value = lead;
   showRelationModal.value = true;
 };
+
+function getLeadUrl(lead: Lead) {
+  return lead.profileUrl || getSalesNavigatorLeadUrl(lead.entityUrn) || undefined;
+}
+
+function getCompanyUrl(company: Company) {
+  return company.profileUrl || getSalesNavigatorCompanyUrl(company.entityUrn) || undefined;
+}
 </script>
 
 <template>
@@ -334,6 +343,14 @@ const openRelationModal = (lead: Lead) => {
 
                   <v-list density="comfortable">
                     <v-list-item
+                      :href="getLeadUrl(lead as Lead)"
+                      target="_blank"
+                      prepend-icon="mdi-open-in-new"
+                      @click.stop
+                    >
+                      <v-list-item-title>Open in LinkedIn</v-list-item-title>
+                    </v-list-item>
+                    <v-list-item
                       prepend-icon="mdi-note-text-outline"
                       @click.stop="openDetail(lead as Lead)"
                     >
@@ -413,14 +430,39 @@ const openRelationModal = (lead: Lead) => {
                   @update:selected="(val) => toggleCompanySelection(company.entityUrn, val)"
                 >
                   <template #actions="{ company: slotCompany }">
-                    <v-btn
-                      :class="{ 'ml-auto': !isCompaniesDense }"
-                      :density="isCompaniesDense ? 'compact' : 'comfortable'"
-                      icon="mdi-note-text-outline"
-                      variant="text"
-                      title="View full info"
-                      @click.stop="openDetail(slotCompany as Company)"
-                    />
+                    <v-menu
+                      transition="scale-transition"
+                      origin="top right"
+                      contained
+                      @click.stop
+                    >
+                      <template #activator="{ props }">
+                        <v-btn
+                          icon="mdi-dots-vertical"
+                          :class="{ 'ml-auto': !isCompaniesDense }"
+                          density="comfortable"
+                          v-bind="props"
+                          variant="text"
+                        />
+                      </template>
+
+                      <v-list density="comfortable">
+                        <v-list-item
+                          :href="getCompanyUrl(slotCompany as Company)"
+                          target="_blank"
+                          prepend-icon="mdi-open-in-new"
+                          @click.stop
+                        >
+                          <v-list-item-title>Open in LinkedIn</v-list-item-title>
+                        </v-list-item>
+                        <v-list-item
+                          prepend-icon="mdi-note-text-outline"
+                          @click.stop="openDetail(slotCompany as Company)"
+                        >
+                          <v-list-item-title>View full info</v-list-item-title>
+                        </v-list-item>
+                      </v-list>
+                    </v-menu>
                   </template>
                 </CompanyPreview>
                 <v-divider v-if="index < paginatedCompanies.length - 1" class="my-1" />

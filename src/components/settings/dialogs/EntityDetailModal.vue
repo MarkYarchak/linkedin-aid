@@ -2,6 +2,7 @@
 import { computed, ref } from 'vue';
 import { useDataStore } from '@/store/data-store';
 import { getEffectiveLeadPositions } from '@/helpers/lead-helper';
+import { getSalesNavigatorLeadUrl, getSalesNavigatorCompanyUrl } from '@/helpers/url-helpers';
 import AppPreviewBox from '@/components/ui/AppPreviewBox.vue';
 import type { Lead } from '@/types/lead/lead';
 import type { Company } from '@/types/company/company';
@@ -100,6 +101,16 @@ const entityName = computed(() => {
   }
 });
 
+const profileUrl = computed(() => {
+  if (!props.entity) return null;
+  if (isLead(props.entity)) {
+    return props.entity.profileUrl || getSalesNavigatorLeadUrl(props.entity.entityUrn);
+  } else if (isCompany(props.entity)) {
+    return props.entity.profileUrl || getSalesNavigatorCompanyUrl(props.entity.entityUrn);
+  }
+  return null;
+});
+
 const jsonData = computed(() => {
   if (!props.entity) return {};
   return props.entity;
@@ -142,6 +153,17 @@ const close = () => {
         <v-toolbar-title>
           {{ entityType }} Details: {{ entityName }}
         </v-toolbar-title>
+        <v-btn
+          v-if="profileUrl"
+          :href="profileUrl"
+          target="_blank"
+          variant="elevated"
+          density="comfortable"
+          prepend-icon="mdi-open-in-new"
+          class="mr-2"
+        >
+          Open in LinkedIn
+        </v-btn>
         <v-btn icon="mdi-close" variant="text" @click="close"></v-btn>
       </v-toolbar>
 
@@ -165,12 +187,12 @@ const close = () => {
                   <v-list-item-subtitle>{{ entity.entityUrn }}</v-list-item-subtitle>
                 </v-list-item>
 
-                <v-list-item v-if="entity.profileUrl" :href="entity.profileUrl" target="_blank">
+                <v-list-item v-if="profileUrl" :href="profileUrl" target="_blank">
                   <template v-slot:prepend>
                     <v-icon icon="mdi-linkedin" class="mr-2" color="#0073b1"></v-icon>
                   </template>
                   <v-list-item-title class="font-weight-bold">LinkedIn Profile</v-list-item-title>
-                  <v-list-item-subtitle class="text-primary">{{ entity.profileUrl }}</v-list-item-subtitle>
+                  <v-list-item-subtitle class="text-primary">{{ profileUrl }}</v-list-item-subtitle>
                 </v-list-item>
               </template>
 
