@@ -25,10 +25,12 @@ body {
 }
 
 #app {
+  width: var(--app-width);
   min-width: var(--app-width);
   height: var(--app-height);
   min-height: var(--app-height);
   max-height: var(--app-height);
+  overflow: auto;
   display: flex;
   flex-direction: column;
 }
