@@ -29,7 +29,9 @@ export class LeadService {
 
       let updatedLead: Lead;
       if (deepMerge) {
-        updatedLead = merge(existingLead, update);
+        updatedLead = merge(existingLead, update, {
+          arrayMerge: (destinationArray, sourceArray) => sourceArray,
+        });
       } else {
         updatedLead = {
           ...existingLead,

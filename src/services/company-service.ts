@@ -40,7 +40,9 @@ export class CompanyService {
 
       let updatedCompany: Company;
       if (deepMerge) {
-        updatedCompany = merge(existingCompany, update);
+        updatedCompany = merge(existingCompany, update, {
+          arrayMerge: (destinationArray, sourceArray) => sourceArray,
+        });
       } else {
         updatedCompany = {
           ...existingCompany,
