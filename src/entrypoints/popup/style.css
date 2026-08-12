@@ -69,6 +69,10 @@ button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
 }
 
+.pa-0 {
+  padding: 0 !important;
+}
+
 .mt-1 {
   margin-top: 0.25rem !important;
 }

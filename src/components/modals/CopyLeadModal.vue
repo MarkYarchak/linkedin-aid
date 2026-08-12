@@ -67,6 +67,23 @@ const selectedPositionsTitle = computed(() => {
   return `${selectedPositionIds.value.length} / ${currentPositions.value.length}`;
 });
 
+const allCompaniesSelected = computed({
+  get: () => currentPositions.value.length > 0
+    && currentPositions.value.every(position => selectedPositionIds.value.includes(position.posId)),
+  set: (selected: boolean) => {
+    const currentPositionIds = new Set(currentPositions.value.map(position => position.posId));
+    const otherPositionIds = selectedPositionIds.value.filter(id => !currentPositionIds.has(id));
+
+    selectedPositionIds.value = selected
+      ? [...otherPositionIds, ...currentPositionIds]
+      : otherPositionIds;
+
+    if (!selected && primaryPositionId.value !== null && currentPositionIds.has(primaryPositionId.value)) {
+      primaryPositionId.value = null;
+    }
+  },
+});
+
 const getInsightData = (insight: any) => {
   const activity = insight.activityUnion;
   const date = insight.createdAt ? getRelativeTime(insight.createdAt) : '';
@@ -168,7 +185,15 @@ watch(currentStep, () => {
 
         <div class="step-header-with-action">
           <h4>Select Positions</h4>
-          <span class="selection-badge">{{ selectedPositionsTitle }}</span>
+          <div class="position-selection-actions">
+            <AppCheckbox
+              v-if="currentPositions.length > 0"
+              v-model="allCompaniesSelected"
+              label="Select all"
+              class="pa-0"
+            />
+            <span class="selection-badge">{{ selectedPositionsTitle }}</span>
+          </div>
         </div>
         <div v-if="currentPositions.length > 0" class="positions-list">
           <div
@@ -422,6 +447,12 @@ watch(currentStep, () => {
 
 .step-header-with-action h4 {
   margin: 0;
+}
+
+.position-selection-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
 .header-actions {
