@@ -1,5 +1,5 @@
 import { ref, computed, onMounted, watch } from 'vue';
-import { browser } from 'wxt/browser';
+import { Browser, browser } from 'wxt/browser';
 import { useDataStore } from '@/store/data-store';
 import { getEffectivePositions } from '@/helpers/lead-helper';
 import { companyService } from '@/services/company-service';
@@ -13,6 +13,7 @@ import type { OptionalDeepReadonly } from '@/types/common';
 import type { Lead } from '@/types/lead/lead';
 import type { Company } from '@/types/company/company';
 import { DEFAULT_COPY_LEAD_ACTIONS, type CopyLeadSettings } from '@/types/copy-lead-settings';
+import tabId = Browser.devtools.inspectedWindow.tabId;
 
 export function useCopyLead(lead: OptionalDeepReadonly<Lead>) {
   const currentStep = ref(1);
@@ -507,7 +508,15 @@ export function useCopyLead(lead: OptionalDeepReadonly<Lead>) {
       const profileUrl = copyActions.value.openProfileDestination === 'linkedin'
         ? lead.main?.flagshipProfileUrl
         : getSalesNavigatorLeadUrl(lead.entityUrn);
-      if (profileUrl) await browser.tabs.create({ url: profileUrl });
+      if (profileUrl) {
+        const [activeTab] = await browser.tabs.query({ active: true, currentWindow: true });
+        await browser.tabs.create({
+          url: profileUrl,
+          active: true,
+          index: activeTab ? activeTab.index + 1 : undefined,
+          openerTabId: activeTab?.id,
+        });
+      }
     }
   };
 
