@@ -5,6 +5,8 @@ import IconCross from '@/components/icons/IconCross.vue';
 interface Props {
   title?: string;
   maxWidth?: string;
+  /** Shrink the modal to its content instead of filling the available height. */
+  compact?: boolean;
 }
 
 const props = defineProps<Props>();
@@ -40,7 +42,10 @@ onUnmounted(() => {
 
 <template>
   <div v-if="show" class="modal-overlay" @click.self="show = false">
-    <div class="modal-content" :style="{ maxWidth: maxWidth || '400px' }">
+    <div
+      :class="['modal-content', { '_compact': compact }]"
+      :style="{ maxWidth: maxWidth || '400px' }"
+    >
       <div class="modal-header">
         <slot name="header">
           <h3 v-if="title">{{ title }}</h3>
@@ -85,6 +90,15 @@ onUnmounted(() => {
   flex-direction: column;
   padding: 16px;
   color: #333;
+}
+
+.modal-content._compact {
+  height: auto;
+}
+
+.modal-content._compact .modal-body {
+  flex: initial;
+  margin-bottom: 0;
 }
 
 .modal-header {

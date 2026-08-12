@@ -1,4 +1,4 @@
-import { ref, onMounted } from 'vue';
+import { ref, computed } from 'vue';
 import { useDataStore } from '@/store/data-store';
 import { storageService } from '@/services/storage-service';
 import { sanitizeText } from '@/helpers/text-helper';
@@ -6,6 +6,7 @@ import { getRelativeTime } from '@/helpers/date-helper';
 import type { OptionalDeepReadonly } from '@/types/common';
 import type { Lead } from '@/types/lead/lead';
 import type { HeroCard } from '@/types/search/salesApiLeadSearch';
+import type { BulkCopyLeadSettings, BulkCopyPrimaryAction } from '@/types/copy-lead-settings';
 
 export function useBulkCopyLeads(leads: OptionalDeepReadonly<Lead>[], heroCard?: HeroCard) {
   const currentStep = ref(1);
@@ -39,34 +40,39 @@ export function useBulkCopyLeads(leads: OptionalDeepReadonly<Lead>[], heroCard?:
   const groupByCompany = ref(false);
   const prefix = ref('');
   const wrapText = ref(false);
+  const primaryAction = ref<BulkCopyPrimaryAction>('configure');
 
   const { bulkCopyLeadSettings } = useDataStore();
 
-  onMounted(async () => {
-    // Load default settings if any from store
-    const bulkCopySettings = bulkCopyLeadSettings.value;
-    if (bulkCopySettings?.leadFields) {
-      leadFields.value = { ...leadFields.value, ...bulkCopySettings.leadFields };
-    }
-    if (bulkCopySettings?.prefix) {
-      prefix.value = bulkCopySettings.prefix;
-    }
-    if (bulkCopySettings?.viewMode) {
-      viewMode.value = bulkCopySettings.viewMode;
-    }
-    if (bulkCopySettings?.wrapText !== undefined) {
-      wrapText.value = bulkCopySettings.wrapText;
-    }
+  // Load default settings if any from store. Applied synchronously so callers
+  // know upfront whether the user opted into an instant copy.
+  const bulkCopySettings = bulkCopyLeadSettings.value;
+  if (bulkCopySettings?.leadFields) {
+    leadFields.value = { ...leadFields.value, ...JSON.parse(JSON.stringify(bulkCopySettings.leadFields)) };
+  }
+  if (bulkCopySettings?.prefix) {
+    prefix.value = bulkCopySettings.prefix;
+  }
+  if (bulkCopySettings?.viewMode) {
+    viewMode.value = bulkCopySettings.viewMode;
+  }
+  if (bulkCopySettings?.wrapText !== undefined) {
+    wrapText.value = bulkCopySettings.wrapText;
+  }
+  if (bulkCopySettings?.primaryAction) {
+    primaryAction.value = bulkCopySettings.primaryAction;
+  }
 
-    if (heroCard) {
-      groupByCompany.value = false;
-    } else {
-      // Set to true only if all leads are within the same company (referencing same URN)
-      const companyUrns = leads.map(l => l.searchResult?.currentPositions?.[0]?.companyUrn).filter(Boolean);
-      const uniqueCompanies = new Set(companyUrns);
-      groupByCompany.value = uniqueCompanies.size === 1 && companyUrns.length === leads.length;
-    }
-  });
+  if (heroCard) {
+    groupByCompany.value = false;
+  } else {
+    // Set to true only if all leads are within the same company (referencing same URN)
+    const companyUrns = leads.map(l => l.searchResult?.currentPositions?.[0]?.companyUrn).filter(Boolean);
+    const uniqueCompanies = new Set(companyUrns);
+    groupByCompany.value = uniqueCompanies.size === 1 && companyUrns.length === leads.length;
+  }
+
+  const isInstantCopy = computed(() => primaryAction.value === 'instant');
 
   const nextStep = () => {
     if (currentStep.value < totalSteps) currentStep.value++;
@@ -372,8 +378,9 @@ export function useBulkCopyLeads(leads: OptionalDeepReadonly<Lead>[], heroCard?:
 
     await navigator.clipboard.writeText(content);
 
-    // Save settings
-    const settings = {
+    // Save settings, keeping preferences the modal does not own (e.g. primaryAction)
+    const settings: BulkCopyLeadSettings = {
+      ...(bulkCopyLeadSettings.value || {}),
       leadFields: leadFields.value,
       prefix: prefix.value,
       viewMode: viewMode.value,
@@ -405,5 +412,7 @@ export function useBulkCopyLeads(leads: OptionalDeepReadonly<Lead>[], heroCard?:
     groupByCompany,
     prefix,
     wrapText,
+    primaryAction,
+    isInstantCopy,
   };
 }

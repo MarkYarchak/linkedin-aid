@@ -1,5 +1,35 @@
 import type { TitleTarget, TitleState } from '@/helpers/title-helper';
 
+/**
+ * Primary action triggered when copying leads in bulk.
+ * - `configure`: open the modal and let the user pick fields / review the preview.
+ * - `instant`: copy straight away using the saved preferences.
+ */
+export type BulkCopyPrimaryAction = 'configure' | 'instant';
+
+export interface BulkCopyLeadSettings {
+  leadFields?: {
+    fullName: boolean;
+    location: boolean;
+    summary: boolean;
+    recentActivity: boolean;
+    mutualConnections: boolean;
+    heroCard: boolean;
+    position: {
+      title: boolean;
+      companyName: boolean;
+      industry: boolean;
+      location: boolean;
+      startedOn: boolean;
+      description: boolean;
+    };
+  };
+  primaryAction?: BulkCopyPrimaryAction;
+  prefix?: string;
+  viewMode?: string;
+  wrapText?: boolean;
+}
+
 export interface CopyLeadSettings {
   leadFields: {
     fullName: boolean;

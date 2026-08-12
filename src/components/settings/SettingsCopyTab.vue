@@ -2,6 +2,7 @@
 import { ref, watch } from 'vue';
 import { useDataStore } from '@/store/data-store';
 import { storageService } from '@/services/storage-service';
+import type { BulkCopyPrimaryAction } from '@/types/copy-lead-settings';
 
 const { copyLeadSettings, bulkCopyLeadSettings } = useDataStore();
 
@@ -57,10 +58,16 @@ const localBulkCopySettings = ref({
       description: true,
     },
   },
+  primaryAction: 'configure' as BulkCopyPrimaryAction,
   prefix: '',
   viewMode: 'text',
   wrapText: false,
 });
+
+const primaryActionOptions = [
+  { title: 'Configure', subtitle: 'Pick fields and review the preview before copying', value: 'configure' },
+  { title: 'Instant copy', subtitle: 'Copy right away using the preferences below', value: 'instant' },
+];
 
 const insightSelectionOptions = [
   { title: 'Posts', value: 'posts' },
@@ -86,8 +93,12 @@ watch(() => copyLeadSettings.value, (val) => {
 }, { immediate: true, deep: true });
 
 watch(() => bulkCopyLeadSettings.value, (val) => {
-  if (val) {
-    localBulkCopySettings.value = JSON.parse(JSON.stringify(val));
+  if (!val) return;
+
+  // Merge so preferences missing from storage keep their default
+  const merged = { ...localBulkCopySettings.value, ...JSON.parse(JSON.stringify(val)) };
+  if (JSON.stringify(merged) !== JSON.stringify(localBulkCopySettings.value)) {
+    localBulkCopySettings.value = merged;
   }
 }, { immediate: true, deep: true });
 
@@ -233,6 +244,24 @@ watch(localBulkCopySettings, async (newValue) => {
 
     <v-card title="Bulk Copy Preferences">
       <v-card-text>
+        <div class="text-caption text-medium-emphasis mb-1">Primary Action</div>
+        <v-radio-group
+          v-model="localBulkCopySettings.primaryAction"
+          hide-details
+          density="comfortable"
+          color="#0073b1"
+          class="mb-4"
+        >
+          <v-radio v-for="opt in primaryActionOptions" :key="opt.value" :value="opt.value">
+            <template #label>
+              <div>
+                <div>{{ opt.title }}</div>
+                <div class="text-caption text-medium-emphasis">{{ opt.subtitle }}</div>
+              </div>
+            </template>
+          </v-radio>
+        </v-radio-group>
+
         <v-textarea
           v-model="localBulkCopySettings.prefix"
           label="Default Prefix"

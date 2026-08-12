@@ -8,7 +8,7 @@ import type { Lead } from '@/types/lead/lead';
 import type { Company } from '@/types/company/company';
 import type { SearchSession, PersonasStorage } from '@/types/search/search';
 import type { LeadPositionRelation } from '@/types/lead/lead-position-relation';
-import type { CopyLeadSettings } from '@/types/copy-lead-settings';
+import type { CopyLeadSettings, BulkCopyLeadSettings } from '@/types/copy-lead-settings';
 
 export type SessionData = {
   personas: PersonasStorage,
@@ -18,12 +18,7 @@ export type SessionData = {
 export type LocalData = {
   theme: 'light' | 'dark' | 'system',
   copyLeadSettings: CopyLeadSettings,
-  bulkCopyLeadSettings: {
-    leadFields?: any;
-    prefix?: string;
-    viewMode?: string;
-    wrapText?: boolean;
-  },
+  bulkCopyLeadSettings: BulkCopyLeadSettings,
   entitiesTTL?: number,
 };
 
