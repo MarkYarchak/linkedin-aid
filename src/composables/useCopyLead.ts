@@ -1,5 +1,5 @@
 import { ref, computed, onMounted, watch } from 'vue';
-import { Browser, browser } from 'wxt/browser';
+import { browser } from 'wxt/browser';
 import { useDataStore } from '@/store/data-store';
 import { getEffectivePositions } from '@/helpers/lead-helper';
 import { companyService } from '@/services/company-service';
@@ -8,16 +8,14 @@ import { sanitizeText } from '@/helpers/text-helper';
 import { titleTargets, titleStates, generateLeadTitle, TitleTarget, TitleState } from '@/helpers/title-helper';
 import { parseLinkedInUrn } from '@/helpers/urn';
 import { getRelativeTime } from '@/helpers/date-helper';
-import { getSalesNavigatorLeadUrl } from '@/helpers/url-helpers';
+import { getSalesNavigatorLeadUrl, getSalesNavigatorCompanyUrl } from '@/helpers/url-helpers';
 import type { OptionalDeepReadonly } from '@/types/common';
 import type { Lead } from '@/types/lead/lead';
 import type { Company } from '@/types/company/company';
-import { DEFAULT_COPY_LEAD_ACTIONS, type CopyLeadSettings } from '@/types/copy-lead-settings';
-import tabId = Browser.devtools.inspectedWindow.tabId;
+import { DEFAULT_COPY_LEAD_ACTIONS, DEFAULT_COPY_LEAD_MODAL_VISIBILITY, type CopyLeadSettings } from '@/types/copy-lead-settings';
 
 export function useCopyLead(lead: OptionalDeepReadonly<Lead>) {
-  const currentStep = ref(1);
-  const totalSteps = 5;
+  const modalVisibility = ref({ ...DEFAULT_COPY_LEAD_MODAL_VISIBILITY });
   const viewMode = ref('text');
   const viewOptions = [
     { label: 'Text', value: 'text' },
@@ -116,6 +114,52 @@ export function useCopyLead(lead: OptionalDeepReadonly<Lead>) {
   const isTitleCopied = ref(false);
   const copyTimeout = ref<ReturnType<typeof setTimeout> | null>(null);
 
+  const selectedCompanyUrls = computed(() => {
+    return lead.main?.positions
+      .filter(p => selectedPositionIds.value.includes(p.posId))
+      .map(p => {
+        const isLoaded = p.companyUrn ? !!selectedCompanies.value[p.companyUrn] : false;
+        return {
+          name: p.companyName,
+          urn: p.companyUrn,
+          url: p.companyUrn ? getSalesNavigatorCompanyUrl(p.companyUrn) : null,
+          isLoaded
+        };
+      }) || [];
+  });
+
+  const missingCompanies = computed(() => {
+    return selectedCompanyUrls.value.filter(c => !c.isLoaded);
+  });
+
+  const visibleSteps = computed(() => {
+    const steps = [1];
+
+    // Step 2: Company Info
+    if (modalVisibility.value.companiesFields || missingCompanies.value.length > 0) {
+      steps.push(2);
+    }
+
+    // Step 3: Insights & Skills
+    const hasInsights = (lead.insights?.elements?.length ?? 0) > 0;
+    const hasSkills = (lead.extra?.skills?.length ?? 0) > 0;
+    if (hasInsights || (modalVisibility.value.skills && hasSkills)) {
+      steps.push(3);
+    }
+
+    // Step 4: Title Settings
+    if (modalVisibility.value.titleSettings) {
+      steps.push(4);
+    }
+
+    steps.push(5);
+    return steps;
+  });
+
+  const currentStepIndex = ref(0);
+  const currentStep = computed(() => visibleSteps.value[currentStepIndex.value] || 1);
+  const totalSteps = computed(() => visibleSteps.value.length);
+
   const { copyLeadSettings, leadTitles, leadPositionRelationsMap, companiesMap } = useDataStore();
 
   const effectivePositions = computed(() => {
@@ -162,6 +206,7 @@ export function useCopyLead(lead: OptionalDeepReadonly<Lead>) {
       const s = copyLeadSettings.value;
       if (s.leadFields) leadFields.value = { ...leadFields.value, ...s.leadFields };
       if (s.companyFields) companyFields.value = { ...companyFields.value, ...s.companyFields };
+      if (s.modalVisibility) modalVisibility.value = { ...modalVisibility.value, ...s.modalVisibility };
       if (s.selectedTarget) selectedTarget.value = s.selectedTarget;
       if (s.selectedState) selectedState.value = s.selectedState;
       if (s.prefix) prefix.value = s.prefix;
@@ -206,11 +251,15 @@ export function useCopyLead(lead: OptionalDeepReadonly<Lead>) {
   }, { immediate: true, deep: true });
 
   const nextStep = () => {
-    if (currentStep.value < totalSteps) currentStep.value++;
+    if (currentStepIndex.value < visibleSteps.value.length - 1) {
+      currentStepIndex.value++;
+    }
   };
 
   const prevStep = () => {
-    if (currentStep.value > 1) currentStep.value--;
+    if (currentStepIndex.value > 0) {
+      currentStepIndex.value--;
+    }
   };
 
   const generateCopyText = () => {
@@ -478,6 +527,7 @@ export function useCopyLead(lead: OptionalDeepReadonly<Lead>) {
     const settings: CopyLeadSettings = {
       ...copyLeadSettings.value,
       actions: copyActions.value,
+      modalVisibility: modalVisibility.value,
       leadFields: leadFields.value,
       companyFields: companyFields.value,
       titleTargets: targets.value as TitleTarget[],
@@ -594,6 +644,8 @@ export function useCopyLead(lead: OptionalDeepReadonly<Lead>) {
   return {
     currentStep,
     totalSteps,
+    currentStepIndex,
+    modalVisibility,
     leadFields,
     selectedPositionIds,
     primaryPositionId,
@@ -612,6 +664,7 @@ export function useCopyLead(lead: OptionalDeepReadonly<Lead>) {
     selectedTarget,
     selectedState,
     prefix,
+    missingCompanies,
     nextStep,
     prevStep,
     generateCopyText,

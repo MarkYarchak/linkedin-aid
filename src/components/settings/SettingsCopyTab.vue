@@ -4,6 +4,7 @@ import { useDataStore } from '@/store/data-store';
 import { storageService } from '@/services/storage-service';
 import {
   DEFAULT_COPY_LEAD_ACTIONS,
+  DEFAULT_COPY_LEAD_MODAL_VISIBILITY,
   type BulkCopyPrimaryAction,
 } from '@/types/copy-lead-settings';
 
@@ -12,6 +13,7 @@ const { copyLeadSettings, bulkCopyLeadSettings } = useDataStore();
 // Copy Settings Local State
 const localCopySettings = ref({
   actions: { ...DEFAULT_COPY_LEAD_ACTIONS },
+  modalVisibility: { ...DEFAULT_COPY_LEAD_MODAL_VISIBILITY },
   leadFields: {
     fullName: true,
     headline: true,
@@ -95,6 +97,7 @@ watch(() => copyLeadSettings.value, (val) => {
     if (val.leadFields) localCopySettings.value.leadFields = JSON.parse(JSON.stringify(val.leadFields));
     if (val.companyFields) localCopySettings.value.companyFields = JSON.parse(JSON.stringify(val.companyFields));
     localCopySettings.value.actions = { ...DEFAULT_COPY_LEAD_ACTIONS, ...val.actions };
+    localCopySettings.value.modalVisibility = { ...DEFAULT_COPY_LEAD_MODAL_VISIBILITY, ...val.modalVisibility };
     if (val.prefix !== undefined) localCopySettings.value.prefix = val.prefix;
     if (val.viewMode !== undefined) localCopySettings.value.viewMode = val.viewMode;
     if (val.wrapText !== undefined) localCopySettings.value.wrapText = val.wrapText;
@@ -129,6 +132,53 @@ watch(localBulkCopySettings, async (newValue) => {
 
 <template>
   <div>
+    <v-card title="Copy Modal Sections Visibility" class="mb-4">
+      <v-card-text>
+        <v-row>
+          <v-col cols="12" sm="6">
+            <v-checkbox
+              v-model="localCopySettings.modalVisibility.leadBasicInfo"
+              label="Lead Basic Info"
+              density="comfortable"
+              hide-details
+              color="#0073b1"
+            />
+            <v-checkbox
+              v-model="localCopySettings.modalVisibility.currentPositionFields"
+              label="Current Position Fields"
+              density="comfortable"
+              hide-details
+              color="#0073b1"
+            />
+            <v-checkbox
+              v-model="localCopySettings.modalVisibility.companiesFields"
+              label="Company Fields"
+              hint="Hides the company step if all companies are already loaded"
+              persistent-hint
+              density="comfortable"
+              color="#0073b1"
+            />
+          </v-col>
+          <v-col cols="12" sm="6">
+            <v-checkbox
+              v-model="localCopySettings.modalVisibility.skills"
+              label="Skills"
+              density="comfortable"
+              hide-details
+              color="#0073b1"
+            />
+            <v-checkbox
+              v-model="localCopySettings.modalVisibility.titleSettings"
+              label="Title Settings"
+              density="comfortable"
+              hide-details
+              color="#0073b1"
+            />
+          </v-col>
+        </v-row>
+      </v-card-text>
+    </v-card>
+
     <v-card title="Actions after copying a lead" class="mb-4">
       <v-card-text>
         <v-checkbox

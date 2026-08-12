@@ -45,8 +45,25 @@ export interface BulkCopyLeadSettings {
   wrapText?: boolean;
 }
 
+export interface CopyLeadModalVisibility {
+  leadBasicInfo: boolean;
+  currentPositionFields: boolean;
+  companiesFields: boolean;
+  skills: boolean;
+  titleSettings: boolean;
+}
+
+export const DEFAULT_COPY_LEAD_MODAL_VISIBILITY: CopyLeadModalVisibility = {
+  leadBasicInfo: true,
+  currentPositionFields: true,
+  companiesFields: true,
+  skills: true,
+  titleSettings: true,
+};
+
 export interface CopyLeadSettings {
   actions?: CopyLeadActions;
+  modalVisibility?: CopyLeadModalVisibility;
   leadFields: {
     fullName: boolean;
     headline: boolean;

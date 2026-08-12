@@ -28,6 +28,8 @@ const modalRef = ref<InstanceType<typeof AppModal> | null>(null);
 const {
   currentStep,
   totalSteps,
+  currentStepIndex,
+  modalVisibility,
   leadFields,
   selectedPositionIds,
   primaryPositionId,
@@ -44,6 +46,7 @@ const {
   states,
   selectedTarget,
   selectedState,
+  missingCompanies,
   nextStep,
   prevStep,
   generateCopyText,
@@ -110,24 +113,6 @@ const copyTitle = async () => {
   await copyTitleToClipboard();
 };
 
-const selectedCompanyUrls = computed(() => {
-  return props.lead.main?.positions
-    .filter(p => selectedPositionIds.value.includes(p.posId))
-    .map(p => {
-      const isLoaded = p.companyUrn ? !!selectedCompanies.value[p.companyUrn] : false;
-      return {
-        name: p.companyName,
-        urn: p.companyUrn,
-        url: p.companyUrn ? getSalesNavigatorCompanyUrl(p.companyUrn) : null,
-        isLoaded
-      };
-    }) || [];
-});
-
-const missingCompanies = computed(() => {
-  return selectedCompanyUrls.value.filter(c => !c.isLoaded);
-});
-
 const isJsonView = computed(() => viewMode.value === 'json');
 
 watch(currentStep, () => {
@@ -144,7 +129,7 @@ watch(currentStep, () => {
     title="Copy Lead Information"
   >
     <AppStepper
-      :current-step="currentStep"
+      :current-step="currentStepIndex + 1"
       :total-steps="totalSteps"
       class="mb-4"
     />
@@ -152,36 +137,41 @@ watch(currentStep, () => {
     <div class="step-content">
       <!-- Step 1: Lead Info -->
       <div v-if="currentStep === 1">
-        <h4>Lead Basic Info</h4>
-        <div class="field-group grid _three-cols">
-          <AppCheckbox v-model="leadFields.fullName" label="Full Name" />
-          <AppCheckbox v-model="leadFields.headline" label="Headline" />
-          <AppCheckbox v-model="leadFields.location" label="Location" />
-          <AppCheckbox v-model="leadFields.summary" label="Summary" />
-          <AppCheckbox
-            v-if="lead.searchResult"
-            v-model="leadFields.recentActivity"
-            label="Recent Activity"
-          />
-          <AppCheckbox
-            v-if="lead.searchResult"
-            v-model="leadFields.mutualConnections"
-            label="Mutual Connections"
-          />
-        </div>
-        <h4>Current Position Fields</h4>
-        <div class="field-group grid _three-cols">
-          <AppCheckbox v-model="leadFields.position.title" label="Job Title" />
-          <AppCheckbox v-model="leadFields.position.companyName" label="Company" />
-          <AppCheckbox v-model="leadFields.position.industry" label="Industry" />
-          <AppCheckbox v-model="leadFields.position.location" label="Location" />
-          <AppCheckbox v-model="leadFields.position.startedOn" label="Started On" />
-          <AppCheckbox
-            v-if="lead.main?.defaultPosition?.description"
-            v-model="leadFields.position.description"
-            label="Description"
-          />
-        </div>
+        <template v-if="modalVisibility.leadBasicInfo">
+          <h4>Lead Basic Info</h4>
+          <div class="field-group grid _three-cols">
+            <AppCheckbox v-model="leadFields.fullName" label="Full Name" />
+            <AppCheckbox v-model="leadFields.headline" label="Headline" />
+            <AppCheckbox v-model="leadFields.location" label="Location" />
+            <AppCheckbox v-model="leadFields.summary" label="Summary" />
+            <AppCheckbox
+              v-if="lead.searchResult"
+              v-model="leadFields.recentActivity"
+              label="Recent Activity"
+            />
+            <AppCheckbox
+              v-if="lead.searchResult"
+              v-model="leadFields.mutualConnections"
+              label="Mutual Connections"
+            />
+          </div>
+        </template>
+
+        <template v-if="modalVisibility.currentPositionFields">
+          <h4>Current Position Fields</h4>
+          <div class="field-group grid _three-cols">
+            <AppCheckbox v-model="leadFields.position.title" label="Job Title" />
+            <AppCheckbox v-model="leadFields.position.companyName" label="Company" />
+            <AppCheckbox v-model="leadFields.position.industry" label="Industry" />
+            <AppCheckbox v-model="leadFields.position.location" label="Location" />
+            <AppCheckbox v-model="leadFields.position.startedOn" label="Started On" />
+            <AppCheckbox
+              v-if="lead.main?.defaultPosition?.description"
+              v-model="leadFields.position.description"
+              label="Description"
+            />
+          </div>
+        </template>
 
         <div class="step-header-with-action">
           <h4>Select Positions</h4>
@@ -327,17 +317,19 @@ watch(currentStep, () => {
         </div>
         <div v-else>No recent activity found.</div>
 
-        <h4 class="mt-6">Skills</h4>
-        <div v-if="lead.extra?.skills?.length" class="tags-list">
-          <AppTag
-            v-for="skill in lead.extra.skills"
-            :key="skill.name"
-            :label="skill.name"
-            :selected="selectedSkills.includes(skill.name)"
-            @toggle="toggleSkill(skill.name)"
-          />
-        </div>
-        <div v-else>No skills found.</div>
+        <template v-if="modalVisibility.skills">
+          <h4 class="mt-6">Skills</h4>
+          <div v-if="lead.extra?.skills?.length" class="tags-list">
+            <AppTag
+              v-for="skill in lead.extra.skills"
+              :key="skill.name"
+              :label="skill.name"
+              :selected="selectedSkills.includes(skill.name)"
+              @toggle="toggleSkill(skill.name)"
+            />
+          </div>
+          <div v-else>No skills found.</div>
+        </template>
       </div>
 
       <!-- Step 4: Title Settings -->
@@ -415,8 +407,8 @@ watch(currentStep, () => {
     <template #footer>
       <div v-if="isCopied" class="copied-feedback">Copied!</div>
       <div v-if="isTitleCopied" class="copied-feedback">Title Copied!</div>
-      <button v-if="currentStep > 1" @click="prevStep">Back</button>
-      <button v-if="currentStep < totalSteps" @click="nextStep" class="primary">Next</button>
+      <button v-if="currentStepIndex > 0" @click="prevStep">Back</button>
+      <button v-if="currentStepIndex < totalSteps - 1" @click="nextStep" class="primary">Next</button>
       <button v-else @click="copyToClipboard" class="primary">
         {{ isCopied ? 'Copied!' : 'Copy Info' }}
       </button>
