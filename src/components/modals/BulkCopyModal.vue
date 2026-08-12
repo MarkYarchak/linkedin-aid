@@ -12,11 +12,11 @@ import type { Lead } from '@/types/lead/lead';
 interface Props {
   leads: OptionalDeepReadonly<Lead>[];
   heroCard?: any;
-  show: boolean;
 }
 
 const props = defineProps<Props>();
-const emit = defineEmits(['close']);
+
+const show = defineModel<boolean>('show');
 
 const modalRef = ref<InstanceType<typeof AppModal> | null>(null);
 
@@ -49,9 +49,8 @@ watch(currentStep, () => {
 <template>
   <AppModal
     ref="modalRef"
-    :show="show"
+    v-model:show="show"
     title="Bulk Copy Leads"
-    @close="emit('close')"
   >
     <AppStepper
       :current-step="currentStep"

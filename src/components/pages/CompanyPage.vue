@@ -180,10 +180,9 @@ watch([activeTab, selectedPersonaId, () => props.tabUrl], () => {
 
     <BulkCopyModal
       v-if="showBulkCopyModal"
-      :show="showBulkCopyModal"
+      v-model:show="showBulkCopyModal"
       :leads="selectedLeads"
       :hero-card="currentSessionHeroCard"
-      @close="showBulkCopyModal = false"
     />
   </div>
 </template>

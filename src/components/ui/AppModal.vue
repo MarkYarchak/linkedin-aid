@@ -3,13 +3,13 @@ import { ref, watch, onUnmounted } from 'vue';
 import IconCross from '@/components/icons/IconCross.vue';
 
 interface Props {
-  show: boolean;
   title?: string;
   maxWidth?: string;
 }
 
 const props = defineProps<Props>();
-const emit = defineEmits(['close']);
+
+const show = defineModel<boolean>('show');
 
 const modalBodyRef = ref<HTMLElement | null>(null);
 
@@ -23,7 +23,7 @@ defineExpose({
   scrollToTop
 });
 
-watch(() => props.show, (value) => {
+watch(show, (value) => {
   const appElement = document.getElementById('app');
   if (value) {
     appElement?.classList.add('modal-open');
@@ -39,13 +39,13 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div v-if="show" class="modal-overlay" @click.self="emit('close')">
+  <div v-if="show" class="modal-overlay" @click.self="show = false">
     <div class="modal-content" :style="{ maxWidth: maxWidth || '400px' }">
       <div class="modal-header">
         <slot name="header">
           <h3 v-if="title">{{ title }}</h3>
         </slot>
-        <button class="close-btn" @click="emit('close')">
+        <button class="close-btn" @click="show = false">
           <IconCross size="20" />
         </button>
       </div>

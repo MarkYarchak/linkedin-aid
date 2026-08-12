@@ -203,10 +203,9 @@ const copySelected = () => {
 
     <BulkCopyModal
       v-if="showBulkCopyModal"
-      :show="showBulkCopyModal"
+      v-model:show="showBulkCopyModal"
       :leads="selectedLeads"
       :hero-card="currentSession?.heroCard"
-      @close="showBulkCopyModal = false"
     />
   </div>
 </template>

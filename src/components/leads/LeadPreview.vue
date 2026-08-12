@@ -151,9 +151,8 @@ function copyLeadInfo() {
     </div>
 
     <CopyLeadModal
-      :show="showCopyModal"
+      v-model:show="showCopyModal"
       :lead="lead"
-      @close="showCopyModal = false"
     />
   </div>
 </template>
