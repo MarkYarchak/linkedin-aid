@@ -1,4 +1,5 @@
 import { ref, computed, onMounted, watch } from 'vue';
+import { browser } from 'wxt/browser';
 import { useDataStore } from '@/store/data-store';
 import { getEffectivePositions } from '@/helpers/lead-helper';
 import { companyService } from '@/services/company-service';
@@ -7,10 +8,11 @@ import { sanitizeText } from '@/helpers/text-helper';
 import { titleTargets, titleStates, generateLeadTitle, TitleTarget, TitleState } from '@/helpers/title-helper';
 import { parseLinkedInUrn } from '@/helpers/urn';
 import { getRelativeTime } from '@/helpers/date-helper';
+import { getSalesNavigatorLeadUrl } from '@/helpers/url-helpers';
 import type { OptionalDeepReadonly } from '@/types/common';
 import type { Lead } from '@/types/lead/lead';
 import type { Company } from '@/types/company/company';
-import type { CopyLeadSettings } from '@/types/copy-lead-settings';
+import { DEFAULT_COPY_LEAD_ACTIONS, type CopyLeadSettings } from '@/types/copy-lead-settings';
 
 export function useCopyLead(lead: OptionalDeepReadonly<Lead>) {
   const currentStep = ref(1);
@@ -127,6 +129,10 @@ export function useCopyLead(lead: OptionalDeepReadonly<Lead>) {
 
   const targets = computed(() => copyLeadSettings.value?.titleTargets || titleTargets);
   const states = computed(() => copyLeadSettings.value?.titleStates || titleStates);
+  const copyActions = computed(() => ({
+    ...DEFAULT_COPY_LEAD_ACTIONS,
+    ...copyLeadSettings.value?.actions,
+  }));
 
   const selectedTarget = ref(targets.value[0]?.value || '');
   const selectedState = ref(states.value[0]?.value || '');
@@ -469,10 +475,10 @@ export function useCopyLead(lead: OptionalDeepReadonly<Lead>) {
 
     // Save settings
     const settings: CopyLeadSettings = {
+      ...copyLeadSettings.value,
+      actions: copyActions.value,
       leadFields: leadFields.value,
       companyFields: companyFields.value,
-      selectedTarget: selectedTarget.value,
-      selectedState: selectedState.value,
       titleTargets: targets.value as TitleTarget[],
       titleStates: states.value as TitleState[],
       prefix: prefix.value,
@@ -480,6 +486,11 @@ export function useCopyLead(lead: OptionalDeepReadonly<Lead>) {
       wrapText: wrapText.value,
       insightFilters: insightFilters.value,
     };
+
+    if (copyActions.value.saveTitlePreferences) {
+      settings.selectedTarget = selectedTarget.value;
+      settings.selectedState = selectedState.value;
+    }
     await storageService.setLocal({ copyLeadSettings: settings });
 
     isCopied.value = true;
@@ -488,8 +499,14 @@ export function useCopyLead(lead: OptionalDeepReadonly<Lead>) {
       isCopied.value = false;
     }, 2000);
 
-    // Save lead title to session storage
-    await saveSessionTitle();
+    if (copyActions.value.generateSessionTitle) {
+      await saveSessionTitle();
+    }
+
+    if (copyActions.value.openLinkedInProfile) {
+      const profileUrl = lead.profileUrl || getSalesNavigatorLeadUrl(lead.entityUrn);
+      if (profileUrl) await browser.tabs.create({ url: profileUrl });
+    }
   };
 
   const saveSessionTitle = async () => {

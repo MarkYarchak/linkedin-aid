@@ -2,12 +2,16 @@
 import { ref, watch } from 'vue';
 import { useDataStore } from '@/store/data-store';
 import { storageService } from '@/services/storage-service';
-import type { BulkCopyPrimaryAction } from '@/types/copy-lead-settings';
+import {
+  DEFAULT_COPY_LEAD_ACTIONS,
+  type BulkCopyPrimaryAction,
+} from '@/types/copy-lead-settings';
 
 const { copyLeadSettings, bulkCopyLeadSettings } = useDataStore();
 
 // Copy Settings Local State
 const localCopySettings = ref({
+  actions: { ...DEFAULT_COPY_LEAD_ACTIONS },
   leadFields: {
     fullName: true,
     headline: true,
@@ -85,6 +89,7 @@ watch(() => copyLeadSettings.value, (val) => {
   if (val) {
     if (val.leadFields) localCopySettings.value.leadFields = JSON.parse(JSON.stringify(val.leadFields));
     if (val.companyFields) localCopySettings.value.companyFields = JSON.parse(JSON.stringify(val.companyFields));
+    localCopySettings.value.actions = { ...DEFAULT_COPY_LEAD_ACTIONS, ...val.actions };
     if (val.prefix !== undefined) localCopySettings.value.prefix = val.prefix;
     if (val.viewMode !== undefined) localCopySettings.value.viewMode = val.viewMode;
     if (val.wrapText !== undefined) localCopySettings.value.wrapText = val.wrapText;
@@ -104,14 +109,12 @@ watch(() => bulkCopyLeadSettings.value, (val) => {
 
 // Auto-save changes
 watch(localCopySettings, async (newValue) => {
-  if (copyLeadSettings.value) {
-    await storageService.setLocal({
-      copyLeadSettings: {
-        ...copyLeadSettings.value,
-        ...newValue,
-      }
-    });
-  }
+  await storageService.setLocal({
+    copyLeadSettings: {
+      ...copyLeadSettings.value,
+      ...newValue,
+    }
+  });
 }, { deep: true });
 
 watch(localBulkCopySettings, async (newValue) => {
@@ -121,6 +124,32 @@ watch(localBulkCopySettings, async (newValue) => {
 
 <template>
   <div>
+    <v-card title="Actions after copying a lead" class="mb-4">
+      <v-card-text>
+        <v-checkbox
+          v-model="localCopySettings.actions.generateSessionTitle"
+          label="Generate and store session title (Recommended)"
+          density="comfortable"
+          hide-details
+          color="#0073b1"
+        />
+        <v-checkbox
+          v-model="localCopySettings.actions.saveTitlePreferences"
+          label="Save title preferences"
+          density="comfortable"
+          hide-details
+          color="#0073b1"
+        />
+        <v-checkbox
+          v-model="localCopySettings.actions.openLinkedInProfile"
+          label="Open LinkedIn profile page"
+          density="comfortable"
+          hide-details
+          color="#0073b1"
+        />
+      </v-card-text>
+    </v-card>
+
     <v-card title="Single Lead Copy Fields" class="mb-4">
       <v-card-text>
         <v-row>

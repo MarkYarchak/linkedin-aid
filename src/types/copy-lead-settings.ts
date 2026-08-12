@@ -7,6 +7,18 @@ import type { TitleTarget, TitleState } from '@/helpers/title-helper';
  */
 export type BulkCopyPrimaryAction = 'configure' | 'instant';
 
+export interface CopyLeadActions {
+  generateSessionTitle: boolean;
+  saveTitlePreferences: boolean;
+  openLinkedInProfile: boolean;
+}
+
+export const DEFAULT_COPY_LEAD_ACTIONS: CopyLeadActions = {
+  generateSessionTitle: true,
+  saveTitlePreferences: true,
+  openLinkedInProfile: false,
+};
+
 export interface BulkCopyLeadSettings {
   leadFields?: {
     fullName: boolean;
@@ -31,6 +43,7 @@ export interface BulkCopyLeadSettings {
 }
 
 export interface CopyLeadSettings {
+  actions?: CopyLeadActions;
   leadFields: {
     fullName: boolean;
     headline: boolean;
