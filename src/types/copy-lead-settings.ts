@@ -6,17 +6,20 @@ import type { TitleTarget, TitleState } from '@/helpers/title-helper';
  * - `instant`: copy straight away using the saved preferences.
  */
 export type BulkCopyPrimaryAction = 'configure' | 'instant';
+export type CopyLeadProfileDestination = 'linkedin' | 'sales-navigator';
 
 export interface CopyLeadActions {
   generateSessionTitle: boolean;
   saveTitlePreferences: boolean;
   openLinkedInProfile: boolean;
+  openProfileDestination: CopyLeadProfileDestination;
 }
 
 export const DEFAULT_COPY_LEAD_ACTIONS: CopyLeadActions = {
   generateSessionTitle: true,
   saveTitlePreferences: true,
   openLinkedInProfile: false,
+  openProfileDestination: 'linkedin',
 };
 
 export interface BulkCopyLeadSettings {

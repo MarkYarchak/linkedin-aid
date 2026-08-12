@@ -504,7 +504,9 @@ export function useCopyLead(lead: OptionalDeepReadonly<Lead>) {
     }
 
     if (copyActions.value.openLinkedInProfile) {
-      const profileUrl = lead.profileUrl || getSalesNavigatorLeadUrl(lead.entityUrn);
+      const profileUrl = copyActions.value.openProfileDestination === 'linkedin'
+        ? lead.main?.flagshipProfileUrl
+        : getSalesNavigatorLeadUrl(lead.entityUrn);
       if (profileUrl) await browser.tabs.create({ url: profileUrl });
     }
   };

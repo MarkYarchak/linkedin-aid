@@ -84,6 +84,11 @@ const viewOptions = [
   { title: 'JSON', value: 'json' },
 ];
 
+const profileDestinationOptions = [
+  { title: 'LinkedIn profile', value: 'linkedin' },
+  { title: 'Sales Navigator profile', value: 'sales-navigator' },
+];
+
 // Initialize local state from store
 watch(() => copyLeadSettings.value, (val) => {
   if (val) {
@@ -147,6 +152,21 @@ watch(localBulkCopySettings, async (newValue) => {
           hide-details
           color="#0073b1"
         />
+        <v-radio-group
+          v-if="localCopySettings.actions.openLinkedInProfile"
+          v-model="localCopySettings.actions.openProfileDestination"
+          hide-details
+          density="comfortable"
+          color="#0073b1"
+          class="profile-destination-options"
+        >
+          <v-radio
+            v-for="option in profileDestinationOptions"
+            :key="option.value"
+            :label="option.title"
+            :value="option.value"
+          />
+        </v-radio-group>
       </v-card-text>
     </v-card>
 
@@ -335,5 +355,9 @@ watch(localBulkCopySettings, async (newValue) => {
   text-transform: uppercase;
   letter-spacing: 0.025em;
   margin-bottom: 4px;
+}
+
+.profile-destination-options {
+  margin-left: 2rem;
 }
 </style>
