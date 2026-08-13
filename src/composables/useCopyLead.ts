@@ -118,7 +118,10 @@ export function useCopyLead(lead: OptionalDeepReadonly<Lead>) {
     return effectivePositions.value
       .filter(p => selectedPositionIds.value.includes(p.posId))
       .map(p => {
-        const isLoaded = p.companyUrn ? !!selectedCompanies.value[p.companyUrn] : false;
+        const isLoadedInStore = p.companyUrn ? !!selectedCompanies.value[p.companyUrn] : false;
+        const isCaptured = p.companyUrn ? capturedCompanyUrns.value.includes(p.companyUrn) : false;
+        const isLoaded = isLoadedInStore || isCaptured;
+
         return {
           name: p.companyName,
           urn: p.companyUrn,
