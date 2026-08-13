@@ -115,7 +115,7 @@ export function useCopyLead(lead: OptionalDeepReadonly<Lead>) {
   const copyTimeout = ref<ReturnType<typeof setTimeout> | null>(null);
 
   const selectedCompanyUrls = computed(() => {
-    return lead.main?.positions
+    return effectivePositions.value
       .filter(p => selectedPositionIds.value.includes(p.posId))
       .map(p => {
         const isLoaded = p.companyUrn ? !!selectedCompanies.value[p.companyUrn] : false;
@@ -125,7 +125,7 @@ export function useCopyLead(lead: OptionalDeepReadonly<Lead>) {
           url: p.companyUrn ? getSalesNavigatorCompanyUrl(p.companyUrn) : null,
           isLoaded
         };
-      }) || [];
+      });
   });
 
   const missingCompanies = computed(() => {
