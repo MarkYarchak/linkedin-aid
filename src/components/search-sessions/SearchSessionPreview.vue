@@ -27,8 +27,8 @@ const pagesCaptured = computed(() => Object.keys(props.session.leadUrnsByPage).l
 
 const title = computed(() => props.session.searchTitle || props.session.id);
 
-const { entitiesTTL } = useDataStore();
-const expirationInfo = computed(() => getEntityExpirationInfo(props.session.updatedAt, entitiesTTL.value));
+const { capturedEntitiesTTL } = useDataStore();
+const expirationInfo = computed(() => getEntityExpirationInfo(props.session.updatedAt, capturedEntitiesTTL.value));
 </script>
 
 <template>

@@ -4,11 +4,11 @@ import { browser } from 'wxt/browser';
 import { useDataStore } from '@/store/data-store';
 import { storageService } from '@/services/storage-service';
 
-const { entitiesTTL, theme } = useDataStore();
+const { capturedEntitiesTTL, theme } = useDataStore();
 const localTTL = ref(30);
 const localTheme = ref<'light' | 'dark' | 'system'>('system');
 
-watch(() => entitiesTTL.value, (val) => {
+watch(() => capturedEntitiesTTL.value, (val) => {
   localTTL.value = val;
 }, { immediate: true });
 
@@ -17,7 +17,7 @@ watch(() => theme.value, (val) => {
 }, { immediate: true });
 
 watch(localTTL, async (newValue) => {
-  await storageService.setLocal({ entitiesTTL: newValue });
+  await storageService.setLocal({ capturedEntitiesTTL: newValue });
 });
 
 watch(localTheme, async (newValue) => {
@@ -41,7 +41,7 @@ const ttlOptions = [
 
 const resetSettings = async () => {
   if (confirm('Are you sure you want to reset all settings?')) {
-    await browser.storage.local.remove(['copyLeadSettings', 'bulkCopyLeadSettings', 'entitiesTTL', 'theme']);
+    await browser.storage.local.remove(['copyLeadSettings', 'bulkCopyLeadSettings', 'capturedEntitiesTTL', 'theme']);
     alert('Settings reset.');
   }
 };
@@ -93,7 +93,7 @@ const resetSettings = async () => {
     <v-card title="Data Retention" class="mb-4">
       <v-card-text>
         <div class="text-body-2 text-medium-emphasis mb-4">
-          Choose how long to keep leads, companies, and sessions before they are automatically deleted.
+          Choose how long to keep captured leads, companies, and sessions before they are automatically deleted.
         </div>
         <v-radio-group v-model="localTTL" hide-details>
           <v-row no-gutters>

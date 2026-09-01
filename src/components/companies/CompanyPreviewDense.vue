@@ -20,8 +20,8 @@ const logoUrl = computed(() => {
   return getDisplayImageUrl(props.company.main?.companyPictureDisplayImage as DisplayImage);
 });
 
-const { entitiesTTL } = useDataStore();
-const expirationInfo = computed(() => getEntityExpirationInfo(props.company.updatedAt, entitiesTTL.value));
+const { capturedEntitiesTTL } = useDataStore();
+const expirationInfo = computed(() => getEntityExpirationInfo(props.company.updatedAt, capturedEntitiesTTL.value));
 </script>
 
 <template>

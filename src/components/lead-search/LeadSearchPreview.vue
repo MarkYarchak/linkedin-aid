@@ -21,11 +21,11 @@ const props = withDefaults(defineProps<Props>(), {
 
 const selected = defineModel<boolean>('selected', { default: false });
 
-const { leadPositionRelationsMap, companiesMap, entitiesTTL } = useDataStore();
+const { leadPositionRelationsMap, companiesMap, capturedEntitiesTTL } = useDataStore();
 
 const avatarUrl = computed(() => getLeadAvatarUrl(props.lead));
 
-const expirationInfo = computed(() => getEntityExpirationInfo(props.lead.updatedAt, entitiesTTL.value));
+const expirationInfo = computed(() => getEntityExpirationInfo(props.lead.updatedAt, capturedEntitiesTTL.value));
 
 const isSaved = computed(() => {
   return props.lead.searchResult?.saved || props.lead.main?.savedLead || false;

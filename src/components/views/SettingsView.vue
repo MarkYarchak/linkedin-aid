@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { ref } from 'vue';
 import { browser } from 'wxt/browser';
-const SettingsEntitiesTab = defineAsyncComponent(() => import('@/components/settings/SettingsEntitiesTab.vue'));
+const SettingsCapturedEntitiesTab = defineAsyncComponent(() => import('@/components/settings/SettingsCapturedEntitiesTab.vue'));
 const SettingsSessionsTab = defineAsyncComponent(() => import('@/components/settings/SettingsSessionsTab.vue'));
 const SettingsTitlesTab = defineAsyncComponent(() => import('@/components/settings/SettingsTitlesTab.vue'));
 const SettingsCopyTab = defineAsyncComponent(() => import('@/components/settings/SettingsCopyTab.vue'));
@@ -9,7 +9,7 @@ const SettingsGeneralTab = defineAsyncComponent(() => import('@/components/setti
 
 const tabs = ref([
   { title: 'General', value: 'general', getComponent: () => SettingsGeneralTab },
-  { title: 'Entities', value: 'entities', getComponent: () => SettingsEntitiesTab },
+  { title: 'Captured entities', value: 'captured_entities', getComponent: () => SettingsCapturedEntitiesTab },
   { title: 'Sessions', value: 'sessions', getComponent: () => SettingsSessionsTab },
   { title: 'Titles', value: 'titles', getComponent: () => SettingsTitlesTab },
   { title: 'Copy', value: 'copy', getComponent: () => SettingsCopyTab },

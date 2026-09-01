@@ -23,11 +23,11 @@ const props = withDefaults(defineProps<Props>(), {
 });
 const emit = defineEmits(['update:modelValue', 'close']);
 
-const { leadPositionRelationsMap, companiesMap, entitiesTTL } = useDataStore();
+const { leadPositionRelationsMap, companiesMap, capturedEntitiesTTL } = useDataStore();
 
 const expirationInfo = computed(() => {
   if (!props.entity) return '';
-  return getEntityExpirationInfo(props.entity.updatedAt, entitiesTTL.value);
+  return getEntityExpirationInfo(props.entity.updatedAt, capturedEntitiesTTL.value);
 });
 
 const effectivePositions = computed(() => {

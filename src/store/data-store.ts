@@ -19,7 +19,7 @@ export type LocalData = {
   theme: 'light' | 'dark' | 'system',
   copyLeadSettings: CopyLeadSettings,
   bulkCopyLeadSettings: BulkCopyLeadSettings,
-  entitiesTTL?: number,
+  capturedEntitiesTTL?: number,
 };
 
 export type CustomStorageChange<T = unknown> = { oldValue: T, newValue: T };
@@ -34,7 +34,7 @@ const personasStorage = ref<PersonasStorage>({ general: [], byCompany: {} });
 const leadTitles = ref<Record<string, string>>({});
 const copyLeadSettings = ref<CopyLeadSettings | null>(null);
 const bulkCopyLeadSettings = ref<LocalData['bulkCopyLeadSettings'] | null>(null);
-const entitiesTTL = ref<number>(30);
+const capturedEntitiesTTL = ref<number>(30);
 const theme = ref<LocalData['theme']>('system');
 const isLoaded = ref(false);
 
@@ -62,9 +62,9 @@ liveQuery(() => db.leadPositionRelations.toArray()).subscribe((relations) => {
 });
 
 const cleanupOldData = async () => {
-  if (entitiesTTL.value === -1) return;
+  if (capturedEntitiesTTL.value === -1) return;
 
-  const threshold = Date.now() - ms(`${entitiesTTL.value}d`);
+  const threshold = Date.now() - ms(`${capturedEntitiesTTL.value}d`);
 
   const oldLeadUrns = await db.leads.where('updatedAt').below(threshold).primaryKeys();
   const oldCompaniesCount = await db.companies.where('updatedAt').below(threshold).delete();
@@ -78,14 +78,14 @@ const cleanupOldData = async () => {
   }
 
   if (oldLeadUrns.length > 0 || oldCompaniesCount > 0 || oldSessionsCount > 0) {
-    console.log(`Cleaned up ${oldLeadUrns.length} leads (and their relations), ${oldCompaniesCount} companies, and ${oldSessionsCount} sessions older than ${entitiesTTL.value} days.`);
+    console.log(`Cleaned up ${oldLeadUrns.length} leads (and their relations), ${oldCompaniesCount} companies, and ${oldSessionsCount} sessions older than ${capturedEntitiesTTL.value} days.`);
   }
 };
 
 const loadData = async () => {
   const [session, local] = await Promise.all([
     storageService.getSession(['personas', 'lead_titles']),
-    storageService.getLocal(['copyLeadSettings', 'bulkCopyLeadSettings', 'entitiesTTL', 'theme']),
+    storageService.getLocal(['copyLeadSettings', 'bulkCopyLeadSettings', 'capturedEntitiesTTL', 'theme']),
   ]);
 
   if (session.personas) personasStorage.value = session.personas;
@@ -93,7 +93,7 @@ const loadData = async () => {
 
   if (local.copyLeadSettings) copyLeadSettings.value = local.copyLeadSettings;
   if (local.bulkCopyLeadSettings) bulkCopyLeadSettings.value = local.bulkCopyLeadSettings;
-  if (local.entitiesTTL !== undefined) entitiesTTL.value = local.entitiesTTL;
+  if (local.capturedEntitiesTTL !== undefined) capturedEntitiesTTL.value = local.capturedEntitiesTTL;
   if (local.theme) theme.value = local.theme;
 
   await cleanupOldData();
@@ -123,9 +123,9 @@ browser.storage.onChanged.addListener((changes, areaName) => {
       const { newValue } = changes.bulkCopyLeadSettings as CustomStorageChange<LocalData['bulkCopyLeadSettings']>;
       bulkCopyLeadSettings.value = newValue || null;
     }
-    if (changes.entitiesTTL) {
-      const { newValue } = changes.entitiesTTL as CustomStorageChange<LocalData['entitiesTTL']>;
-      entitiesTTL.value = newValue || 30;
+    if (changes.capturedEntitiesTTL) {
+      const { newValue } = changes.capturedEntitiesTTL as CustomStorageChange<LocalData['capturedEntitiesTTL']>;
+      capturedEntitiesTTL.value = newValue || 30;
     }
     if (changes.theme) {
       const { newValue } = changes.theme as CustomStorageChange<LocalData['theme']>;
@@ -152,7 +152,7 @@ export const useDataStore = () => {
     leadTitles: readonly(leadTitles),
     copyLeadSettings: readonly(copyLeadSettings),
     bulkCopyLeadSettings: readonly(bulkCopyLeadSettings),
-    entitiesTTL: readonly(entitiesTTL),
+    capturedEntitiesTTL: readonly(capturedEntitiesTTL),
     theme: readonly(theme),
     isLoaded: readonly(isLoaded),
     loadData,
