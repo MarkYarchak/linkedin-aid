@@ -1,6 +1,5 @@
 <script lang="ts" setup>
 interface Props {
-  modelValue: boolean;
   label?: string;
   size?: 'sm' | 'md' | 'lg';
 }
@@ -8,23 +7,19 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
   size: 'md',
 });
-const emit = defineEmits(['update:modelValue']);
 
-const toggle = () => {
-  emit('update:modelValue', !props.modelValue);
-};
+const checked = defineModel<boolean>();
 </script>
 
 <template>
   <label :class="['app-checkbox', `size-${size}`]">
     <input
+      v-model="checked"
       type="checkbox"
       class="checkbox-input"
-      :checked="modelValue"
-      @change="toggle"
     />
-    <div :class="['checkbox-box', { checked: modelValue }]">
-      <svg v-if="modelValue" viewBox="0 0 24 24" class="check-icon">
+    <div :class="['checkbox-box', { checked }]">
+      <svg v-if="checked" viewBox="0 0 24 24" class="check-icon">
         <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" fill="currentColor" />
       </svg>
     </div>
@@ -36,6 +31,7 @@ const toggle = () => {
 
 <style scoped>
 .app-checkbox {
+  position: relative;
   display: inline-flex;
   align-items: center;
   gap: 10px;
@@ -53,8 +49,9 @@ const toggle = () => {
   margin: -1px;
   overflow: hidden;
   clip: rect(0, 0, 0, 0);
+  clip-path: inset(50%);
   white-space: nowrap;
-  border-width: 0;
+  border: 0;
 }
 
 .app-checkbox.size-sm {
