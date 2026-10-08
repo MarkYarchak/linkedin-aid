@@ -8,7 +8,23 @@ const { copyLeadSettings } = useDataStore();
 const targets = computed(() => copyLeadSettings.value?.titleTargets || defaultTargets);
 const states = computed(() => copyLeadSettings.value?.titleStates || defaultStates);
 
+const activeTab = ref<'statuses' | 'targets'>('statuses');
 const copiedValue = ref<string | null>(null);
+
+const tabs = computed(() => [
+  {
+    key: 'statuses' as const,
+    label: 'Title Statuses',
+    items: states.value,
+  },
+  {
+    key: 'targets' as const,
+    label: 'Title Targets',
+    items: targets.value,
+  },
+]);
+
+const activeItems = computed(() => tabs.value.find((tab) => tab.key === activeTab.value)?.items || []);
 
 const copyToClipboard = async (text: string, value: string) => {
   try {
@@ -27,38 +43,34 @@ const copyToClipboard = async (text: string, value: string) => {
 
 <template>
   <div class="legend-view">
-    <div class="section">
-      <h3>Title Targets</h3>
-      <div class="list">
-        <div
-          v-for="target in targets"
-          :key="target.value"
-          title="Click to copy emoji"
-          class="item"
-          :class="{ copied: copiedValue === target.value }"
-          @click="copyToClipboard(target.emoji, target.value)"
-        >
-          <span class="emoji">{{ target.emoji }}</span>
-          <span class="label">{{ target.label }}</span>
-          <span v-if="copiedValue === target.value" class="copied-badge">Copied!</span>
-        </div>
-      </div>
+    <div class="tabs" role="tablist" aria-label="Title legend categories">
+      <button
+        v-for="tab in tabs"
+        :key="tab.key"
+        type="button"
+        class="tab"
+        :class="{ active: activeTab === tab.key }"
+        role="tab"
+        :aria-selected="activeTab === tab.key"
+        @click="activeTab = tab.key"
+      >
+        {{ tab.label }}
+      </button>
     </div>
 
-    <div class="section">
-      <h3>Title Statuses</h3>
-      <div class="list">
+    <div class="tab-content">
+      <div class="grid">
         <div
-          v-for="state in states"
-          :key="state.value"
+          v-for="item in activeItems"
+          :key="item.value"
           title="Click to copy emoji"
-          class="item"
-          :class="{ copied: copiedValue === state.value }"
-          @click="copyToClipboard(state.emoji, state.value)"
+          class="card"
+          :class="{ copied: copiedValue === item.value }"
+          @click="copyToClipboard(item.emoji, item.value)"
         >
-          <span class="emoji">{{ state.emoji }}</span>
-          <span class="label">{{ state.label }}</span>
-          <span v-if="copiedValue === state.value" class="copied-badge">Copied!</span>
+          <span class="emoji">{{ item.emoji }}</span>
+          <span class="label">{{ item.label }}</span>
+          <span v-if="copiedValue === item.value" class="copied-badge">Copied!</span>
         </div>
       </div>
     </div>
@@ -71,46 +83,72 @@ const copyToClipboard = async (text: string, value: string) => {
   flex-direction: column;
   height: 100%;
   min-height: 0;
-  padding: 16px;
-  overflow-y: auto;
 }
 
-.section {
-  margin-bottom: 24px;
+.tabs {
+  display: flex;
+  gap: 8px;
+  border-bottom: 1px solid #ddd;
+  padding: 8px 16px 0;
 }
 
-h3 {
-  margin-top: 0;
-  margin-bottom: 12px;
-  font-size: 14px;
+.tab {
+  padding: 10px 14px;
+  border-radius: 0;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: transparent;
   color: #666;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: none;
 }
 
-.list {
+.tab:hover {
+  color: #333;
+  background: #fafafa;
+}
+
+.tab.active {
+  color: #1976d2;
+  border-bottom-color: #1976d2;
+}
+
+.tab-content {
+  flex-grow: 1;
+  overflow-y: auto;
+  padding: 16px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 12px;
+}
+
+.card {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-}
-
-.item {
-  display: flex;
   align-items: center;
+  justify-content: center;
   gap: 12px;
-  padding: 8px 12px;
-  border-radius: 6px;
+  min-height: 104px;
+  padding: 14px;
+  border: 1px solid transparent;
+  border-radius: 10px;
   background: #f5f5f5;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.1s;
   position: relative;
+  text-align: center;
 }
 
-.item:hover {
+.card:hover {
   background: #e0e0e0;
 }
 
-.item.copied {
+.card.copied {
   background: #e8f5e9;
   border-color: #4caf50;
   animation: copy-flash-green 0.6s ease-out;
@@ -129,20 +167,29 @@ h3 {
 }
 
 .emoji {
-  font-size: 18px;
-  width: 24px;
   display: flex;
   justify-content: center;
+  font-size: 28px;
+  line-height: 1;
 }
 
 .label {
+  display: -webkit-box;
+  overflow: hidden;
   font-size: 13px;
+  font-weight: bold;
   color: #333;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
 }
 
 .copied-badge {
-  margin-left: auto;
-  font-size: 11px;
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  font-size: 10px;
   font-weight: bold;
   color: #2e7d32;
   text-transform: uppercase;
