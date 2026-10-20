@@ -7,8 +7,6 @@ const SettingsTitlesTab = defineAsyncComponent(() => import('@/components/settin
 const SettingsCopyTab = defineAsyncComponent(() => import('@/components/settings/SettingsCopyTab.vue'));
 const SettingsGeneralTab = defineAsyncComponent(() => import('@/components/settings/SettingsGeneralTab.vue'));
 const SettingsCrmTab = defineAsyncComponent(() => import('@/components/settings/SettingsCrmTab.vue'));
-const SettingsAiTab = defineAsyncComponent(() => import('@/components/settings/SettingsAiTab.vue'));
-const SettingsSignalsTab = defineAsyncComponent(() => import('@/components/settings/SettingsSignalsTab.vue'));
 
 interface TabItem {
   title: string;
@@ -24,8 +22,6 @@ const tabs = ref<TabItem[]>([
   { title: 'Titles', value: 'titles', getComponent: () => SettingsTitlesTab },
   { title: 'Copy', value: 'copy', getComponent: () => SettingsCopyTab },
   { title: 'CRM', value: 'crm', badge: 'Beta', getComponent: () => SettingsCrmTab },
-  { title: 'AI Actions', value: 'ai', badge: 'Beta', getComponent: () => SettingsAiTab },
-  { title: 'Signals', value: 'signals', badge: 'Beta', getComponent: () => SettingsSignalsTab },
 ]);
 const activeTab = ref(0);
 
