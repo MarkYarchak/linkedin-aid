@@ -2,6 +2,7 @@
 import { ref } from 'vue';
 import SettingsAiTab from '@/components/settings/SettingsAiTab.vue';
 import SettingsSignalsTab from '@/components/settings/SettingsSignalsTab.vue';
+import SettingsInteractionsTab from '@/components/settings/SettingsInteractionsTab.vue';
 
 const activeSubTab = ref<'crm' | 'ai' | 'signals'>('crm');
 
@@ -9,6 +10,7 @@ const subTabs = [
   { label: 'CRM', value: 'crm' },
   { label: 'AI', value: 'ai' },
   { label: 'Signals', value: 'signals' },
+  { label: 'Interactions', value: 'interactions' },
 ];
 </script>
 
@@ -48,6 +50,10 @@ const subTabs = [
 
     <div v-else-if="activeSubTab === 'signals'">
       <SettingsSignalsTab />
+    </div>
+
+    <div v-else-if="activeSubTab === 'interactions'">
+      <SettingsInteractionsTab />
     </div>
   </div>
 </template>
