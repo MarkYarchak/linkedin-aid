@@ -128,7 +128,7 @@ watch([activeTab, selectedPersonaId, () => props.tabUrl], () => {
 <template>
   <div class="company-page">
     <div v-if="currentUrlCompany">
-      <CompanyPreview :company="currentUrlCompany" />
+      <CompanyPreview :company="currentUrlCompany" accordion />
 
       <div class="leads-section">
         <div class="leads-header">

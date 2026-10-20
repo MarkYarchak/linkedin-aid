@@ -6,6 +6,8 @@ import { getDisplayImageUrl } from '@/helpers/image-helper';
 import { getEntityExpirationInfo } from '@/helpers/date-helper';
 import AppAvatar from '@/components/ui/AppAvatar.vue';
 import AppCheckbox from '@/components/ui/AppCheckbox.vue';
+import IconChevronDown from '@/components/icons/IconChevronDown.vue';
+import IconChevronUp from '@/components/icons/IconChevronUp.vue';
 import CompanyPreviewDense from './CompanyPreviewDense.vue';
 import type { OptionalDeepReadonly } from '@/types/common';
 import type { Company } from '@/types/company/company';
@@ -15,24 +17,39 @@ interface Props {
   company: OptionalDeepReadonly<Company>;
   selectable?: boolean;
   dense?: boolean;
+  accordion?: boolean;
   showExpiration?: boolean;
 }
 const props = withDefaults(defineProps<Props>(), {
   selectable: false,
   dense: false,
+  accordion: false,
   showExpiration: false,
 });
 
 const selected = defineModel<boolean>('selected', { default: false });
 
-const isExpanded = ref(false);
+const isAccordion = computed(() => props.accordion);
+const isAccordionExpanded = ref(false);
+const isDescriptionExpanded = ref(false);
 const isTruncated = ref(false);
 const descriptionRef = ref<HTMLElement | null>(null);
 
-const isCurrentlyDense = computed(() => props.dense && !isExpanded.value);
+const isCurrentlyDense = computed(() => {
+  if (isAccordion.value) {
+    return !isAccordionExpanded.value;
+  }
+  return props.dense;
+});
 
-const toggleExpand = () => {
-  isExpanded.value = !isExpanded.value;
+const toggleAccordion = () => {
+  if (isAccordion.value) {
+    isAccordionExpanded.value = !isAccordionExpanded.value;
+  }
+};
+
+const toggleDescriptionExpand = () => {
+  isDescriptionExpanded.value = !isDescriptionExpanded.value;
 };
 
 const checkTruncation = () => {
@@ -81,22 +98,41 @@ const revenueRangeString = computed(() => {
 <template>
   <div
     class="company-info"
-    :class="{ selected: selected, 'is-dense': isCurrentlyDense }"
+    :class="{
+      selected: selected,
+      'is-dense': isCurrentlyDense,
+      'is-accordion': isAccordion,
+      'is-expanded': isAccordion && isAccordionExpanded
+    }"
   >
-    <div v-if="isCurrentlyDense" class="dense-view">
-      <div v-if="selectable" class="selection-area">
+    <div
+      v-if="isCurrentlyDense"
+      class="dense-view"
+      :class="{ 'is-clickable': isAccordion }"
+      @click="isAccordion ? toggleAccordion() : undefined"
+    >
+      <div v-if="selectable" class="selection-area" @click.stop>
         <AppCheckbox v-model="selected" @click.stop />
       </div>
       <CompanyPreviewDense :company="company" :show-expiration="showExpiration">
         <template #actions>
-          <slot name="actions" :company="company" />
+          <div @click.stop>
+            <slot name="actions" :company="company" />
+          </div>
         </template>
       </CompanyPreviewDense>
+      <div v-if="isAccordion" class="accordion-toggle" title="Expand">
+        <IconChevronDown :size="16" color="#666" />
+      </div>
     </div>
 
     <template v-else>
-      <div class="header">
-        <div v-if="selectable" class="selection-area">
+      <div
+        class="header"
+        :class="{ 'is-clickable': isAccordion }"
+        @click="isAccordion ? toggleAccordion() : undefined"
+      >
+        <div v-if="selectable" class="selection-area" @click.stop>
           <AppCheckbox v-model="selected" @click.stop />
         </div>
         <AppAvatar
@@ -105,12 +141,17 @@ const revenueRangeString = computed(() => {
           shape="square"
           size="md"
         />
-        <h3>{{ company.main?.name }}</h3>
+        <h3 class="company-name">{{ company.main?.name }}</h3>
 
         <div v-if="showExpiration" class="expiration ml-auto">
           {{ expirationInfo }}
         </div>
-        <slot name="actions" :company="company" />
+        <div v-if="$slots.actions" class="actions-area" :class="{ 'ml-auto': !showExpiration }" @click.stop>
+          <slot name="actions" :company="company" />
+        </div>
+        <div v-if="isAccordion" class="accordion-toggle" :class="{ 'ml-auto': !showExpiration && !$slots.actions }" title="Collapse">
+          <IconChevronUp :size="16" color="#666" />
+        </div>
       </div>
 
       <div class="info-row">
@@ -120,7 +161,7 @@ const revenueRangeString = computed(() => {
         <strong>Location:</strong> {{ company.main?.location || 'N/A' }}
       </div>
       <div class="info-row" v-if="company.main?.website">
-        <strong>Website:</strong> <a :href="company.main.website" target="_blank">{{ company.main.website }}</a>
+        <strong>Website:</strong> <a :href="company.main.website" target="_blank" @click.stop>{{ company.main.website }}</a>
       </div>
       <div class="info-row" v-if="company.extra?.employeeDisplayCount">
         <strong>Headcount:</strong> {{ company.extra.employeeDisplayCount }} employees
@@ -132,16 +173,16 @@ const revenueRangeString = computed(() => {
         <strong>Description:</strong>
         <p
           ref="descriptionRef"
-          :class="['description', { 'is-clamped': !isExpanded }]"
+          :class="['description', { 'is-clamped': !isDescriptionExpanded }]"
         >
           {{ sanitizeText(company.main.description) }}
         </p>
         <button
-          v-if="isTruncated || isExpanded"
+          v-if="isTruncated || isDescriptionExpanded"
           class="toggle-button"
-          @click="toggleExpand"
+          @click.stop="toggleDescriptionExpand"
         >
-          {{ isExpanded ? 'Show less' : 'Show more' }}
+          {{ isDescriptionExpanded ? 'Show less' : 'Show more' }}
         </button>
       </div>
     </template>
@@ -152,7 +193,6 @@ const revenueRangeString = computed(() => {
 .company-info {
   padding: 4px 4px 12px;
   transition: background-color 0.2s;
-  border-radius: 8px;
 }
 
 .company-info:hover {
@@ -169,12 +209,35 @@ const revenueRangeString = computed(() => {
 
 .company-info.is-dense {
   padding: 8px;
+  border: 1px solid #e5e7eb;
 }
 
 .dense-view {
   display: flex;
   align-items: center;
   gap: 10px;
+  width: 100%;
+}
+
+.dense-view.is-clickable,
+.header.is-clickable {
+  cursor: pointer;
+}
+
+.accordion-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #64748b;
+  padding: 2px;
+  border-radius: 4px;
+  flex-shrink: 0;
+  transition: color 0.2s, background-color 0.2s;
+}
+
+.dense-view:hover .accordion-toggle,
+.header:hover .accordion-toggle {
+  color: #0a66c2;
 }
 
 .selection-area {
@@ -189,11 +252,7 @@ const revenueRangeString = computed(() => {
   gap: 10px;
 }
 
-.header button {
-  margin-left: auto;
-}
-
-.company-info h3 {
+.company-name {
   margin: 0;
   font-size: 1.1em;
   color: #0a66c2;
@@ -217,6 +276,15 @@ const revenueRangeString = computed(() => {
   color: #94a3b8;
   font-weight: 500;
   font-size: 0.75rem;
+}
+
+.ml-auto {
+  margin-left: auto;
+}
+
+.actions-area {
+  display: flex;
+  align-items: center;
 }
 
 .description {

@@ -37,6 +37,8 @@ const expirationInfo = computed(() => getEntityExpirationInfo(props.company.upda
       <div class="meta">
         <span v-if="company.main?.industry" class="industry">{{ company.main.industry }}</span>
         <span v-if="company.main?.industry && company.main?.location" class="separator"> &middot; </span>
+        <span v-if="company.extra?.employeeDisplayCount">{{ company.extra.employeeDisplayCount }} employees</span>
+        <span v-if="company.extra?.employeeDisplayCount" class="separator"> &middot; </span>
         <span v-if="company.main?.location" class="location">{{ company.main.location }}</span>
       </div>
     </div>
