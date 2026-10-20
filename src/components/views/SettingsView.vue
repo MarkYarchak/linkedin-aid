@@ -6,13 +6,22 @@ const SettingsSessionsTab = defineAsyncComponent(() => import('@/components/sett
 const SettingsTitlesTab = defineAsyncComponent(() => import('@/components/settings/SettingsTitlesTab.vue'));
 const SettingsCopyTab = defineAsyncComponent(() => import('@/components/settings/SettingsCopyTab.vue'));
 const SettingsGeneralTab = defineAsyncComponent(() => import('@/components/settings/SettingsGeneralTab.vue'));
+const SettingsAiTab = defineAsyncComponent(() => import('@/components/settings/SettingsAiTab.vue'));
 
-const tabs = ref([
+interface TabItem {
+  title: string;
+  value: string;
+  badge?: string;
+  getComponent: () => any;
+}
+
+const tabs = ref<TabItem[]>([
   { title: 'General', value: 'general', getComponent: () => SettingsGeneralTab },
   { title: 'Captured entities', value: 'captured_entities', getComponent: () => SettingsCapturedEntitiesTab },
   { title: 'Sessions', value: 'sessions', getComponent: () => SettingsSessionsTab },
   { title: 'Titles', value: 'titles', getComponent: () => SettingsTitlesTab },
   { title: 'Copy', value: 'copy', getComponent: () => SettingsCopyTab },
+  { title: 'AI Actions', value: 'ai', badge: 'Beta', getComponent: () => SettingsAiTab },
 ]);
 const activeTab = ref(0);
 
@@ -38,7 +47,18 @@ const version = browser.runtime.getManifest().version;
               :title="tab.title"
               :class="selectedClass"
               @click="toggle"
-            ></v-list-item>
+            >
+              <template v-if="tab.badge" #append>
+                <v-chip
+                  size="x-small"
+                  color="#0073b1"
+                  variant="flat"
+                  class="font-weight-bold"
+                >
+                  {{ tab.badge }}
+                </v-chip>
+              </template>
+            </v-list-item>
           </v-item>
         </v-list>
       </v-item-group>
