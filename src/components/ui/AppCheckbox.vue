@@ -8,7 +8,7 @@ const props = withDefaults(defineProps<Props>(), {
   size: 'md',
 });
 
-const checked = defineModel<boolean>();
+const checked = defineModel<boolean>({ required: true });
 </script>
 
 <template>
