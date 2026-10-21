@@ -1,12 +1,12 @@
 <script lang="ts" setup>
 import { ref } from 'vue';
 import { browser } from 'wxt/browser';
-const SettingsCapturedEntitiesTab = defineAsyncComponent(() => import('@/components/settings/SettingsCapturedEntitiesTab.vue'));
-const SettingsSessionsTab = defineAsyncComponent(() => import('@/components/settings/SettingsSessionsTab.vue'));
-const SettingsTitlesTab = defineAsyncComponent(() => import('@/components/settings/SettingsTitlesTab.vue'));
-const SettingsCopyTab = defineAsyncComponent(() => import('@/components/settings/SettingsCopyTab.vue'));
-const SettingsGeneralTab = defineAsyncComponent(() => import('@/components/settings/SettingsGeneralTab.vue'));
-const SettingsCrmTab = defineAsyncComponent(() => import('@/components/settings/SettingsCrmTab.vue'));
+const SettingsCapturedEntitiesTab = defineAsyncComponent(() => import('@/entrypoints/settings/pages/SettingsCapturedEntitiesTab.vue'));
+const SettingsSessionsTab = defineAsyncComponent(() => import('@/entrypoints/settings/pages/SettingsSessionsTab.vue'));
+const SettingsTitlesTab = defineAsyncComponent(() => import('@/entrypoints/settings/pages/SettingsTitlesTab.vue'));
+const SettingsCopyTab = defineAsyncComponent(() => import('@/entrypoints/settings/pages/SettingsCopyTab.vue'));
+const SettingsGeneralTab = defineAsyncComponent(() => import('@/entrypoints/settings/pages/SettingsGeneralTab.vue'));
+const SettingsCrmTab = defineAsyncComponent(() => import('@/entrypoints/settings/pages/crm/SettingsCrmTab.vue'));
 
 interface TabItem {
   title: string;

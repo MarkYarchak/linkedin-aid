@@ -1,8 +1,8 @@
 <script lang="ts" setup>
 import { ref } from 'vue';
-import SettingsAiTab from '@/components/settings/SettingsAiTab.vue';
-import SettingsSignalsTab from '@/components/settings/SettingsSignalsTab.vue';
-import SettingsInteractionsTab from '@/components/settings/SettingsInteractionsTab.vue';
+import SettingsAiTab from '@/entrypoints/settings/pages/crm/SettingsAiTab.vue';
+import SettingsSignalsTab from '@/entrypoints/settings/pages/crm/SettingsSignalsTab.vue';
+import SettingsInteractionsTab from '@/entrypoints/settings/pages/crm/SettingsInteractionsTab.vue';
 
 const activeSubTab = ref<'crm' | 'ai' | 'signals'>('crm');
 
