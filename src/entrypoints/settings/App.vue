@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { useDataStore } from '@/store/data-store';
 import { useAppTheme } from '@/composables/useTheme';
-import SettingsView from '@/components/views/SettingsView.vue';
+import SettingsView from '@/entrypoints/settings/views/SettingsView.vue';
 
 const { isLoaded, loadData } = useDataStore();
 const { initTheme } = useAppTheme();

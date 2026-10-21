@@ -2,8 +2,8 @@
 import { onMounted, ref } from 'vue';
 import { browser } from 'wxt/browser';
 import { useDataStore } from '@/store/data-store';
-import CapturedDataView from '@/components/views/CapturedDataView.vue';
-import LegendView from '@/components/views/LegendView.vue';
+import CapturedDataView from '@/entrypoints/popup/views/CapturedDataView.vue';
+import LegendView from '@/entrypoints/popup/views/LegendView.vue';
 
 const tabUrl = ref('');
 const isLinkedIn = ref(false);
