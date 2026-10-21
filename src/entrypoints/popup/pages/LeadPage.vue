@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useLeads } from '@/composables/useLeads';
-import LeadPreview from '../leads/LeadPreview.vue';
+import LeadPreview from '../../../components/leads/LeadPreview.vue';
 
 interface Props {
   tabUrl: string;

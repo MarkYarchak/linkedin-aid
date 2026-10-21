@@ -1,8 +1,8 @@
 <script lang="ts" setup>
 import { computed } from 'vue';
-import LeadPage from '@/components/pages/LeadPage.vue';
-import LeadSearchPage from '@/components/pages/LeadSearchPage.vue';
-import CompanyPage from '@/components/pages/CompanyPage.vue';
+import LeadPage from '@/entrypoints/popup/pages/LeadPage.vue';
+import LeadSearchPage from '@/entrypoints/popup/pages/LeadSearchPage.vue';
+import CompanyPage from '@/entrypoints/popup/pages/CompanyPage.vue';
 import {
   isSalesNavigatorLeadUrl,
   isSalesNavigatorCompanyUrl,
