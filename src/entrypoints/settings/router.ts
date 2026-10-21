@@ -3,16 +3,19 @@ import {
   createWebHashHistory,
 } from 'vue-router';
 
+// Root pages
 const SettingsGeneralPage = defineAsyncComponent(() => import('@/entrypoints/settings/pages/SettingsGeneralPage.vue'));
 const SettingsCapturedEntitiesPage = defineAsyncComponent(() => import('@/entrypoints/settings/pages/SettingsCapturedEntitiesPage.vue'));
 const SettingsSessionsPage = defineAsyncComponent(() => import('@/entrypoints/settings/pages/SettingsSessionsPage.vue'));
 const SettingsTitlesPage = defineAsyncComponent(() => import('@/entrypoints/settings/pages/SettingsTitlesPage.vue'));
 const SettingsCopyPage = defineAsyncComponent(() => import('@/entrypoints/settings/pages/SettingsCopyPage.vue'));
+// CRM pages
 const SettingsCrmPage = defineAsyncComponent(() => import('@/entrypoints/settings/pages/crm/SettingsCrmPage.vue'));
+const SettingsCrmHomePage = defineAsyncComponent(() => import('@/entrypoints/settings/pages/crm/SettingsCrmHomePage.vue'));
 const SettingsCrmEntitiesPage = defineAsyncComponent(() => import('@/entrypoints/settings/pages/crm/SettingsCrmEntitiesPage.vue'));
-const SettingsAiTab = defineAsyncComponent(() => import('@/entrypoints/settings/pages/crm/SettingsAiPage.vue'));
-const SettingsSignalsTab = defineAsyncComponent(() => import('@/entrypoints/settings/pages/crm/SettingsSignalsPage.vue'));
-const SettingsInteractionsTab = defineAsyncComponent(() => import('@/entrypoints/settings/pages/crm/SettingsInteractionsPage.vue'));
+const SettingsCrmAiPage = defineAsyncComponent(() => import('@/entrypoints/settings/pages/crm/SettingsCrmAiPage.vue'));
+const SettingsCrmSignalsTab = defineAsyncComponent(() => import('@/entrypoints/settings/pages/crm/SettingsCrmSignalsTab.vue'));
+const SettingsCrmInteractionsTab = defineAsyncComponent(() => import('@/entrypoints/settings/pages/crm/SettingsCrmInteractionsTab.vue'));
 
 export const router = createRouter({
   history: createWebHashHistory(),
@@ -26,11 +29,11 @@ export const router = createRouter({
       path: '/crm',
       component: SettingsCrmPage,
       children: [
-        { path: '', redirect: '/crm/entities' },
+        { path: '', component: SettingsCrmHomePage },
         { path: 'entities', component: SettingsCrmEntitiesPage },
-        { path: 'ai', component: SettingsAiTab },
-        { path: 'signals', component: SettingsSignalsTab },
-        { path: 'interactions', component: SettingsInteractionsTab },
+        { path: 'ai', component: SettingsCrmAiPage },
+        { path: 'signals', component: SettingsCrmSignalsTab },
+        { path: 'interactions', component: SettingsCrmInteractionsTab },
       ],
     },
   ],

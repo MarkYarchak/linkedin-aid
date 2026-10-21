@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 const subTabs = [
-  { label: 'Entities', value: 'crm', route: '/crm/entities' },
+  { label: 'Home', value: 'home', route: '/crm' },
+  { label: 'Entities', value: 'entities', route: '/crm/entities' },
   { label: 'AI', value: 'ai', route: '/crm/ai' },
   { label: 'Signals', value: 'signals', route: '/crm/signals' },
   { label: 'Interactions', value: 'interactions', route: '/crm/interactions' },
@@ -19,6 +20,7 @@ const subTabs = [
         v-for="tab in subTabs"
         :key="tab.value"
         :to="tab.route"
+        exact
         :variant="$vuetify.theme.current.dark ? undefined : 'outlined'"
         class="flex-grow-1"
       >
