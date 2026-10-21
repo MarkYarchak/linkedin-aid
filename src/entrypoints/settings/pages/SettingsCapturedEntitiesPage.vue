@@ -89,7 +89,7 @@ const activeTab = ref('leads');
 const tabs = computed(() => [
   { value: 'leads', title: `Leads (${ leadsCount.value })` },
   { value: 'companies', title: `Companies (${ companiesCount.value })` },
-  { value: 'sessions', title: `Sessions (${ sessionsCount.value })` },
+  { value: 'sessions', title: `Search Sessions (${ sessionsCount.value })` },
 ]);
 
 const selectedLeadUrns = ref(new Set<string>());
